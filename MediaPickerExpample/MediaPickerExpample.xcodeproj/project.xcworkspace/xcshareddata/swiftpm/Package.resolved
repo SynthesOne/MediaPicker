@@ -1,0 +1,15 @@
+{
+  "originHash" : "e1b3a1f5735a412eb13ea7ad25fca82f0305c62812a433ef3abfd183356c3ab2",
+  "pins" : [
+    {
+      "identity" : "mediapicker",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/SynthesOne/MediaPicker.git",
+      "state" : {
+        "branch" : "main",
+        "revision" : "fab100c124ef890f0bbc3ae5037ece549ed14709"
+      }
+    }
+  ],
+  "version" : 3
+}
