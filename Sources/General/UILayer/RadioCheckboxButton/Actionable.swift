@@ -25,7 +25,6 @@
 import UIKit
 
 private extension UIAction.Identifier {
-    static let touchUpInside: UIAction.Identifier = .init("touchUpInside")
     static func descriptIdent(_ rawValue: UInt) -> UIAction.Identifier {
         .init(String(rawValue))
     }
