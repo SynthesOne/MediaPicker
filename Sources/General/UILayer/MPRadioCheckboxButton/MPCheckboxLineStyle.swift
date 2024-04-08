@@ -1,7 +1,7 @@
 //
-//  CheckBoxColor.swift
+//  CheckboxLineStyle.swift
 //
-//  Created by Валентин Панчишен on 05.04.2024.
+//  Created by Валентин Панчишен on 08.04.2024.
 //  Copyright © 2024 Валентин Панчишен. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -21,24 +21,31 @@
 //  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
-
+    
 import UIKit
 
-/// Define check box color
-public struct CheckBoxColor {
+// MARK: CheckboxLineStyle
+/// Define Checkbox style
+public struct MPCheckboxLineStyle {
+    let checkBoxHeight: CGFloat
+    let checkmarkLineWidth: CGFloat
+    let padding: CGFloat
     
-    let activeColor: UIColor
-    let activeBorderColor: UIColor?
-    let inactiveColor: UIColor
-    let inactiveBorderColor: UIColor
-    let checkMarkColor: UIColor
-    
-    public init(activeColor: UIColor, activeBorderColor: UIColor? = nil, inactiveColor: UIColor, inactiveBorderColor: UIColor, checkMarkColor: UIColor) {
-        self.activeColor = activeColor
-        self.activeBorderColor = activeBorderColor
-        self.inactiveColor = inactiveColor
-        self.inactiveBorderColor = inactiveBorderColor
-        self.checkMarkColor = checkMarkColor
+    public init(checkBoxHeight: CGFloat, checkmarkLineWidth: CGFloat = -1, padding: CGFloat = 6) {
+        self.checkBoxHeight = checkBoxHeight
+        self.checkmarkLineWidth = checkmarkLineWidth
+        self.padding = padding
     }
     
+    public init(checkmarkLineWidth: CGFloat, padding: CGFloat = 6) {
+        self.init(checkBoxHeight: 18, checkmarkLineWidth: checkmarkLineWidth, padding: padding)
+    }
+    
+    public init(padding: CGFloat = 6) {
+        self.init(checkmarkLineWidth: -1, padding: padding)
+    }
+    
+    public var size: CGSize {
+        return CGSize(width: checkBoxHeight, height: checkBoxHeight)
+    }
 }

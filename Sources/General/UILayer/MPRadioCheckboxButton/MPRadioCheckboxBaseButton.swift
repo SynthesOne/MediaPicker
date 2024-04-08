@@ -28,7 +28,7 @@ public enum MPRadioCheckboxStyle {
     case square, circle, rounded(radius: CGFloat)
 }
 
-public class MPRadioCheckboxButton: UIControl {
+public class MPRadioCheckboxBaseButton: UIControl {
     private var sizeChangeObserver: NSKeyValueObservation?
     
     public var isOn = false {
@@ -56,9 +56,6 @@ public class MPRadioCheckboxButton: UIControl {
         setup()
     }
     
-    private func setup() {
-        action({ [weak self] in self?.isOn.toggle() }, forEvent: .touchUpInside)
-    }
     
     public func updateSelectionState() {
         if isOn {
@@ -66,6 +63,11 @@ public class MPRadioCheckboxButton: UIControl {
         } else {
             updateInactiveLayer()
         }
+    }
+    
+    /// Base setup
+    func setup() {
+        action({ [weak self] in self?.isOn.toggle() }, forEvent: .touchUpInside)
     }
     
     /// Setup layer that will for Radio and Checkbox button
@@ -86,12 +88,12 @@ public class MPRadioCheckboxButton: UIControl {
 }
 
 // MARK:- frame change handler
-extension MPRadioCheckboxButton {
+extension MPRadioCheckboxBaseButton {
     private func addObserverSizeChange() {
-        sizeChangeObserver = observe(\MPRadioCheckboxButton.frame, changeHandler: sizeChangeObseveHandler)
+        sizeChangeObserver = observe(\MPRadioCheckboxBaseButton.frame, changeHandler: sizeChangeObseveHandler)
     }
     
-    private func sizeChangeObseveHandler(_ object: MPRadioCheckboxButton, _ change: NSKeyValueObservedChange<CGRect>) {
+    private func sizeChangeObseveHandler(_ object: MPRadioCheckboxBaseButton, _ change: NSKeyValueObservedChange<CGRect>) {
         setupLayer()
     }
 }
