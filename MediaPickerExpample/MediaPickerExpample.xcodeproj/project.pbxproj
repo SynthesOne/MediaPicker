@@ -288,6 +288,10 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = MediaPickerExpample/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = MediaPicker;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Enable access to make photos/videos, attach them to the tasks, projects, opportunities, invoices and share with the team.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Enable access to make videos and attach them to the tasks, projects, opportunities, invoices and share with the team.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Enable access to record  the album is required";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Enable access to upload photos and attach them to the tasks, projects, opportunities, invoices and share with the team.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = "Launch Screen.storyboard";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
@@ -316,6 +320,10 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = MediaPickerExpample/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = MediaPicker;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Enable access to make photos/videos, attach them to the tasks, projects, opportunities, invoices and share with the team.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Enable access to make videos and attach them to the tasks, projects, opportunities, invoices and share with the team.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Enable access to record  the album is required";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Enable access to upload photos and attach them to the tasks, projects, opportunities, invoices and share with the team.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = "Launch Screen.storyboard";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";

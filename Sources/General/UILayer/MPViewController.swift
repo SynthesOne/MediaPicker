@@ -93,15 +93,15 @@ final class MPViewController: UIViewController {
             let itemSize: NSCollectionLayoutSize
             
             if #unavailable(iOS 17) {
-                itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(0.30), heightDimension: .fractionalHeight(1.0))
+                itemSize = NSCollectionLayoutSize(widthDimension: .absolute(environment.container.contentSize.width/3), heightDimension: .fractionalHeight(1.0))
             } else {
-                itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(0.33), heightDimension: .fractionalHeight(1.0))
+                itemSize = NSCollectionLayoutSize(widthDimension: .absolute(environment.container.contentSize.width/3), heightDimension: .fractionalHeight(1.0))
             }
             
             let item = NSCollectionLayoutItem(layoutSize: itemSize)
             
             let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
-                                                   heightDimension: .fractionalWidth(0.33))
+                                                   heightDimension: .absolute(environment.container.contentSize.width/3))
             let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
             group.interItemSpacing = .flexible(0)
             

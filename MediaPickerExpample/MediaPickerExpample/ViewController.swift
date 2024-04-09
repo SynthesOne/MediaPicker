@@ -10,26 +10,24 @@ import MediaPicker
 
 class ViewController: UIViewController {
     
-    let button: MPCheckboxButton = {
-        let view = MPCheckboxButton(frame: CGRect(origin: .zero, size: .init(width: 24, height: 24)))
-        view.contentMode = .center
-        view.contentVerticalAlignment = .center
-        view.style = .circle
-        view.checkBoxColor = .init(
-            activeColor: UIColor.systemRed,
-            inactiveColor: UIColor.systemBackground,
-            inactiveBorderColor: UIColor(named: "checkboxBorderColor") ?? .white,
-            checkMarkColor: UIColor.white
-        )
-        view.checkboxLine = .init(checkBoxHeight: 24)
+    let button: UIButton = {
+        let view = UIButton(frame: CGRect(origin: .zero, size: .init(width: 120, height: 44)))
+        view.setTitle("gallert", for: .normal)
+        view.setTitleColor(.white, for: .normal)
+        view.backgroundColor = .systemRed
+        view.layer.cornerRadius = 8
+        view.layer.masksToBounds = true
         return view
     }()
+    
+    var mp: MPPresenter?
 
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
         view.backgroundColor = .systemBackground
         view.addSubview(button)
+        button.addTarget(self, action: #selector(openG), for: .touchUpInside)
     }
     
     override func viewDidLayoutSubviews() {
@@ -37,5 +35,9 @@ class ViewController: UIViewController {
         button.center = view.center
     }
 
+    @objc func openG() {
+        mp = MPPresenter(sender: self)
+        mp?.showMediaPicker()
+    }
 }
 

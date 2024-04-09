@@ -80,7 +80,6 @@ final class MediaPickerCell: CollectionViewCell {
     }
     
     override func setupSubviews() {
-        containerView.backgroundColor = .systemRed
         contentView.addSubview(imageView)
         contentView.addSubview(containerView)
         containerView.addSubview(selectionButton)
@@ -120,6 +119,16 @@ final class MediaPickerCell: CollectionViewCell {
         } else {
             bottomShadowView.isHidden = true
         }
+        
+        selectionButton.isOn = model.isSelected
+        
+        if model.isSelected {
+            fetchBigImage()
+        } else {
+            cancelFetchBigImage()
+        }
+        
+        fetchSmallImage()
     }
     
     private func selectionBlock() {
