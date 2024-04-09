@@ -25,8 +25,10 @@
 
 import Foundation
 
-extension NSObject {
+extension MPExtensionWrapper where Base: NSObject {
+    static var className: String { String(describing: Base.self) }
+    
     func `as`<T: NSObject>(_ type: T.Type) -> T? {
-        self as? T
+        base as? T
     }
 }

@@ -1,7 +1,7 @@
 //
-//  MPExtensionsWrapper.swift
+//  UICollectionView+MPExtension.swift
 //
-//  Created by Валентин Панчишен on 08.04.2024.
+//  Created by Валентин Панчишен on 09.04.2024.
 //  Copyright © 2024 Валентин Панчишен. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -22,50 +22,14 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
     
-
-import Foundation
 import UIKit
-import Photos
 
-public struct MPExtensionWrapper<Base> {
-    public let base: Base
-    
-    public init(_ base: Base) {
-        self.base = base
-    }
-}
-
-public protocol MPExtensionCompatible: AnyObject { }
-public protocol MPExtensionCompatibleValue { }
-
-extension MPExtensionCompatible {
-    public var mp: MPExtensionWrapper<Self> {
-        get { MPExtensionWrapper(self) }
-        set { }
+extension MPExtensionWrapper where Base: UICollectionView {
+    func register<T: UICollectionViewCell>(_ type: T.Type) {
+        base.register(type, forCellWithReuseIdentifier: type.mp.className)
     }
     
-    public static var mp: MPExtensionWrapper<Self>.Type {
-        get { MPExtensionWrapper<Self>.self }
-        set { }
+    func register<T: UICollectionReusableView>(_ type: T.Type) {
+        base.register(type, forSupplementaryViewOfKind: type.mp.className, withReuseIdentifier: type.mp.className)
     }
 }
-
-extension MPExtensionCompatibleValue {
-    public var mp: MPExtensionWrapper<Self> {
-        get { MPExtensionWrapper(self) }
-        set { }
-    }
-    
-    public static var mp: MPExtensionWrapper<Self>.Type {
-        get { MPExtensionWrapper<Self>.self }
-        set { }
-    }
-}
-
-extension NSObject: MPExtensionCompatible { }
-//extension UIControl: MPExtensionCompatible { }
-//extension UIApplication: MPExtensionCompatible { }
-//extension UIScreen: MPExtensionCompatible { }
-//extension PHAsset: MPExtensionCompatible { }
-
-extension UIAction.Identifier: MPExtensionCompatibleValue { }

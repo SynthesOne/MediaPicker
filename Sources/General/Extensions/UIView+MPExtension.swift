@@ -1,7 +1,7 @@
 //
-//  MediaPickerCell.swift
+//  UIView+MPExtension.swift
 //
-//  Created by Валентин Панчишен on 05.04.2024.
+//  Created by Валентин Панчишен on 09.04.2024.
 //  Copyright © 2024 Валентин Панчишен. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -21,27 +21,20 @@
 //  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
-
+    
 import UIKit
 
-final class MediaPickerCell: CollectionViewCell {
-    
-    override func setupSubviews() {
+extension MPExtensionWrapper where Base: UIView {
+    func setIsHidden(_ hidden: Bool, duration: CGFloat = 0.25) {
+        if base.isHidden && !hidden {
+            base.alpha = 0.0
+            base.isHidden = false
+        }
         
+        UIView.animate(withDuration: duration, animations: {
+            base.alpha = hidden ? 0.0 : 1.0
+        }) { (_) in
+            base.isHidden = hidden
+        }
     }
-    
-    override func setupLayout() {
-        
-    }
-    
-    override func adaptationLayout() {
-        
-    }
-    
-    override func reuseBlock() {
-        
-    }
-    
-    
 }
-

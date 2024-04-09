@@ -1,7 +1,7 @@
 //
-//  MPExtensionsWrapper.swift
+//  MPUIConfiguration.swift
 //
-//  Created by Валентин Панчишен on 08.04.2024.
+//  Created by Валентин Панчишен on 09.04.2024.
 //  Copyright © 2024 Валентин Панчишен. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,49 +23,25 @@
 //  THE SOFTWARE.
     
 
-import Foundation
 import UIKit
-import Photos
 
-public struct MPExtensionWrapper<Base> {
-    public let base: Base
-    
-    public init(_ base: Base) {
-        self.base = base
-    }
-}
-
-public protocol MPExtensionCompatible: AnyObject { }
-public protocol MPExtensionCompatibleValue { }
-
-extension MPExtensionCompatible {
-    public var mp: MPExtensionWrapper<Self> {
-        get { MPExtensionWrapper(self) }
-        set { }
+final class MPUIConfiguration: NSObject {
+    private override init() {
+        super.init()
     }
     
-    public static var mp: MPExtensionWrapper<Self>.Type {
-        get { MPExtensionWrapper<Self>.self }
-        set { }
-    }
-}
-
-extension MPExtensionCompatibleValue {
-    public var mp: MPExtensionWrapper<Self> {
-        get { MPExtensionWrapper(self) }
-        set { }
+    private static var single = MPUIConfiguration()
+    
+    public class func `default`() -> MPUIConfiguration {
+        return MPUIConfiguration.single
     }
     
-    public static var mp: MPExtensionWrapper<Self>.Type {
-        get { MPExtensionWrapper<Self>.self }
-        set { }
+    public class func resetConfiguration() {
+        MPUIConfiguration.single = MPUIConfiguration()
     }
+    
+    /// Shows on the counter selection button
+    /// Default value is true
+    /// If false, there will be a check mark instead of counter
+    public var showCounterOnSelectedButton = true
 }
-
-extension NSObject: MPExtensionCompatible { }
-//extension UIControl: MPExtensionCompatible { }
-//extension UIApplication: MPExtensionCompatible { }
-//extension UIScreen: MPExtensionCompatible { }
-//extension PHAsset: MPExtensionCompatible { }
-
-extension UIAction.Identifier: MPExtensionCompatibleValue { }

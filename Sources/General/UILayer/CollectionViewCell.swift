@@ -1,7 +1,7 @@
 //
-//  MPExtensionsWrapper.swift
+//  CollectionViewCell.swift
 //
-//  Created by Валентин Панчишен on 08.04.2024.
+//  Created by Валентин Панчишен on 09.04.2024.
 //  Copyright © 2024 Валентин Панчишен. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,49 +23,51 @@
 //  THE SOFTWARE.
     
 
-import Foundation
 import UIKit
-import Photos
 
-public struct MPExtensionWrapper<Base> {
-    public let base: Base
+class CollectionViewCell: UICollectionViewCell {
     
-    public init(_ base: Base) {
-        self.base = base
-    }
-}
-
-public protocol MPExtensionCompatible: AnyObject { }
-public protocol MPExtensionCompatibleValue { }
-
-extension MPExtensionCompatible {
-    public var mp: MPExtensionWrapper<Self> {
-        get { MPExtensionWrapper(self) }
-        set { }
+    override public var isHighlighted: Bool {
+        didSet {
+            UIView.animate(withDuration: 0.25, animations: highlightedAnimation)
+        }
     }
     
-    public static var mp: MPExtensionWrapper<Self>.Type {
-        get { MPExtensionWrapper<Self>.self }
-        set { }
-    }
-}
-
-extension MPExtensionCompatibleValue {
-    public var mp: MPExtensionWrapper<Self> {
-        get { MPExtensionWrapper(self) }
-        set { }
+    override public var isSelected: Bool {
+        didSet {
+            UIView.animate(withDuration: 0.25, animations: selectedAnimation)
+        }
     }
     
-    public static var mp: MPExtensionWrapper<Self>.Type {
-        get { MPExtensionWrapper<Self>.self }
-        set { }
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        setupSubviews()
+        setupLayout()
     }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        reuseBlock()
+    }
+    
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        adaptationLayout()
+    }
+    
+    func setupSubviews() { }
+    
+    func setupLayout() { }
+    
+    func adaptationLayout() { }
+    
+    func reuseBlock() { }
+    
+    func highlightedAnimation() { }
+    
+    func selectedAnimation() { }
 }
-
-extension NSObject: MPExtensionCompatible { }
-//extension UIControl: MPExtensionCompatible { }
-//extension UIApplication: MPExtensionCompatible { }
-//extension UIScreen: MPExtensionCompatible { }
-//extension PHAsset: MPExtensionCompatible { }
-
-extension UIAction.Identifier: MPExtensionCompatibleValue { }
