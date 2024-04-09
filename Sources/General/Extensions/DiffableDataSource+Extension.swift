@@ -1,5 +1,5 @@
 //
-//  UICollectionView+MPExtension.swift
+//  DiffableDataSource+MPExtension.swift
 //
 //  Created by Валентин Панчишен on 09.04.2024.
 //  Copyright © 2024 Валентин Панчишен. All rights reserved.
@@ -24,20 +24,29 @@
     
 import UIKit
 
-extension MPExtensionWrapper where Base: UICollectionView {
-    func register<T: UICollectionViewCell>(_ type: T.Type) {
-        base.register(type, forCellWithReuseIdentifier: type.mp.className)
-    }
+extension UICollectionViewDiffableDataSource {
+    func applySnapshot(
+        _ snapshot: NSDiffableDataSourceSnapshot<SectionIdentifierType, ItemIdentifierType>,
+        animated: Bool,
+        completion: (() -> Void)? = nil) {
+            self.apply(snapshot, animatingDifferences: animated, completion: completion)
+        }
     
-    func register<T: UICollectionReusableView>(_ type: T.Type) {
-        base.register(type, forSupplementaryViewOfKind: type.mp.className, withReuseIdentifier: type.mp.className)
-    }
-    
-    func cell<T: UICollectionViewCell>(_ type: T.Type, for indexPath: IndexPath) -> T {
-        base.dequeueReusableCell(withReuseIdentifier: type.mp.className, for: indexPath) as! T
-    }
-    
-    func cellItem<T: UICollectionViewCell>(_ type: T.Type, for indexPath: IndexPath) -> T? {
-        base.cellForItem(at: indexPath) as? T
+    func reconfig(withSections sections: [SectionIdentifierType] = [], withItems items: [ItemIdentifierType], animated: Bool, completion: (() -> Void)? = nil) {
+        var snapshot = snapshot()
+        if !sections.isEmpty {
+            sections.forEach({ section in
+                var sectionSnap = NSDiffableDataSourceSectionSnapshot<ItemIdentifierType>()
+                if items.isEmpty {
+                    let allItems = snapshot.itemIdentifiers(inSection: section)
+                    sectionSnap.append(allItems)
+                } else {
+                    sectionSnap.append(items)
+                }
+                apply(sectionSnap, to: section, animatingDifferences: animated, completion: nil)
+            })
+        }
+        snapshot.reconfigureItems(items)
+        applySnapshot(snapshot, animated: animated, completion: completion)
     }
 }

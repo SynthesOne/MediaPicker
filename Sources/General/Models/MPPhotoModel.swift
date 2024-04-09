@@ -135,3 +135,9 @@ public extension MPPhotoModel {
         case video
     }
 }
+
+extension MPPhotoModel {
+    enum Section: Hashable {
+        case main
+    }
+}

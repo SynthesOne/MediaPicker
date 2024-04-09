@@ -43,8 +43,7 @@ public class MPCheckboxButton: MPRadioCheckboxBaseButton {
     
     private lazy var counterLabel: UILabel = {
        let view = UILabel()
-        view.font = .systemFont(ofSize: 15)
-        view.textColor = .white
+        view.font = .systemFont(ofSize: 15, weight: .semibold)
         view.textAlignment = .center
         return view
     }()
@@ -52,12 +51,30 @@ public class MPCheckboxButton: MPRadioCheckboxBaseButton {
     private var outerLayer = CAShapeLayer()
     private var checkMarkLayer = CAShapeLayer()
     private var bacgroundLayer = CAShapeLayer()
+    private var selfSize: CGFloat = 24
     
-    // UI Configurator
+    /// UI Configurator
     private let uiConfig = MPUIConfiguration.default()
     
     /// Set you delegate handler
     public weak var delegate: MPCheckboxButtonDelegate?
+    
+    /// Set checkbox color to customise the buttons
+    private var checkBoxColor: MPCheckboxColor! {
+        didSet {
+            checkMarkLayer.strokeColor = checkBoxColor.checkMarkColor.resolvedColor(with: traitCollection).cgColor
+            updateSelectionState()
+        }
+    }
+    
+    /// Indicates the index of the selected media
+    public var counter: Int = 1 {
+        didSet {
+            if uiConfig.showCounterOnSelectionButton {
+                counterLabel.text = "\(counter)"
+            }
+        }
+    }
     
     /// Duplicates the delegate method `chechboxButtonDidSelect`
     public var chechboxButtonDidSelect: ((MPCheckboxButton) -> ())?
@@ -65,53 +82,31 @@ public class MPCheckboxButton: MPRadioCheckboxBaseButton {
     /// Duplicates the delegate method `chechboxButtonDidDeselect`
     public var chechboxButtonDidDeselect: ((MPCheckboxButton) -> ())?
     
-    /// Set checkbox color to customise the buttons
-    public var checkBoxColor: MPCheckboxColor! {
-        didSet {
-            checkMarkLayer.strokeColor = checkBoxColor.checkMarkColor.resolvedColor(with: traitCollection).cgColor
-            updateSelectionState()
-        }
-    }
-    
-    public var counter: Int = 1 {
-        didSet {
-            counterLabel.text = "\(counter)"
-        }
-    }
-    
-    /// Apply checkbox line to gcustomize checkbox button layout
-    public var checkboxLine = MPCheckboxLineStyle() {
-        didSet {
-            setupLayer()
-        }
-    }
-    
     /// Set default color of chebox
     override func setup() {
-        checkBoxColor = MPCheckboxColor(activeColor: tintColor, activeBorderColor: .white, inactiveColor: .clear, inactiveBorderColor: .white, checkMarkColor: .white)
-        style = .circle
-        super.setup()
-        if uiConfig.showCounterOnSelectedButton {
+        checkBoxColor = uiConfig.selectionButtonColorStyle
+        style = uiConfig.selectionButtonCornersStyle
+        if uiConfig.showCounterOnSelectionButton {
             addSubview(counterLabel)
+            counterLabel.textColor = uiConfig.selectionButtonColorStyle.checkMarkColor
             counterLabel.isHidden = true
-            counterLabel.frame = bounds
         }
+        super.setup()
     }
 
     /// Setup layer of check box
     override func setupLayer() {
-        let height = checkboxLine.checkBoxHeight
-        let origin = CGPoint(x: 0, y: bounds.midY - (height/2))
-        let rect = CGRect(origin: origin, size: checkboxLine.size)
+        let origin = CGPoint(x: 0, y: 0)
+        let rect = CGRect(origin: origin, size: .init(width: selfSize, height: selfSize))
         switch style {
         case .rounded(let radius):
             outerLayer.path = UIBezierPath(roundedRect: rect, cornerRadius: radius).cgPath
         case .circle:
-            outerLayer.path = UIBezierPath(roundedRect: rect, cornerRadius: checkboxLine.size.height / 2).cgPath
+            outerLayer.path = UIBezierPath(roundedRect: rect, cornerRadius: selfSize / 2).cgPath
         case .square:
             outerLayer.path = UIBezierPath(rect: rect).cgPath
         }
-        bacgroundLayer.path = UIBezierPath(roundedRect: .init(origin: .init(x: height / 2, y: height / 2), size: .zero), cornerRadius: .zero).cgPath
+        bacgroundLayer.path = UIBezierPath(roundedRect: .init(origin: .init(x: selfSize / 2, y: selfSize / 2), size: .zero), cornerRadius: .zero).cgPath
         bacgroundLayer.fillColor = checkBoxColor.activeColor.resolvedColor(with: traitCollection).cgColor
         outerLayer.fillColor = .none
         outerLayer.lineWidth = 1
@@ -119,8 +114,7 @@ public class MPCheckboxButton: MPRadioCheckboxBaseButton {
         layer.insertSublayer(outerLayer, at: 0)
         layer.insertSublayer(bacgroundLayer, at: 0)
         
-        
-        if !uiConfig.showCounterOnSelectedButton {
+        if !uiConfig.showCounterOnSelectionButton {
             let path = UIBezierPath()
             var xPos: CGFloat = (rect.width * 0.25) + origin.x
             var yPos = rect.midY
@@ -135,7 +129,7 @@ public class MPCheckboxButton: MPRadioCheckboxBaseButton {
                 checkMarkLength *= 2
             }
             
-            checkMarkLayer.lineWidth = checkboxLine.checkmarkLineWidth == -1 ? max(checkboxLine.checkBoxHeight*0.1, 2) : checkboxLine.checkmarkLineWidth
+            checkMarkLayer.lineWidth = 2
             checkMarkLayer.strokeColor = checkBoxColor.checkMarkColor.resolvedColor(with: traitCollection).cgColor
             checkMarkLayer.path = path.cgPath
             checkMarkLayer.lineCap = .round
@@ -143,6 +137,11 @@ public class MPCheckboxButton: MPRadioCheckboxBaseButton {
             checkMarkLayer.fillColor = .none
             checkMarkLayer.removeFromSuperlayer()
             outerLayer.insertSublayer(checkMarkLayer, at: 0)
+        } else {
+            debugPrint("bounds: ", bounds)
+            debugPrint("frame: ", frame)
+            counterLabel.frame = bounds
+            bringSubviewToFront(counterLabel)
         }
         super.setupLayer()
     }
@@ -161,7 +160,7 @@ public class MPCheckboxButton: MPRadioCheckboxBaseButton {
     
     /// Update active layer and apply animation
     override func updateActiveLayer() {
-        if !uiConfig.showCounterOnSelectedButton {
+        if !uiConfig.showCounterOnSelectionButton {
             checkMarkLayer.animateStrokeEnd(from: 0, to: 1)
         }
         
@@ -174,7 +173,6 @@ public class MPCheckboxButton: MPRadioCheckboxBaseButton {
         layer.add(pulse, forKey: nil)
         
         // Background filling animation
-        let circleDiameter = checkboxLine.checkBoxHeight
         let animationId = "path"
         let animation = CABasicAnimation(keyPath: animationId)
         animation.duration = 0.25
@@ -183,7 +181,7 @@ public class MPCheckboxButton: MPRadioCheckboxBaseButton {
         animation.isRemovedOnCompletion = false
         
         // Create current path
-        let fromPath = UIBezierPath(roundedRect: CGRect(x: circleDiameter / 2, y: circleDiameter / 2, width: 0, height: 0), cornerRadius: 0).cgPath
+        let fromPath = UIBezierPath(roundedRect: CGRect(x: selfSize / 2, y: selfSize / 2, width: 0, height: 0), cornerRadius: 0).cgPath
         
         // Create a new path.
         let _radius: CGFloat
@@ -191,11 +189,11 @@ public class MPCheckboxButton: MPRadioCheckboxBaseButton {
         case .rounded(let radius):
             _radius = radius
         case .circle:
-            _radius = circleDiameter / 2
+            _radius = selfSize / 2
         case .square:
             _radius = 0
         }
-        let newPath = UIBezierPath(roundedRect: CGRect(x: 0, y: 0, width: circleDiameter, height: circleDiameter), cornerRadius: _radius).cgPath
+        let newPath = UIBezierPath(roundedRect: CGRect(x: 0, y: 0, width: selfSize, height: selfSize), cornerRadius: _radius).cgPath
         
         // Set start and end values.
         animation.fromValue = fromPath
@@ -204,21 +202,20 @@ public class MPCheckboxButton: MPRadioCheckboxBaseButton {
         // Start the animation.
         bacgroundLayer.add(animation, forKey: animationId)
         
-        //outerLayer.fillColor = checkBoxColor.activeColor.resolvedColor(with: traitCollection).cgColor
         if let activeBorderColor = checkBoxColor.activeBorderColor {
             outerLayer.strokeColor = activeBorderColor.resolvedColor(with: traitCollection).cgColor
         } else {
             outerLayer.strokeColor = checkBoxColor.activeColor.resolvedColor(with: traitCollection).cgColor
         }
         
-        if uiConfig.showCounterOnSelectedButton {
+        if uiConfig.showCounterOnSelectionButton {
             counterLabel.mp.setIsHidden(false)
         }
     }
     
     /// Update inactive layer apply animation
     override func updateInactiveLayer() {
-        if !uiConfig.showCounterOnSelectedButton {
+        if !uiConfig.showCounterOnSelectionButton {
             checkMarkLayer.animateStrokeEnd(from: 1, to: 0)
         }
         
@@ -231,7 +228,6 @@ public class MPCheckboxButton: MPRadioCheckboxBaseButton {
         layer.add(pulse, forKey: nil)
         
         // Background filling animation
-        let circleDiameter = checkboxLine.checkBoxHeight
         let animationId = "path"
         let animation = CABasicAnimation(keyPath: animationId)
         animation.duration = 0.25
@@ -245,14 +241,14 @@ public class MPCheckboxButton: MPRadioCheckboxBaseButton {
         case .rounded(let radius):
             _radius = radius
         case .circle:
-            _radius = circleDiameter / 2
+            _radius = selfSize / 2
         case .square:
             _radius = 0
         }
-        let fromPath = UIBezierPath(roundedRect: CGRect(x: 0, y: 0, width: circleDiameter, height: circleDiameter), cornerRadius: _radius).cgPath
+        let fromPath = UIBezierPath(roundedRect: CGRect(x: 0, y: 0, width: selfSize, height: selfSize), cornerRadius: _radius).cgPath
         
         // Create a new path.
-        let newPath = UIBezierPath(roundedRect: CGRect(x: circleDiameter / 2, y: circleDiameter / 2, width: 0, height: 0), cornerRadius: 0).cgPath
+        let newPath = UIBezierPath(roundedRect: CGRect(x: selfSize / 2, y: selfSize / 2, width: 0, height: 0), cornerRadius: 0).cgPath
         
         // Set start and end values.
         animation.fromValue = fromPath
@@ -263,7 +259,7 @@ public class MPCheckboxButton: MPRadioCheckboxBaseButton {
         
         outerLayer.strokeColor = checkBoxColor.inactiveBorderColor.resolvedColor(with: traitCollection).cgColor
         
-        if uiConfig.showCounterOnSelectedButton {
+        if uiConfig.showCounterOnSelectionButton {
             counterLabel.mp.setIsHidden(true)
         }
     }
@@ -275,26 +271,4 @@ public class MPCheckboxButton: MPRadioCheckboxBaseButton {
             updateSelectionState()
         }
     }
-}
-
-@available(iOS 17.0, *)
-#Preview {
-    let config = MPUIConfiguration.default()
-    
-    let button: MPCheckboxButton = {
-        let view = MPCheckboxButton(frame: CGRect(origin: .zero, size: .init(width: 24, height: 24)))
-        view.contentMode = .center
-        view.contentVerticalAlignment = .center
-        view.style = .circle
-        view.checkboxLine = .init(checkBoxHeight: 24)
-        return view
-    }()
-    
-    let viewController = UIViewController()
-    viewController.view.backgroundColor = .systemBackground
-    viewController.view.addSubview(button)
-    button.center = viewController.view.center
-    button.counter = 1
-    
-    return viewController
 }

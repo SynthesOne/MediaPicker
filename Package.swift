@@ -18,7 +18,13 @@ let package = Package(
         // Targets can depend on other targets in this package and products from dependencies.
         .target(
             name: "MediaPicker",
-            path: "Sources"
+            path: "Sources",
+            exclude: [
+                "Info.plist"
+            ],
+            resources: [
+                .copy("PrivacyInfo.xcprivacy")
+            ]
         ),
         .testTarget(
             name: "MediaPickerTests",

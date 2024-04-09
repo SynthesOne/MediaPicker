@@ -1,7 +1,7 @@
 //
-//  PHAsset+MPExtension.swift
+//  MPGeneralConfiguration.swift
 //
-//  Created by Валентин Панчишен on 08.04.2024.
+//  Created by Валентин Панчишен on 09.04.2024.
 //  Copyright © 2024 Валентин Панчишен. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -22,27 +22,32 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
     
-import Photos
-import MobileCoreServices
+import UIKit
 
-public extension MPExtensionWrapper where Base: PHAsset {
-    var resource: PHAssetResource? {
-        PHAssetResource.assetResources(for: base).first
+public final class MPGeneralConfiguration: NSObject {
+    private override init() {
+        super.init()
     }
     
-    var fileName: String? {
-        base.value(forKey: "filename") as? String
+    private static var single = MPGeneralConfiguration()
+    
+    public class func `default`() -> MPGeneralConfiguration {
+        return MPGeneralConfiguration.single
     }
     
-    var isInCloud: Bool {
-        guard let resource else { return false }
-        
-        return !(resource.value(forKey: "locallyAvailable") as? Bool ?? true)
+    public class func resetConfiguration() {
+        MPGeneralConfiguration.single = MPGeneralConfiguration()
     }
     
-    var isGif: Bool {
-        guard let fileName else { return false }
-        
-        return fileName.hasSuffix("GIF")
-    }
+    /// Allow select image media, if false - gif and live photo will not be select either
+    public var allowImage = true
+    
+    /// Allow select gif media
+    public var allowGif = true
+    
+    /// Allow select video media
+    public var allowVideo = true
+    
+    /// Allow select live photo media
+    public var allowLivePhoto = true
 }

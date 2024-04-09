@@ -22,10 +22,9 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
     
-
 import UIKit
 
-final class MPUIConfiguration: NSObject {
+public final class MPUIConfiguration: NSObject {
     private override init() {
         super.init()
     }
@@ -43,5 +42,17 @@ final class MPUIConfiguration: NSObject {
     /// Shows on the counter selection button
     /// Default value is true
     /// If false, there will be a check mark instead of counter
-    public var showCounterOnSelectedButton = true
+    public var showCounterOnSelectionButton = true
+    
+    /// Color scheme for the selection button
+    public var selectionButtonColorStyle = MPCheckboxColor(
+        activeColor: .systemBlue,
+        activeBorderColor: .white,
+        inactiveColor: .clear,
+        inactiveBorderColor: .white,
+        checkMarkColor: .white
+    )
+    
+    /// Selection button rounding style
+    public var selectionButtonCornersStyle = MPRadioCheckboxStyle.circle
 }

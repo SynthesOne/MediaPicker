@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>NSCameraUsageDescription</key>
+	<string>Enable access to make photos/videos, attach them to the tasks, projects, opportunities, invoices and share with the team.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Enable access to make videos and attach them to the tasks, projects, opportunities, invoices and share with the team.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Enable access to record  the album is required</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Enable access to upload photos and attach them to the tasks, projects, opportunities, invoices and share with the team.</string>
+</dict>
+</plist>

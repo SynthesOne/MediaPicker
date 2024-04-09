@@ -28,7 +28,37 @@ public enum MPRadioCheckboxStyle {
     case square, circle, rounded(radius: CGFloat)
 }
 
-public class MPRadioCheckboxBaseButton: UIControl {
+public class MPControl: UIControl {
+    public var increasedInsets = UIEdgeInsets.zero
+    
+    override public func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
+        guard !isHidden, alpha != 0 else {
+            return false
+        }
+        
+        let rect = increasedRect()
+        if rect.equalTo(bounds) {
+            return super.point(inside: point, with: event)
+        }
+        return rect.contains(point) ? true : false
+    }
+    
+    private func increasedRect() -> CGRect {
+        guard increasedInsets != .zero else {
+            return bounds
+        }
+        
+        let rect = CGRect(
+            x: bounds.minX - increasedInsets.left,
+            y: bounds.minY - increasedInsets.top,
+            width: bounds.width + increasedInsets.left + increasedInsets.right,
+            height: bounds.height + increasedInsets.top + increasedInsets.bottom
+        )
+        return rect
+    }
+}
+
+public class MPRadioCheckboxBaseButton: MPControl {
     private var sizeChangeObserver: NSKeyValueObservation?
     
     public var isOn = false {
@@ -40,7 +70,7 @@ public class MPRadioCheckboxBaseButton: UIControl {
         }
     }
     
-    public var style: MPRadioCheckboxStyle = .circle {
+    var style: MPRadioCheckboxStyle = .circle {
         didSet {
             setupLayer()
         }
@@ -67,7 +97,9 @@ public class MPRadioCheckboxBaseButton: UIControl {
     
     /// Base setup
     func setup() {
-        mp.action({ [weak self] in self?.isOn.toggle() }, forEvent: .touchUpInside)
+        addObserverSizeChange()
+        setupLayer()
+        //mp.action({ [weak self] in self?.isOn.toggle() }, forEvent: .touchUpInside)
     }
     
     /// Setup layer that will for Radio and Checkbox button

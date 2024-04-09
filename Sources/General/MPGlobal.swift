@@ -21,7 +21,6 @@
 //  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
-    
 
 import UIKit
 import Photos
@@ -42,4 +41,45 @@ func MPMainAsync(after: TimeInterval = 0, handler: @escaping (() -> ())) {
             DispatchQueue.main.async(execute: handler)
         }
     }
+}
+
+@available(iOS 17.0, *)
+#Preview {
+    let uiConfig = MPUIConfiguration.default()
+//    uiConfig.showCounterOnSelectionButton = false
+    //uiConfig.selectionButtonCornersStyle = .circle
+    //uiConfig.selectionButtonColorStyle = .init(activeColor: .red, activeBorderColor: .white, inactiveColor: .clear, inactiveBorderColor: .white, checkMarkColor: .black)
+    
+//    let button: MPCheckboxButton = {
+//        let view = MPCheckboxButton(frame: CGRect(origin: .zero, size: .init(width: 24, height: 24)))
+//        view.contentMode = .center
+//        view.contentVerticalAlignment = .center
+//        return view
+//    }()
+    
+//    let cell = MediaPickerCell(frame: .init(origin: .zero, size: .init(width: 250, height: 250)))
+
+    let viewController = UIViewController()
+    viewController.view.backgroundColor = .systemBackground
+    
+    let button: UIButton = {
+        let view = UIButton(frame: .init(origin: .zero, size: .init(width: 120, height: 44)))
+        view.setTitle("gallery", for: .normal)
+        view.setTitleColor(.white, for: .normal)
+        view.backgroundColor = .systemRed
+        return view
+    }()
+    
+    let presenter = MPPresenter(sender: viewController)
+    
+    button.mp.action({
+        presenter.showMediaPicker()
+    }, forEvent: .touchUpInside)
+    
+    viewController.view.addSubview(button)
+    button.center = viewController.view.center
+//    cell.center = viewController.view.center
+//    cell.index = 2
+    
+    return viewController
 }

@@ -22,7 +22,6 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
     
-
 import Foundation
 import UIKit
 import Photos
@@ -63,9 +62,5 @@ extension MPExtensionCompatibleValue {
 }
 
 extension NSObject: MPExtensionCompatible { }
-//extension UIControl: MPExtensionCompatible { }
-//extension UIApplication: MPExtensionCompatible { }
-//extension UIScreen: MPExtensionCompatible { }
-//extension PHAsset: MPExtensionCompatible { }
 
 extension UIAction.Identifier: MPExtensionCompatibleValue { }
