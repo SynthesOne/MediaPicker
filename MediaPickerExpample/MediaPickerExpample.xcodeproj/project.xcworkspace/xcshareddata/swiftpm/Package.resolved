@@ -6,8 +6,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/SynthesOne/MediaPicker.git",
       "state" : {
-        "branch" : "main",
-        "revision" : "76af61924f7b399c210a8ff7d4ebff9dad862e18"
+        "branch" : "dev",
+        "revision" : "720d19788d2f4779cabc1fbdafd828f74c44cd83"
       }
     }
   ],

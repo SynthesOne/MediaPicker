@@ -163,3 +163,22 @@ public class MPCheckboxButton: MPRadioCheckboxBaseButton {
         }
     }
 }
+
+@available(iOS 17.0, *)
+#Preview {
+    let button: MPCheckboxButton = {
+        let view = MPCheckboxButton(frame: CGRect(origin: .zero, size: .init(width: 24, height: 24)))
+        view.contentMode = .center
+        view.contentVerticalAlignment = .center
+        view.style = .circle
+        view.checkboxLine = .init(checkBoxHeight: 24)
+        return view
+    }()
+    
+    let viewController = UIViewController()
+    viewController.view.backgroundColor = .systemBackground
+    viewController.view.addSubview(button)
+    button.center = viewController.view.center
+    
+    return viewController
+}

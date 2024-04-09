@@ -11,17 +11,18 @@ import MediaPicker
 class ViewController: UIViewController {
     
     let button: MPCheckboxButton = {
-        let view = MPCheckboxButton(frame: CGRect(origin: .zero, size: .init(width: 20, height: 20)))
+        let view = MPCheckboxButton(frame: CGRect(origin: .zero, size: .init(width: 24, height: 24)))
         view.contentMode = .center
         view.contentVerticalAlignment = .center
         view.style = .circle
         view.checkBoxColor = .init(
             activeColor: UIColor.systemRed,
             inactiveColor: UIColor.systemBackground,
-            inactiveBorderColor: UIColor.white,
+            inactiveBorderColor: UIColor(named: "checkboxBorderColor") ?? .white,
             checkMarkColor: UIColor.white
         )
-        view.checkboxLine = .init(checkBoxHeight: 20)
+        view.checkboxLine = .init(checkBoxHeight: 24)
+        return view
     }()
 
     override func viewDidLoad() {
@@ -31,8 +32,8 @@ class ViewController: UIViewController {
         view.addSubview(button)
     }
     
-    override func viewDidLayoutSubview() {
-        super.viewDidLayoutSubview()
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
         button.center = view.center
     }
 

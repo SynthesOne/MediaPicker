@@ -1,7 +1,7 @@
 //
-//  MPRadioCheckboxButton.swift
+//  MPExtensionsWrapper.swift
 //
-//  Created by Валентин Панчишен on 05.04.2024.
+//  Created by Валентин Панчишен on 08.04.2024.
 //  Copyright © 2024 Валентин Панчишен. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -21,23 +21,50 @@
 //  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
+    
 
+import Foundation
 import UIKit
+import Photos
 
-private extension UIAction.Identifier {
-    static func descriptIdent(_ rawValue: UInt) -> UIAction.Identifier {
-        .init(String(rawValue))
+public struct MPExtensionWrapper<Base> {
+    public let base: Base
+    
+    public init(_ base: Base) {
+        self.base = base
     }
 }
 
-protocol Actionable: AnyObject {
-    func action(_ action: @escaping () -> (), forEvent event: UIControl.Event)
-}
+public protocol MPExtensionCompatible: AnyObject { }
+public protocol MPExtensionCompatibleValue { }
 
-extension Actionable where Self: UIControl {
-    func action(_ action: @escaping () -> (), forEvent event: UIControl.Event) {
-        addAction(.init(identifier: .descriptIdent(event.rawValue), handler: { _ in action() }), for: event)
+extension MPExtensionCompatible {
+    public var mp: MPExtensionWrapper<Self> {
+        get { MPExtensionWrapper(self) }
+        set { }
+    }
+    
+    public static var mp: MPExtensionWrapper<Self>.Type {
+        get { MPExtensionWrapper<Self>.self }
+        set { }
     }
 }
 
-extension UIControl: Actionable { }
+extension MPExtensionCompatibleValue {
+    public var mp: MPExtensionWrapper<Self> {
+        get { MPExtensionWrapper(self) }
+        set { }
+    }
+    
+    public static var mp: MPExtensionWrapper<Self>.Type {
+        get { MPExtensionWrapper<Self>.self }
+        set { }
+    }
+}
+
+extension UIControl: MPExtensionCompatible { }
+extension UIApplication: MPExtensionCompatible { }
+extension UIScreen: MPExtensionCompatible { }
+extension PHAsset: MPExtensionCompatible { }
+
+extension UIAction.Identifier: MPExtensionCompatibleValue { }

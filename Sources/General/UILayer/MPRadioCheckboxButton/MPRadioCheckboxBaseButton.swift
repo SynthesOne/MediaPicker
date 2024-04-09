@@ -67,7 +67,7 @@ public class MPRadioCheckboxBaseButton: UIControl {
     
     /// Base setup
     func setup() {
-        action({ [weak self] in self?.isOn.toggle() }, forEvent: .touchUpInside)
+        mp.action({ [weak self] in self?.isOn.toggle() }, forEvent: .touchUpInside)
     }
     
     /// Setup layer that will for Radio and Checkbox button
