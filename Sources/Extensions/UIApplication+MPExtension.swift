@@ -27,7 +27,7 @@ import UIKit
 extension MPExtensionWrapper where Base: UIApplication {
     var scene: UIWindowScene? {
         UIApplication.shared.connectedScenes
-                .compactMap({ $0 as? UIWindowScene })
+            .compactMap({ $0.mp.as(UIWindowScene.self) })
                 .first
     }
 

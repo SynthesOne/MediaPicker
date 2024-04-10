@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		50A78D9A2BC3EA8E00D348AB /* MediaPicker in Frameworks */ = {isa = PBXBuildFile; productRef = 50A78D992BC3EA8E00D348AB /* MediaPicker */; };
+		50B85BF62BC576C800D9C5E2 /* MediaPicker in Frameworks */ = {isa = PBXBuildFile; productRef = 50B85BF52BC576C800D9C5E2 /* MediaPicker */; };
 		50E466DB2BBFD9B0004DD4C1 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50E466DA2BBFD9B0004DD4C1 /* AppDelegate.swift */; };
 		50E466DF2BBFD9B0004DD4C1 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50E466DE2BBFD9B0004DD4C1 /* ViewController.swift */; };
 		50E466E42BBFD9B1004DD4C1 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 50E466E32BBFD9B1004DD4C1 /* Assets.xcassets */; };
@@ -15,7 +15,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		50E466D72BBFD9B0004DD4C1 /* MediaPickerExpample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MediaPickerExpample.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		50E466D72BBFD9B0004DD4C1 /* MediaPickerExpample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = MediaPickerExpample.app; path = "/Users/valentinpancisen/Documents/XCodeProjects/MediaPicker/MediaPickerExpample/build/Debug-iphoneos/MediaPickerExpample.app"; sourceTree = "<absolute>"; };
 		50E466DA2BBFD9B0004DD4C1 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		50E466DE2BBFD9B0004DD4C1 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		50E466E32BBFD9B1004DD4C1 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -28,7 +28,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				50A78D9A2BC3EA8E00D348AB /* MediaPicker in Frameworks */,
+				50B85BF62BC576C800D9C5E2 /* MediaPicker in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -39,16 +39,7 @@
 			isa = PBXGroup;
 			children = (
 				50E466D92BBFD9B0004DD4C1 /* MediaPickerExpample */,
-				50E466D82BBFD9B0004DD4C1 /* Products */,
 			);
-			sourceTree = "<group>";
-		};
-		50E466D82BBFD9B0004DD4C1 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				50E466D72BBFD9B0004DD4C1 /* MediaPickerExpample.app */,
-			);
-			name = Products;
 			sourceTree = "<group>";
 		};
 		50E466D92BBFD9B0004DD4C1 /* MediaPickerExpample */ = {
@@ -80,7 +71,7 @@
 			);
 			name = MediaPickerExpample;
 			packageProductDependencies = (
-				50A78D992BC3EA8E00D348AB /* MediaPicker */,
+				50B85BF52BC576C800D9C5E2 /* MediaPicker */,
 			);
 			productName = MediaPickerExpample;
 			productReference = 50E466D72BBFD9B0004DD4C1 /* MediaPickerExpample.app */;
@@ -111,9 +102,9 @@
 			);
 			mainGroup = 50E466CE2BBFD9B0004DD4C1;
 			packageReferences = (
-				50A78D982BC3EA8E00D348AB /* XCRemoteSwiftPackageReference "MediaPicker" */,
+				50B85BF42BC576C800D9C5E2 /* XCRemoteSwiftPackageReference "MediaPicker" */,
 			);
-			productRefGroup = 50E466D82BBFD9B0004DD4C1 /* Products */;
+			productRefGroup = 50E466CE2BBFD9B0004DD4C1;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -365,7 +356,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		50A78D982BC3EA8E00D348AB /* XCRemoteSwiftPackageReference "MediaPicker" */ = {
+		50B85BF42BC576C800D9C5E2 /* XCRemoteSwiftPackageReference "MediaPicker" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/SynthesOne/MediaPicker.git";
 			requirement = {
@@ -376,9 +367,9 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		50A78D992BC3EA8E00D348AB /* MediaPicker */ = {
+		50B85BF52BC576C800D9C5E2 /* MediaPicker */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 50A78D982BC3EA8E00D348AB /* XCRemoteSwiftPackageReference "MediaPicker" */;
+			package = 50B85BF42BC576C800D9C5E2 /* XCRemoteSwiftPackageReference "MediaPicker" */;
 			productName = MediaPicker;
 		};
 /* End XCSwiftPackageProductDependency section */

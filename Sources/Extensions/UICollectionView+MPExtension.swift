@@ -34,10 +34,14 @@ extension MPExtensionWrapper where Base: UICollectionView {
     }
     
     func cell<T: UICollectionViewCell>(_ type: T.Type, for indexPath: IndexPath) -> T {
-        base.dequeueReusableCell(withReuseIdentifier: type.mp.className, for: indexPath) as! T
+        base.dequeueReusableCell(withReuseIdentifier: type.mp.className, for: indexPath).mp.as(type)!
     }
     
     func cellItem<T: UICollectionViewCell>(_ type: T.Type, for indexPath: IndexPath) -> T? {
-        base.cellForItem(at: indexPath) as? T
+        base.cellForItem(at: indexPath)?.mp.as(type)
+    }
+    
+    func isLastCellIn(indexPath: IndexPath) -> Bool {
+        indexPath.item == (base.numberOfItems(inSection: indexPath.section) - 1)
     }
 }

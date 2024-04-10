@@ -94,3 +94,9 @@ extension MPAlbumModel: Hashable {
             lhs.headImageAsset?.localIdentifier == rhs.headImageAsset?.localIdentifier
     }
 }
+
+extension MPAlbumModel {
+    enum Section: Hashable {
+        case main
+    }
+}

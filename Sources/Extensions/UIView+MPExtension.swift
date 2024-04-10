@@ -1,5 +1,5 @@
 //
-//  MPUIConfiguration.swift
+//  UIView+MPExtension.swift
 //
 //  Created by Валентин Панчишен on 09.04.2024.
 //  Copyright © 2024 Валентин Панчишен. All rights reserved.
@@ -24,41 +24,23 @@
     
 import UIKit
 
-public final class MPUIConfiguration: NSObject {
-    private override init() {
-        super.init()
+extension MPExtensionWrapper where Base: UIView {
+    func setIsHidden(_ hidden: Bool, duration: CGFloat = 0.25) {
+        if base.isHidden && !hidden {
+            base.alpha = 0.0
+            base.isHidden = false
+        }
+        
+        UIView.animate(withDuration: duration, animations: {
+            base.alpha = hidden ? 0.0 : 1.0
+        }) { (_) in
+            base.isHidden = hidden
+        }
     }
     
-    private static var single = MPUIConfiguration()
-    
-    public class func `default`() -> MPUIConfiguration {
-        return MPUIConfiguration.single
+    func addSubviews(_ subviews: UIView...) {
+        subviews.forEach {
+            base.addSubview($0)
+        }
     }
-    
-    public class func resetConfiguration() {
-        MPUIConfiguration.single = MPUIConfiguration()
-    }
-    
-    /// Shows on the counter selection button
-    /// Default value is true
-    /// If false, there will be a check mark instead of counter
-    public var showCounterOnSelectionButton = true
-    
-    /// Color scheme for the selection button
-    public var selectionButtonColorStyle = MPCheckboxColor(
-        activeColor: .systemBlue,
-        activeBorderColor: .white,
-        inactiveColor: .clear,
-        inactiveBorderColor: .white,
-        checkMarkColor: .white
-    )
-    
-    /// Selection button rounding style
-    public var selectionButtonCornersStyle = MPRadioCheckboxStyle.circle
-    
-    /// Define primary color of library
-    public var navigationAppearance: MPNavigationAppearance = .default
-    
-    /// Define background colors of main screen
-    public var primaryBackgroundColor = UIColor.systemBackground
 }

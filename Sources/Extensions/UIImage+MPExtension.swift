@@ -1,7 +1,7 @@
 //
-//  UIView+MPExtension.swift
+//  UIImage+MPExtension.swift
 //
-//  Created by Валентин Панчишен on 09.04.2024.
+//  Created by Валентин Панчишен on 10.04.2024.
 //  Copyright © 2024 Валентин Панчишен. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,17 +24,12 @@
     
 import UIKit
 
-extension MPExtensionWrapper where Base: UIView {
-    func setIsHidden(_ hidden: Bool, duration: CGFloat = 0.25) {
-        if base.isHidden && !hidden {
-            base.alpha = 0.0
-            base.isHidden = false
-        }
-        
-        UIView.animate(withDuration: duration, animations: {
-            base.alpha = hidden ? 0.0 : 1.0
-        }) { (_) in
-            base.isHidden = hidden
-        }
+extension MPExtensionWrapper where Base: UIImage {
+    var original: UIImage {
+        base.withRenderingMode(.alwaysOriginal)
+    }
+    
+    var template: UIImage {
+        base.withRenderingMode(.alwaysTemplate)
     }
 }

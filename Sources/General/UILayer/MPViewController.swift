@@ -34,11 +34,17 @@ final class MPViewController: UIViewController {
         return view
     }()
     
+    private let albulListNavView: MPAlbumPickerNavView = {
+        let view = MPAlbumPickerNavView(title: "", isCenterAlignment: true)
+        return view
+    }()
+    
     private lazy var dataSource = UICollectionViewDiffableDataSource<MPPhotoModel.Section, MPPhotoModel>(collectionView: collectionView, cellProvider: cellProvider)
     
     private var arrModels: [MPPhotoModel] = []
     private var albumModel: MPAlbumModel
     private var hasTakeANewAsset = false
+    private let uiConfig = MPUIConfiguration.default()
     
     init(albumModel: MPAlbumModel) {
         self.albumModel = albumModel
@@ -53,6 +59,7 @@ final class MPViewController: UIViewController {
     override func loadView() {
         super.loadView()
         setupSubviews()
+        setupNavigationView()
         loadPhotos()
         
         if PHPhotoLibrary.authorizationStatus(for: .readWrite) == .limited {
@@ -61,10 +68,37 @@ final class MPViewController: UIViewController {
     }
     
     private func setupSubviews() {
+        view.backgroundColor = uiConfig.primaryBackgroundColor
         view.addSubview(collectionView)
     }
     
-    
+    private func setupNavigationView() {
+        albulListNavView.setMenuTitle(albumModel.title)
+        navigationItem.titleView = albulListNavView
+        
+        var selectAlbumBlock: ((MPAlbumModel) -> ())? = { [weak self] (album) in
+            guard let strongSelf = self, strongSelf.albumModel != album  else { return }
+            self?.albumModel = album
+            self?.albulListNavView.setMenuTitle(album.title)
+            self?.loadPhotos()
+        }
+        
+        albulListNavView.onTap = { [weak self] (view, isShow) in
+            guard let strongSelf = self else { return }
+            if isShow {
+                let albumList = MPAlbumListViewController()
+                albumList.preferredContentSize = .init(width: 120, height: 200)
+                albumList.popoverPresentationController?.sourceView = view
+                albumList.popoverPresentationController?.permittedArrowDirections = UIPopoverArrowDirection(rawValue: 0)
+                albumList.selectAlbumBlock = selectAlbumBlock
+                strongSelf.navigationController?.present(albumList, animated: true)
+            } else {
+                if strongSelf.navigationController?.presentedViewController is MPAlbumListViewController {
+                    strongSelf.navigationController?.presentedViewController?.dismiss(animated: true)
+                }
+            }
+        }
+    }
     
     private func loadPhotos() {
         DispatchQueue.global().async { [weak self] in
@@ -92,11 +126,7 @@ final class MPViewController: UIViewController {
             
             let itemSize: NSCollectionLayoutSize
             
-            if #unavailable(iOS 17) {
-                itemSize = NSCollectionLayoutSize(widthDimension: .absolute(environment.container.contentSize.width/3), heightDimension: .fractionalHeight(1.0))
-            } else {
-                itemSize = NSCollectionLayoutSize(widthDimension: .absolute(environment.container.contentSize.width/3), heightDimension: .fractionalHeight(1.0))
-            }
+            itemSize = NSCollectionLayoutSize(widthDimension: .absolute(environment.container.contentSize.width/3), heightDimension: .fractionalHeight(1.0))
             
             let item = NSCollectionLayoutItem(layoutSize: itemSize)
             
