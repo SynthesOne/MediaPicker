@@ -156,6 +156,6 @@ final class MPAlbumPickerNavView: UIView {
     
     func setMenuTitle(_ title: String) {
         menuView.title = title
-        menuView.layoutIfNeeded()
+        layoutIfNeeded()
     }
 }

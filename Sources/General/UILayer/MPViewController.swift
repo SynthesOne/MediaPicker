@@ -35,7 +35,7 @@ final class MPViewController: UIViewController {
     }()
     
     private let albulListNavView: MPAlbumPickerNavView = {
-        let view = MPAlbumPickerNavView(title: "", isCenterAlignment: true)
+        let view = MPAlbumPickerNavView(title: "Recent", isCenterAlignment: true)
         return view
     }()
     
@@ -76,7 +76,7 @@ final class MPViewController: UIViewController {
         albulListNavView.setMenuTitle(albumModel.title)
         navigationItem.titleView = albulListNavView
         
-        var selectAlbumBlock: ((MPAlbumModel) -> ())? = { [weak self] (album) in
+        let selectAlbumBlock: ((MPAlbumModel) -> ())? = { [weak self] (album) in
             guard let strongSelf = self, strongSelf.albumModel != album  else { return }
             self?.albumModel = album
             self?.albulListNavView.setMenuTitle(album.title)
