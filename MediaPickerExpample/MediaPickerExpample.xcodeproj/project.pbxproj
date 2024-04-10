@@ -15,7 +15,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		50E466D72BBFD9B0004DD4C1 /* MediaPickerExpample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = MediaPickerExpample.app; path = "/Users/valentinpancisen/Documents/XCodeProjects/MediaPicker/MediaPickerExpample/build/Debug-iphoneos/MediaPickerExpample.app"; sourceTree = "<absolute>"; };
+		502AD2BF2BC680E300C5CD3C /* MediaPickerExpample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MediaPickerExpample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		50E466DA2BBFD9B0004DD4C1 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		50E466DE2BBFD9B0004DD4C1 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		50E466E32BBFD9B1004DD4C1 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -39,6 +39,7 @@
 			isa = PBXGroup;
 			children = (
 				50E466D92BBFD9B0004DD4C1 /* MediaPickerExpample */,
+				502AD2BF2BC680E300C5CD3C /* MediaPickerExpample.app */,
 			);
 			sourceTree = "<group>";
 		};
@@ -74,7 +75,7 @@
 				50B85BF52BC576C800D9C5E2 /* MediaPicker */,
 			);
 			productName = MediaPickerExpample;
-			productReference = 50E466D72BBFD9B0004DD4C1 /* MediaPickerExpample.app */;
+			productReference = 502AD2BF2BC680E300C5CD3C /* MediaPickerExpample.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */

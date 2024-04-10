@@ -13,7 +13,7 @@ class ViewController: UIViewController {
     let button: UIButton = {
         let view = UIButton(frame: CGRect(origin: .zero, size: .init(width: 120, height: 44)))
         view.setTitle("gallery", for: .normal)
-        view.setTitleColor(.white, for: .normal)
+        view.setTitleColor(.label, for: .normal)
         view.backgroundColor = .systemRed
         view.layer.cornerRadius = 8
         view.layer.masksToBounds = true

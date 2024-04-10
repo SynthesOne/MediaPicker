@@ -138,8 +138,6 @@ public class MPCheckboxButton: MPRadioCheckboxBaseButton {
             checkMarkLayer.removeFromSuperlayer()
             outerLayer.insertSublayer(checkMarkLayer, at: 0)
         } else {
-            debugPrint("bounds: ", bounds)
-            debugPrint("frame: ", frame)
             counterLabel.frame = bounds
             bringSubviewToFront(counterLabel)
         }

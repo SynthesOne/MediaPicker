@@ -95,8 +95,6 @@ final class MPTitleView: UIView {
     
     override func layoutSubviews() {
         super.layoutSubviews()
-        debugPrint("MPTitleView layoutSubviews bounds \(bounds)")
-        debugPrint("MPTitleView layoutSubviews frame \(frame)")
         //VStack.frame = bounds
         //arrowView.frame = container.bounds
     }
