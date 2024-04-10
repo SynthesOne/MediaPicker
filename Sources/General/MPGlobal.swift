@@ -70,10 +70,8 @@ func MPMainAsync(after: TimeInterval = 0, handler: @escaping (() -> ())) {
         return view
     }()
     
-    let presenter = MPPresenter(sender: viewController)
-    
     button.mp.action({
-        presenter.showMediaPicker()
+        MPPresenter.showMediaPicker(sender: viewController)
     }, forEvent: .touchUpInside)
     
     viewController.view.addSubview(button)

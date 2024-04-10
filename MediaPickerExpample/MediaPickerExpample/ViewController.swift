@@ -20,8 +20,6 @@ class ViewController: UIViewController {
         return view
     }()
     
-    var mp: MPPresenter?
-
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
@@ -36,8 +34,7 @@ class ViewController: UIViewController {
     }
 
     @objc func openG() {
-        mp = MPPresenter(sender: self)
-        mp?.showMediaPicker()
+        MPPresenter.showMediaPicker(sender: self)
     }
 }
 
