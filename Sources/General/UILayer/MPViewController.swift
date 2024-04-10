@@ -73,8 +73,8 @@ final class MPViewController: UIViewController {
     }
     
     private func setupNavigationView() {
-        albulListNavView.setMenuTitle(albumModel.title)
         navigationItem.titleView = albulListNavView
+        albulListNavView.setMenuTitle(albumModel.title)
         
         let selectAlbumBlock: ((MPAlbumModel) -> ())? = { [weak self] (album) in
             guard let strongSelf = self, strongSelf.albumModel != album  else { return }

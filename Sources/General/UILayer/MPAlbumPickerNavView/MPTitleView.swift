@@ -95,8 +95,10 @@ final class MPTitleView: UIView {
     
     override func layoutSubviews() {
         super.layoutSubviews()
-        VStack.frame = bounds
-        arrowView.frame = container.bounds
+        debugPrint("MPTitleView layoutSubviews bounds \(bounds)")
+        debugPrint("MPTitleView layoutSubviews frame \(frame)")
+        //VStack.frame = bounds
+        //arrowView.frame = container.bounds
     }
     
     private func setup() {
@@ -113,8 +115,16 @@ final class MPTitleView: UIView {
     
     private func setupLayout() {
         NSLayoutConstraint.activate([
+            VStack.leftAnchor.constraint(equalTo: self.leftAnchor),
+            VStack.rightAnchor.constraint(equalTo: self.rightAnchor),
+            VStack.topAnchor.constraint(equalTo: self.topAnchor),
+            VStack.bottomAnchor.constraint(equalTo: self.bottomAnchor),
             container.widthAnchor.constraint(equalToConstant: 16),
-            container.heightAnchor.constraint(equalToConstant: 16)
+            container.heightAnchor.constraint(equalToConstant: 16),
+            arrowView.leftAnchor.constraint(equalTo: container.leftAnchor),
+            arrowView.rightAnchor.constraint(equalTo: container.rightAnchor),
+            arrowView.topAnchor.constraint(equalTo: container.topAnchor),
+            arrowView.bottomAnchor.constraint(equalTo: container.bottomAnchor)
         ])
     }
     

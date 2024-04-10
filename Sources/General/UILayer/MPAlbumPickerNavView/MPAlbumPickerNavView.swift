@@ -89,6 +89,9 @@ final class MPAlbumPickerNavView: UIView {
             if leftOffset == 0 {
                 targetOffset += offset
             }
+            debugPrint("layoutSubviews menuView frame \(CGRect(x: targetOffset, y: 0, width: frame.width - targetOffset, height: frame.height))")
+            
+            debugPrint("layoutSubviews main frame \(frame)")
             menuView.frame = CGRect(x: targetOffset, y: 0, width: frame.width - targetOffset, height: frame.height)
         } else {
             menuView.frame = CGRect(origin: .zero, size: .init(width: frame.width, height: frame.height))
