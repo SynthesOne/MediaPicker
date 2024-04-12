@@ -1,7 +1,7 @@
 //
-//  CheckboxLineStyle.swift
+//  UILabel+MPExtension.swift
 //
-//  Created by Валентин Панчишен on 08.04.2024.
+//  Created by Валентин Панчишен on 11.04.2024.
 //  Copyright © 2024 Валентин Панчишен. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,28 +24,37 @@
     
 import UIKit
 
-// MARK: CheckboxLineStyle
-/// Define Checkbox style
-public struct MPCheckboxLineStyle {
-    let checkBoxHeight: CGFloat
-    let checkmarkLineWidth: CGFloat
-    let padding: CGFloat
-    
-    public init(checkBoxHeight: CGFloat, checkmarkLineWidth: CGFloat = -1, padding: CGFloat = 6) {
-        self.checkBoxHeight = checkBoxHeight
-        self.checkmarkLineWidth = checkmarkLineWidth
-        self.padding = padding
+extension MPExtensionWrapper where Base: UILabel {
+    func textWidth(withText text: String? = nil) -> CGFloat {
+        UILabel.mp.textWidth(label: base, text: text)
     }
     
-    public init(checkmarkLineWidth: CGFloat, padding: CGFloat = 6) {
-        self.init(checkBoxHeight: 18, checkmarkLineWidth: checkmarkLineWidth, padding: padding)
+    static func textWidth(label: UILabel, text: String?) -> CGFloat {
+        var _text: String = ""
+        if let text {
+            _text = text
+        } else if let labelText = label.text {
+            _text = labelText
+        } else {
+            return 0.0
+        }
+        return textWidth(label: label, text: _text)
     }
     
-    public init(padding: CGFloat = 6) {
-        self.init(checkmarkLineWidth: -1, padding: padding)
+    static func textWidth(label: UILabel, text: String) -> CGFloat {
+        UILabel.mp.textWidth(font: label.font, text: text)
     }
     
-    public var size: CGSize {
-        return CGSize(width: checkBoxHeight, height: checkBoxHeight)
+    static func textWidth(font: UIFont, text: String) -> CGFloat {
+        UILabel.mp.textSize(font: font, text: text).width
+    }
+    
+    static func textSize(font: UIFont, text: String, width: CGFloat = .greatestFiniteMagnitude, height: CGFloat = .greatestFiniteMagnitude) -> CGSize {
+        let label = UILabel(frame: CGRect(x: 0, y: 0, width: width, height: height))
+        label.numberOfLines = 0
+        label.font = font
+        label.text = text
+        label.sizeToFit()
+        return label.frame.size
     }
 }

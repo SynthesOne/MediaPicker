@@ -33,23 +33,20 @@ public final class MPAlbumListViewController: UIViewController, UIPopoverPresent
         view.mp.register(MPAlbumListCell.self)
         view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         view.delegate = self
+        view.backgroundColor = .none
         return view
     }()
     
-    private let blurSubstrate: UIVisualEffectView = {
-        let blurEffect = UIBlurEffect(style: .regular)
-        let view = UIVisualEffectView(effect: blurEffect)
-        view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        return view
-    }()
-    
-    private lazy var dataSource = UICollectionViewDiffableDataSource<MPAlbumModel.Section, MPAlbumModel>(collectionView: collectionView, cellProvider: cellProvider)
+    private lazy var dataSource = UICollectionViewDiffableDataSource<MPAlbumModel.Section, MPAlbumModel>(collectionView: collectionView, cellProvider: { [weak self] (collectionView, indexPath, item) -> UICollectionViewCell? in
+        self?.cellProvider(collectionView: collectionView, indexPath: indexPath, item: item)
+    })
     
     private var arrModels: [MPAlbumModel] = []
     
     private var shouldReloadAlbumList = true
     
     var selectAlbumBlock: ((MPAlbumModel) -> ())?
+    var closeBlock: (() -> ())?
     
     public init() {
         super.init(nibName: nil, bundle: nil)
@@ -61,20 +58,29 @@ public final class MPAlbumListViewController: UIViewController, UIPopoverPresent
         fatalError("init(coder:) has not been implemented")
     }
     
+    deinit {
+        Logger.log("deinit MPAlbumListViewController")
+    }
+    
     public func adaptivePresentationStyle(for controller: UIPresentationController) -> UIModalPresentationStyle {
         .none
+    }
+    
+    public func presentationControllerWillDismiss(_ presentationController: UIPresentationController) {
+        PHPhotoLibrary.shared().unregisterChangeObserver(self)
+        closeBlock?()
     }
     
     public override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         guard shouldReloadAlbumList else { return }
         
-        DispatchQueue.global().async {
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             MPManager.getPhotoAlbumList(
                 ascending: false,
                 allowSelectImage: MPGeneralConfiguration.default().allowImage,
                 allowSelectVideo: MPGeneralConfiguration.default().allowVideo
-            ) { [weak self] albumList in
+            ) { albumList in
                 self?.arrModels = []
                 self?.arrModels.append(contentsOf: albumList)
                 
@@ -88,25 +94,26 @@ public final class MPAlbumListViewController: UIViewController, UIPopoverPresent
     
     public override func loadView() {
         super.loadView()
+        view.backgroundColor = .none
         setupSubViews()
         PHPhotoLibrary.shared().register(self)
     }
     
     private func setupSubViews() {
-        view.mp.addSubviews(blurSubstrate, collectionView)
+        view.mp.addSubviews(collectionView)
     }
     
     private func createLayout() -> UICollectionViewLayout {
         let globalConfig = UICollectionViewCompositionalLayoutConfiguration()
         return UICollectionViewCompositionalLayout(
-            sectionProvider: { (sectionNumber, env) -> NSCollectionLayoutSection? in
-                var config = UICollectionLayoutListConfiguration(appearance: .sidebar)
-                config.backgroundColor = .none
+            sectionProvider: { [weak self] (sectionNumber, env) -> NSCollectionLayoutSection? in
+                var config = UICollectionLayoutListConfiguration(appearance: .plain)
+                config.backgroundColor = .clear
                 config.separatorConfiguration.topSeparatorVisibility = .hidden
                 config.separatorConfiguration.color = UIColor.mp.borderColor
-                config.itemSeparatorHandler = { [weak self] (indexPath, config) in
+                let separatorInsets = NSDirectionalEdgeInsets.zero
+                config.itemSeparatorHandler = { (indexPath, config) in
                     var mutateCOnfig = config
-                    var separatorInsets = NSDirectionalEdgeInsets.zero
                     if self?.collectionView.mp.isLastCellIn(indexPath: indexPath) ?? false {
                         mutateCOnfig.bottomSeparatorVisibility = .hidden
                     } else {
@@ -125,6 +132,7 @@ public final class MPAlbumListViewController: UIViewController, UIPopoverPresent
     private func cellProvider(collectionView: UICollectionView, indexPath: IndexPath, item: any Hashable) -> UICollectionViewCell {
         let cell = collectionView.mp.cell(MPAlbumListCell.self, for: indexPath)
         cell.configureCell(model: arrModels[indexPath.row])
+        cell.layoutIfNeeded()
         return cell
     }
 }
@@ -132,6 +140,7 @@ public final class MPAlbumListViewController: UIViewController, UIPopoverPresent
 // MARK: - UICollectionViewDelegate
 extension MPAlbumListViewController: UICollectionViewDelegate {
     public func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        collectionView.deselectItem(at: indexPath, animated: true)
         selectAlbumBlock?(arrModels[indexPath.item])
     }
 }

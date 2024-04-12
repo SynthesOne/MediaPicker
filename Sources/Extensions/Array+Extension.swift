@@ -1,7 +1,7 @@
 //
-//  UIView+MPExtension.swift
+//  Array+Extension.swift
 //
-//  Created by Валентин Панчишен on 09.04.2024.
+//  Created by Валентин Панчишен on 10.04.2024.
 //  Copyright © 2024 Валентин Панчишен. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -22,29 +22,14 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
     
-import UIKit
+import Foundation
 
-extension MPExtensionWrapper where Base: UIView {
-    func setIsHidden(_ hidden: Bool, duration: CGFloat = 0.25) {
-        if base.isHidden && !hidden {
-            base.alpha = 0.0
-            base.isHidden = false
+extension Array where Element: Equatable {
+    // Remove first collection element that is equal to the given `object`:
+    mutating func remove(_ object: Element) {
+        guard let index = firstIndex(of: object) else {
+            return
         }
-        
-        UIView.animate(withDuration: duration, animations: {
-            base.alpha = hidden ? 0.0 : 1.0
-        }) { (_) in
-            base.isHidden = hidden
-        }
-    }
-    
-    func addSubviews(_ subviews: UIView...) {
-        subviews.forEach {
-            base.addSubview($0)
-        }
-    }
-    
-    var globalFrame: CGRect? {
-        base.superview?.convert(base.frame, to: nil)
+        remove(at: index)
     }
 }

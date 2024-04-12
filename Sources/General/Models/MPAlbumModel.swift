@@ -46,12 +46,6 @@ public struct MPAlbumModel {
     
     public var models: [MPPhotoModel] = []
     
-    // 暂未用到
-    private var selectedModels: [MPPhotoModel] = []
-    
-    // 暂未用到
-    private var selectedCount = 0
-    
     public init(
         title: String,
         result: PHFetchResult<PHAsset>,

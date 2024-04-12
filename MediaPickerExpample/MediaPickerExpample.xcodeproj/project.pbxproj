@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		50B85BF62BC576C800D9C5E2 /* MediaPicker in Frameworks */ = {isa = PBXBuildFile; productRef = 50B85BF52BC576C800D9C5E2 /* MediaPicker */; };
+		502AD2C32BC688D400C5CD3C /* MediaPicker in Frameworks */ = {isa = PBXBuildFile; productRef = 502AD2C22BC688D400C5CD3C /* MediaPicker */; };
 		50E466DB2BBFD9B0004DD4C1 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50E466DA2BBFD9B0004DD4C1 /* AppDelegate.swift */; };
 		50E466DF2BBFD9B0004DD4C1 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50E466DE2BBFD9B0004DD4C1 /* ViewController.swift */; };
 		50E466E42BBFD9B1004DD4C1 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 50E466E32BBFD9B1004DD4C1 /* Assets.xcassets */; };
@@ -28,18 +28,26 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				50B85BF62BC576C800D9C5E2 /* MediaPicker in Frameworks */,
+				502AD2C32BC688D400C5CD3C /* MediaPicker in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		502AD2C12BC688D400C5CD3C /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		50E466CE2BBFD9B0004DD4C1 = {
 			isa = PBXGroup;
 			children = (
 				50E466D92BBFD9B0004DD4C1 /* MediaPickerExpample */,
 				502AD2BF2BC680E300C5CD3C /* MediaPickerExpample.app */,
+				502AD2C12BC688D400C5CD3C /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -72,7 +80,7 @@
 			);
 			name = MediaPickerExpample;
 			packageProductDependencies = (
-				50B85BF52BC576C800D9C5E2 /* MediaPicker */,
+				502AD2C22BC688D400C5CD3C /* MediaPicker */,
 			);
 			productName = MediaPickerExpample;
 			productReference = 502AD2BF2BC680E300C5CD3C /* MediaPickerExpample.app */;
@@ -103,7 +111,6 @@
 			);
 			mainGroup = 50E466CE2BBFD9B0004DD4C1;
 			packageReferences = (
-				50B85BF42BC576C800D9C5E2 /* XCRemoteSwiftPackageReference "MediaPicker" */,
 			);
 			productRefGroup = 50E466CE2BBFD9B0004DD4C1;
 			projectDirPath = "";
@@ -356,21 +363,9 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCRemoteSwiftPackageReference section */
-		50B85BF42BC576C800D9C5E2 /* XCRemoteSwiftPackageReference "MediaPicker" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/SynthesOne/MediaPicker.git";
-			requirement = {
-				branch = dev;
-				kind = branch;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
 /* Begin XCSwiftPackageProductDependency section */
-		50B85BF52BC576C800D9C5E2 /* MediaPicker */ = {
+		502AD2C22BC688D400C5CD3C /* MediaPicker */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 50B85BF42BC576C800D9C5E2 /* XCRemoteSwiftPackageReference "MediaPicker" */;
 			productName = MediaPicker;
 		};
 /* End XCSwiftPackageProductDependency section */

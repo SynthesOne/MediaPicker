@@ -1,7 +1,7 @@
 //
-//  UIView+MPExtension.swift
+//  WeakProxy.swift
 //
-//  Created by Валентин Панчишен on 09.04.2024.
+//  Created by Валентин Панчишен on 10.04.2024.
 //  Copyright © 2024 Валентин Панчишен. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,27 +24,23 @@
     
 import UIKit
 
-extension MPExtensionWrapper where Base: UIView {
-    func setIsHidden(_ hidden: Bool, duration: CGFloat = 0.25) {
-        if base.isHidden && !hidden {
-            base.alpha = 0.0
-            base.isHidden = false
-        }
-        
-        UIView.animate(withDuration: duration, animations: {
-            base.alpha = hidden ? 0.0 : 1.0
-        }) { (_) in
-            base.isHidden = hidden
-        }
+class WeakProxy: NSObject {
+    private weak var target: NSObjectProtocol?
+    
+    init(target: NSObjectProtocol) {
+        self.target = target
+        super.init()
     }
     
-    func addSubviews(_ subviews: UIView...) {
-        subviews.forEach {
-            base.addSubview($0)
-        }
+    class func proxy(target: NSObjectProtocol) -> WeakProxy {
+        return WeakProxy(target: target)
     }
     
-    var globalFrame: CGRect? {
-        base.superview?.convert(base.frame, to: nil)
+    override func forwardingTarget(for aSelector: Selector!) -> Any? {
+        return target
+    }
+    
+    override func responds(to aSelector: Selector!) -> Bool {
+        return target?.responds(to: aSelector) ?? false
     }
 }

@@ -1,7 +1,7 @@
 //
-//  UIView+MPExtension.swift
+//  MPControl.swift
 //
-//  Created by Валентин Панчишен on 09.04.2024.
+//  Created by Валентин Панчишен on 11.04.2024.
 //  Copyright © 2024 Валентин Панчишен. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,27 +24,32 @@
     
 import UIKit
 
-extension MPExtensionWrapper where Base: UIView {
-    func setIsHidden(_ hidden: Bool, duration: CGFloat = 0.25) {
-        if base.isHidden && !hidden {
-            base.alpha = 0.0
-            base.isHidden = false
+class MPControl: UIControl {
+    public var increasedInsets = UIEdgeInsets.zero
+    
+    override public func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
+        guard !isHidden, alpha != 0 else {
+            return false
         }
         
-        UIView.animate(withDuration: duration, animations: {
-            base.alpha = hidden ? 0.0 : 1.0
-        }) { (_) in
-            base.isHidden = hidden
+        let rect = increasedRect()
+        if rect.equalTo(bounds) {
+            return super.point(inside: point, with: event)
         }
+        return rect.contains(point) ? true : false
     }
     
-    func addSubviews(_ subviews: UIView...) {
-        subviews.forEach {
-            base.addSubview($0)
+    private func increasedRect() -> CGRect {
+        guard increasedInsets != .zero else {
+            return bounds
         }
-    }
-    
-    var globalFrame: CGRect? {
-        base.superview?.convert(base.frame, to: nil)
+        
+        let rect = CGRect(
+            x: bounds.minX - increasedInsets.left,
+            y: bounds.minY - increasedInsets.top,
+            width: bounds.width + increasedInsets.left + increasedInsets.right,
+            height: bounds.height + increasedInsets.top + increasedInsets.bottom
+        )
+        return rect
     }
 }

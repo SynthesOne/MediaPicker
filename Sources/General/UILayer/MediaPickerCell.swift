@@ -79,6 +79,18 @@ final class MediaPickerCell: CollectionViewCell {
         }
     }
     
+    var isOn = false {
+        didSet {
+            selectionButton.isOn = isOn
+        }
+    }
+    
+    var selectedBlock: ((@escaping (Bool) -> ()) -> ())?
+    
+    deinit {
+        Logger.log("deinit MediaPickerCell")
+    }
+    
     override func setupSubviews() {
         contentView.addSubview(imageView)
         contentView.addSubview(containerView)
@@ -105,8 +117,6 @@ final class MediaPickerCell: CollectionViewCell {
     }
     
     private func configureCell() {
-        let generalConfig = MPGeneralConfiguration.default()
-        
         if model.type == .video {
             bottomShadowView.isHidden = false
             descLabel.text = model.duration
@@ -120,7 +130,9 @@ final class MediaPickerCell: CollectionViewCell {
             bottomShadowView.isHidden = true
         }
         
-        selectionButton.isOn = model.isSelected
+        UIView.performWithoutAnimation {
+            selectionButton.isOn = model.isSelected
+        }
         
         if model.isSelected {
             fetchBigImage()
@@ -132,7 +144,15 @@ final class MediaPickerCell: CollectionViewCell {
     }
     
     private func selectionBlock() {
-        selectionButton.isOn.toggle()
+        selectedBlock?({ [weak self] isSelected in
+            self?.selectionButton.isOn = isSelected
+            
+            if isSelected {
+                self?.fetchBigImage()
+            } else {
+                self?.cancelFetchBigImage()
+            }
+        })
     }
     
     private func fetchSmallImage() {
@@ -169,7 +189,7 @@ final class MediaPickerCell: CollectionViewCell {
             if self?.model.isSelected == true {
                 //self?.progressView.isHidden = false
                 //self?.progressView.progress = max(0.1, progress)
-                self?.imageView.alpha = 0.5
+                //self?.imageView.alpha = 0.5
                 if progress >= 1 {
                     //self?.resetProgressViewStatus()
                 }

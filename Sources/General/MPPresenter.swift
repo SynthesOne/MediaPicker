@@ -25,28 +25,37 @@
 import UIKit
 import Photos
 
-public enum MPPresenter {
-    public static func showMediaPicker(sender: UIViewController?, selectedResults: [MPPhotoModel] = []) {
+public final class MPPresenter: NSObject {
+    weak var sender: UIViewController?
+    var preSelectedResults: [MPPhotoModel]
+    
+    public init(sender: UIViewController?, preSelectedResults: [MPPhotoModel] = []) {
+        self.sender = sender
+        self.preSelectedResults = preSelectedResults
+        super.init()
+    }
+    
+    public func showMediaPicker() {
         let status = PHPhotoLibrary.authorizationStatus()
         if status == .restricted || status == .denied {
-            showNoAuthAlert(sender: sender)
+            showNoAuthAlert()
         } else if status == .notDetermined {
             PHPhotoLibrary.requestAuthorization(for: .readWrite, handler: { (status) in
-                MPMainAsync {
+                MPMainAsync { [weak self] in
                     if status == .denied {
-                        showNoAuthAlert(sender: sender)
+                        self?.showNoAuthAlert()
                     } else if status == .authorized {
-                        showLibraryMP(sender: sender, selectedResults: selectedResults)
+                        self?.showLibraryMP()
                     }
                 }
             })
         } else {
-            showLibraryMP(sender: sender, selectedResults: selectedResults)
+            showLibraryMP()
         }
         
     }
     
-    private static func showNoAuthAlert(sender: UIViewController?) {
+    private func showNoAuthAlert() {
         let alert = Alert(message: "Enable access to upload photos and attach them", {
             Action.cancel("ok")
         })
@@ -54,15 +63,17 @@ public enum MPPresenter {
         sender?.present(alert, animated: true)
     }
     
-    private static func showLibraryMP(sender: UIViewController?, selectedResults: [MPPhotoModel]) {
-        MPManager.getCameraRollAlbum(allowSelectImage: MPGeneralConfiguration.default().allowImage, allowSelectVideo: MPGeneralConfiguration.default().allowVideo, completion: { (album) in
+    private func showLibraryMP() {
+        MPManager.getCameraRollAlbum(allowSelectImage: MPGeneralConfiguration.default().allowImage, allowSelectVideo: MPGeneralConfiguration.default().allowVideo, completion: { [weak self] (album) in
+            dump(album, name: "album")
             let gallery = MPViewController(albumModel: album)
             let navWrapper = MPNavigationViewController(rootViewController: gallery)
             
             let sheet = navWrapper.sheetPresentationController
             sheet?.detents = [.medium(), .large()]
+            sheet?.selectedDetentIdentifier = .medium
             
-            sender?.present(navWrapper, animated: true)
+            self?.sender?.present(navWrapper, animated: true)
         })
     }
     

@@ -25,11 +25,12 @@
 import UIKit
 
 final class MPTitleView: UIView {
-    let VStack: UIStackView = {
+    private let VStack: UIStackView = {
         let view = UIStackView()
         view.distribution = .fill
         view.axis = .vertical
         view.alignment = .center
+        view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
     
@@ -42,7 +43,7 @@ final class MPTitleView: UIView {
         return view
     }()
     
-    private let titleLabel: UILabel = {
+    let titleLabel: UILabel = {
        let view = UILabel()
         view.font = .systemFont(ofSize: 17, weight: .medium)
         view.textColor = .label
@@ -54,6 +55,7 @@ final class MPTitleView: UIView {
       let view = UIImageView()
         view.image = UIImage(systemName: "chevron.down.circle.fill")?.mp.template
         view.tintColor = .label
+        view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
     
@@ -61,6 +63,7 @@ final class MPTitleView: UIView {
         let view = UIView()
         view.setContentHuggingPriority(.defaultHigh, for: .horizontal)
         view.setContentCompressionResistancePriority(.defaultHigh, for: .horizontal)
+        view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
     
@@ -91,12 +94,6 @@ final class MPTitleView: UIView {
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
-    }
-    
-    override func layoutSubviews() {
-        super.layoutSubviews()
-        //VStack.frame = bounds
-        //arrowView.frame = container.bounds
     }
     
     private func setup() {

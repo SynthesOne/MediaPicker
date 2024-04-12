@@ -1,7 +1,7 @@
 //
-//  UIView+MPExtension.swift
+//  CheckboxLineStyle.swift
 //
-//  Created by Валентин Панчишен on 09.04.2024.
+//  Created by Валентин Панчишен on 08.04.2024.
 //  Copyright © 2024 Валентин Панчишен. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,27 +24,27 @@
     
 import UIKit
 
-extension MPExtensionWrapper where Base: UIView {
-    func setIsHidden(_ hidden: Bool, duration: CGFloat = 0.25) {
-        if base.isHidden && !hidden {
-            base.alpha = 0.0
-            base.isHidden = false
-        }
-        
-        UIView.animate(withDuration: duration, animations: {
-            base.alpha = hidden ? 0.0 : 1.0
-        }) { (_) in
-            base.isHidden = hidden
-        }
+// MARK: CheckboxLineStyle
+public struct MPCheckboxLineStyle {
+    let checkBoxHeight: CGFloat
+    let checkmarkLineWidth: CGFloat
+    let padding: CGFloat
+    
+    public init(checkBoxHeight: CGFloat, checkmarkLineWidth: CGFloat = -1, padding: CGFloat = 6) {
+        self.checkBoxHeight = checkBoxHeight
+        self.checkmarkLineWidth = checkmarkLineWidth
+        self.padding = padding
     }
     
-    func addSubviews(_ subviews: UIView...) {
-        subviews.forEach {
-            base.addSubview($0)
-        }
+    public init(checkmarkLineWidth: CGFloat, padding: CGFloat = 6) {
+        self.init(checkBoxHeight: 18, checkmarkLineWidth: checkmarkLineWidth, padding: padding)
     }
     
-    var globalFrame: CGRect? {
-        base.superview?.convert(base.frame, to: nil)
+    public init(padding: CGFloat = 6) {
+        self.init(checkmarkLineWidth: -1, padding: padding)
+    }
+    
+    public var size: CGSize {
+        return CGSize(width: checkBoxHeight, height: checkBoxHeight)
     }
 }

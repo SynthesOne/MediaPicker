@@ -1,7 +1,7 @@
 //
-//  UIView+MPExtension.swift
+//  MPAddPhotoCell.swift
 //
-//  Created by Валентин Панчишен on 09.04.2024.
+//  Created by Валентин Панчишен on 11.04.2024.
 //  Copyright © 2024 Валентин Панчишен. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,27 +24,25 @@
     
 import UIKit
 
-extension MPExtensionWrapper where Base: UIView {
-    func setIsHidden(_ hidden: Bool, duration: CGFloat = 0.25) {
-        if base.isHidden && !hidden {
-            base.alpha = 0.0
-            base.isHidden = false
-        }
-        
-        UIView.animate(withDuration: duration, animations: {
-            base.alpha = hidden ? 0.0 : 1.0
-        }) { (_) in
-            base.isHidden = hidden
-        }
+final class MPAddPhotoCell: CollectionViewCell {
+    private let imageView: UIImageView = {
+        let view = UIImageView(image: UIImage(systemName: "plus.circle.fill"))
+        view.contentMode = .scaleAspectFit
+        view.clipsToBounds = true
+        return view
+    }()
+    
+    override func setupSubviews() {
+        backgroundColor = .systemGray
+        contentView.addSubview(imageView)
     }
     
-    func addSubviews(_ subviews: UIView...) {
-        subviews.forEach {
-            base.addSubview($0)
-        }
+    override func adaptationLayout() {
+        imageView.frame = CGRect(x: 0, y: 0, width: bounds.width / 3, height: bounds.width / 3)
+        imageView.center = center
     }
     
-    var globalFrame: CGRect? {
-        base.superview?.convert(base.frame, to: nil)
+    deinit {
+        Logger.log("deinit MPAddPhotoCell")
     }
 }

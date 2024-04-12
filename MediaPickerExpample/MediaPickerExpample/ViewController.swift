@@ -10,6 +10,8 @@ import MediaPicker
 
 class ViewController: UIViewController {
     
+    var mp: MPPresenter?
+    
     let button: UIButton = {
         let view = UIButton(frame: CGRect(origin: .zero, size: .init(width: 120, height: 44)))
         view.setTitle("gallery", for: .normal)
@@ -34,7 +36,10 @@ class ViewController: UIViewController {
     }
 
     @objc func openG() {
-        MPPresenter.showMediaPicker(sender: self)
+        MPGeneralConfiguration.default()
+            .maxMediaSelectCount(1)
+        mp = MPPresenter(sender: self)
+        mp?.showMediaPicker()
     }
 }
 

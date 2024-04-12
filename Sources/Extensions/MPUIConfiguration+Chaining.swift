@@ -1,7 +1,7 @@
 //
-//  UIView+MPExtension.swift
+//  MPUIConfiguration+Chaining.swift
 //
-//  Created by Валентин Панчишен on 09.04.2024.
+//  Created by Валентин Панчишен on 11.04.2024.
 //  Copyright © 2024 Валентин Панчишен. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -21,30 +21,37 @@
 //  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
-    
+
 import UIKit
 
-extension MPExtensionWrapper where Base: UIView {
-    func setIsHidden(_ hidden: Bool, duration: CGFloat = 0.25) {
-        if base.isHidden && !hidden {
-            base.alpha = 0.0
-            base.isHidden = false
-        }
-        
-        UIView.animate(withDuration: duration, animations: {
-            base.alpha = hidden ? 0.0 : 1.0
-        }) { (_) in
-            base.isHidden = hidden
-        }
+public extension MPUIConfiguration {
+    @discardableResult
+    func showCounterOnSelectionButton(_ value: Bool) -> MPUIConfiguration {
+        showCounterOnSelectionButton = value
+        return self
     }
     
-    func addSubviews(_ subviews: UIView...) {
-        subviews.forEach {
-            base.addSubview($0)
-        }
+    @discardableResult
+    func selectionButtonCornersStyle(_ value: MPCheckboxStyle) -> MPUIConfiguration {
+        selectionButtonCornersStyle = value
+        return self
     }
     
-    var globalFrame: CGRect? {
-        base.superview?.convert(base.frame, to: nil)
+    @discardableResult
+    func navigationAppearance(_ value: MPNavigationAppearance) -> MPUIConfiguration {
+        navigationAppearance = value
+        return self
+    }
+    
+    @discardableResult
+    func primaryBackgroundColor(_ value: UIColor) -> MPUIConfiguration {
+        primaryBackgroundColor = value
+        return self
+    }
+    
+    @discardableResult
+    func showCameraCell(_ value: Bool) -> MPUIConfiguration {
+        showCameraCell = value
+        return self
     }
 }

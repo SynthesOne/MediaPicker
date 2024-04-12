@@ -1,7 +1,7 @@
 //
-//  UIView+MPExtension.swift
+//  MPGeneralConfiguration+Chaining.swift
 //
-//  Created by Валентин Панчишен on 09.04.2024.
+//  Created by Валентин Панчишен on 11.04.2024.
 //  Copyright © 2024 Валентин Панчишен. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,27 +24,34 @@
     
 import UIKit
 
-extension MPExtensionWrapper where Base: UIView {
-    func setIsHidden(_ hidden: Bool, duration: CGFloat = 0.25) {
-        if base.isHidden && !hidden {
-            base.alpha = 0.0
-            base.isHidden = false
-        }
-        
-        UIView.animate(withDuration: duration, animations: {
-            base.alpha = hidden ? 0.0 : 1.0
-        }) { (_) in
-            base.isHidden = hidden
-        }
+public extension MPGeneralConfiguration {
+    @discardableResult
+    func allowImage(_ value: Bool) -> MPGeneralConfiguration {
+        allowImage = value
+        return self
     }
     
-    func addSubviews(_ subviews: UIView...) {
-        subviews.forEach {
-            base.addSubview($0)
-        }
+    @discardableResult
+    func allowGif(_ value: Bool) -> MPGeneralConfiguration {
+        allowGif = value
+        return self
     }
     
-    var globalFrame: CGRect? {
-        base.superview?.convert(base.frame, to: nil)
+    @discardableResult
+    func allowVideo(_ value: Bool) -> MPGeneralConfiguration {
+        allowVideo = value
+        return self
+    }
+    
+    @discardableResult
+    func allowLivePhoto(_ value: Bool) -> MPGeneralConfiguration {
+        allowLivePhoto = value
+        return self
+    }
+    
+    @discardableResult
+    func maxMediaSelectCount(_ value: Int) -> MPGeneralConfiguration {
+        maxMediaSelectCount = value
+        return self
     }
 }

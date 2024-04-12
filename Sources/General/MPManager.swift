@@ -150,7 +150,7 @@ public enum MPManager {
     
     /// Fetch camera roll album.
     public static func getCameraRollAlbum(allowSelectImage: Bool, allowSelectVideo: Bool, completion: @escaping (MPAlbumModel) -> Void) {
-        DispatchQueue.global().async {
+        DispatchQueue.global(qos: .userInitiated).async {
             let option = PHFetchOptions()
             if !allowSelectImage {
                 option.predicate = NSPredicate(format: "mediaType == %ld", PHAssetMediaType.video.rawValue)

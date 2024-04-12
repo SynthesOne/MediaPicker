@@ -48,6 +48,10 @@ public class MPNavigationViewController: UINavigationController {
         fatalError("init(coder:) has not been implemented")
     }
     
+    deinit {
+        Logger.log("deinit MPNavigationViewController")
+    }
+    
     public override func loadView() {
         super.loadView()
         configurationStyleNavigationBar()
@@ -55,7 +59,7 @@ public class MPNavigationViewController: UINavigationController {
     
     private func configurationStyleNavigationBar() {
         let uiConfig = MPUIConfiguration.default()
-        view.backgroundColor = uiConfig.primaryBackgroundColor
+        view.backgroundColor = .none
         let attributes: [NSAttributedString.Key: Any] = [
             .font: UIFont.systemFont(ofSize: 17, weight: .medium),
             .foregroundColor: UIColor.label

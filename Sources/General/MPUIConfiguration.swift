@@ -54,11 +54,14 @@ public final class MPUIConfiguration: NSObject {
     )
     
     /// Selection button rounding style
-    public var selectionButtonCornersStyle = MPRadioCheckboxStyle.circle
+    public var selectionButtonCornersStyle = MPCheckboxStyle.circle
     
     /// Define primary color of library
     public var navigationAppearance: MPNavigationAppearance = .default
     
     /// Define background colors of main screen
     public var primaryBackgroundColor = UIColor.systemBackground
+    
+    /// Allow show camera cell
+    public var showCameraCell = true
 }

@@ -23,7 +23,7 @@
 //  THE SOFTWARE.
     
 import UIKit
-
+// MPGeneralConfiguration+discardable
 public final class MPGeneralConfiguration: NSObject {
     private override init() {
         super.init()
@@ -50,4 +50,7 @@ public final class MPGeneralConfiguration: NSObject {
     
     /// Allow select live photo media
     public var allowLivePhoto = true
+    
+    /// Maximum number of media that can be selected
+    public var maxMediaSelectCount = 20
 }

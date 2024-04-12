@@ -33,8 +33,8 @@ final class MPAlbumListCell: CollectionViewCell {
         let view = UIStackView()
         view.axis = .vertical
         view.distribution = .fill
-        view.alignment = .leading
-        view.spacing = 0
+        view.alignment = .fill
+        view.spacing = 2
         return view
     }()
     
@@ -44,6 +44,7 @@ final class MPAlbumListCell: CollectionViewCell {
         view.distribution = .fill
         view.alignment = .center
         view.spacing = 2
+        view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
     
@@ -66,6 +67,7 @@ final class MPAlbumListCell: CollectionViewCell {
         view.contentMode = .scaleAspectFill
         view.layer.masksToBounds = true
         view.layer.cornerRadius = 8
+        view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
     
@@ -105,11 +107,11 @@ final class MPAlbumListCell: CollectionViewCell {
     }
     
     override func highlightedAnimation() {
-        contentView.backgroundColor = isHighlighted ? UIColor.mp.selectedColor : .none
+        contentView.backgroundColor = isHighlighted ? UIColor.mp.selectedColor : .clear
     }
     
     override func selectedAnimation() {
-        contentView.backgroundColor = isSelected ? UIColor.mp.selectedColor : .none
+        contentView.backgroundColor = isSelected ? UIColor.mp.selectedColor : .clear
     }
 }
 

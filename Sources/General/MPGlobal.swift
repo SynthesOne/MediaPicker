@@ -46,38 +46,48 @@ func MPMainAsync(after: TimeInterval = 0, handler: @escaping (() -> ())) {
 @available(iOS 17.0, *)
 #Preview {
     let uiConfig = MPUIConfiguration.default()
-//    uiConfig.showCounterOnSelectionButton = false
-    //uiConfig.selectionButtonCornersStyle = .circle
-    //uiConfig.selectionButtonColorStyle = .init(activeColor: .red, activeBorderColor: .white, inactiveColor: .clear, inactiveBorderColor: .white, checkMarkColor: .black)
-    
-//    let button: MPCheckboxButton = {
-//        let view = MPCheckboxButton(frame: CGRect(origin: .zero, size: .init(width: 24, height: 24)))
-//        view.contentMode = .center
-//        view.contentVerticalAlignment = .center
-//        return view
-//    }()
-    
-//    let cell = MediaPickerCell(frame: .init(origin: .zero, size: .init(width: 250, height: 250)))
 
     let viewController = UIViewController()
     viewController.view.backgroundColor = .systemBackground
+    viewController.view.insetsLayoutMarginsFromSafeArea = false
     
     let button: UIButton = {
         let view = UIButton(frame: .init(origin: .zero, size: .init(width: 120, height: 44)))
-        view.setTitle("gallery", for: .normal)
+        view.setTitle("Add", for: .normal)
         view.setTitleColor(.white, for: .normal)
         view.backgroundColor = .systemRed
         return view
     }()
     
+    let button2: UIButton = {
+        let view = UIButton(frame: .init(origin: .zero, size: .init(width: 120, height: 44)))
+        view.setTitle("Subtract", for: .normal)
+        view.setTitleColor(.white, for: .normal)
+        view.backgroundColor = .systemRed
+        return view
+    }()
+    
+    let footer = MPFooterView()
+    viewController.view.mp.addSubviews(button, button2, footer)
+    button.center = viewController.view.center
+    button2.center = .init(x: viewController.view.center.x, y: viewController.view.center.y + 52)
+    var counter = 0
     button.mp.action({
-        MPPresenter.showMediaPicker(sender: viewController)
+        counter += 1
+        footer.setCounter(counter)
     }, forEvent: .touchUpInside)
     
-    viewController.view.addSubview(button)
-    button.center = viewController.view.center
-//    cell.center = viewController.view.center
-//    cell.index = 2
+    button2.mp.action({
+        counter -= 1
+        footer.setCounter(counter)
+    }, forEvent: .touchUpInside)
+    
+    footer.frame = .init(
+        x: 0,
+        y: viewController.view.safeAreaLayoutGuide.layoutFrame.maxY - 88,
+        width: viewController.view.bounds.width,
+        height: 88
+    )
     
     return viewController
 }

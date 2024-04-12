@@ -44,6 +44,10 @@ final class MPAlbumPickerNavView: UIView {
     
     fileprivate let isCenterAlignment: Bool
     
+    var sourceView: UIView {
+        menuView.titleLabel
+    }
+    
     var onTap: ((MPAlbumPickerNavView, Bool) -> ())? = nil
     
     required public init?(coder aDecoder: NSCoder) {
@@ -51,7 +55,7 @@ final class MPAlbumPickerNavView: UIView {
     }
     
     deinit {
-        debugPrint("deinit MPAlbumPickerNavView")
+        Logger.log("deinit MPAlbumPickerNavView")
     }
     
     init(
@@ -76,6 +80,7 @@ final class MPAlbumPickerNavView: UIView {
             } else if let superMinX = superview?.frame.minX, superMinX > 0 {
                 minX = superMinX
             }
+            
             let offset: CGFloat = abs((frame.width + minX) - UIScreenWidth) - minX
             var leftOffset = offset
             if leftOffset < 0 {
@@ -123,9 +128,9 @@ final class MPAlbumPickerNavView: UIView {
     
     func hideMenu() {
         guard isShown else { return }
+        menuView.toggleHighlightState(false)
         menuView.rotateArrow(isShow: false)
         isShown = false
-        onTap?(self, false)
     }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -139,10 +144,6 @@ final class MPAlbumPickerNavView: UIView {
         guard isEnabled else { return }
         menuView.toggleHighlightState(true)
         isShown ? hideMenu() : showMenu()
-        UIView.animate(withDuration: 0.25, delay: 0.0, options: .curveLinear, animations: { [weak self] in
-            self?.menuView.toggleHighlightState(false)
-            
-        })
     }
     
     override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
