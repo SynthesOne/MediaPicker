@@ -37,7 +37,11 @@ class ViewController: UIViewController {
 
     @objc func openG() {
         MPGeneralConfiguration.default()
-            .maxMediaSelectCount(1)
+            //.maxMediaSelectCount(1)
+        
+        MPUIConfiguration.default()
+//            .showCameraCell(false)
+        
         mp = MPPresenter(sender: self)
         mp?.showMediaPicker()
     }

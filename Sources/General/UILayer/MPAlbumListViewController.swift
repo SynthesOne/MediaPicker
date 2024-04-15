@@ -75,7 +75,7 @@ public final class MPAlbumListViewController: UIViewController, UIPopoverPresent
         super.viewWillAppear(animated)
         guard shouldReloadAlbumList else { return }
         
-        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+        DispatchQueue.global().async { [weak self] in
             MPManager.getPhotoAlbumList(
                 ascending: false,
                 allowSelectImage: MPGeneralConfiguration.default().allowImage,
@@ -86,7 +86,9 @@ public final class MPAlbumListViewController: UIViewController, UIPopoverPresent
                 
                 self?.shouldReloadAlbumList = false
                 MPMainAsync {
-                    self?.reloadData()
+                    self?.reloadData {
+                        self?.viewDidLayoutSubviews()
+                    }
                 }
             }
         }
@@ -97,6 +99,14 @@ public final class MPAlbumListViewController: UIViewController, UIPopoverPresent
         view.backgroundColor = .none
         setupSubViews()
         PHPhotoLibrary.shared().register(self)
+    }
+    
+    public override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        let contentSize = collectionView.collectionViewLayout.collectionViewContentSize
+        if contentSize.height != 0, contentSize.height < preferredContentSize.height {
+            preferredContentSize.height = contentSize.height
+        }
     }
     
     private func setupSubViews() {

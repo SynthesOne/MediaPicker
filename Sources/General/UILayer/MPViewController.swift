@@ -21,15 +21,18 @@
 //  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
-    
+
 import UIKit
 import Photos
+import PhotosUI
 
 final class MPViewController: UIViewController {
     private lazy var collectionView: UICollectionView = {
         let view = UICollectionView(frame: view.bounds, collectionViewLayout: createLayout())
         view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         view.mp.register(MediaPickerCell.self)
+        view.mp.register(MPCameraCell.self)
+        view.mp.register(MPAddPhotoCell.self)
         view.verticalScrollIndicatorInsets.bottom = 52
         view.contentInset.bottom = 52
         view.delegate = self
@@ -43,12 +46,11 @@ final class MPViewController: UIViewController {
     
     private let closeButton = UIBarButtonItem()
     private let footer = MPFooterView()
-    private lazy var dataSource = UICollectionViewDiffableDataSource<MPPhotoModel.Section, MPPhotoModel>(collectionView: collectionView, cellProvider: { [weak self] (collectionView, indexPath, item) -> UICollectionViewCell? in
+    private lazy var dataSource = UICollectionViewDiffableDataSource<MPModel.Section, MPModel.Item>(collectionView: collectionView, cellProvider: { [weak self] (collectionView, indexPath, item) -> UICollectionViewCell? in
         self?.cellProvider(collectionView: collectionView, indexPath: indexPath, item: item)
     })
     
     private var dataModel: MPModel = .empty
-    private var arrModels: [MPPhotoModel] = []
     private var arrSelectedModels: [MPPhotoModel] = [] {
         didSet {
             MPMainAsync { [weak self] in
@@ -69,12 +71,8 @@ final class MPViewController: UIViewController {
     private var slideCalculateQueue = DispatchQueue(label: "com.mediapicker.slide")
     private var panSelectType: MPViewController.SlideSelectType = .none
     private var beginPanSelect = false
-    private var lastSlideIndex: Int?
-    private var beginSlideIndexPath: IndexPath?
     private var autoScrollTimer: CADisplayLink?
     private var lastPanUpdateTime = CACurrentMediaTime()
-    private lazy var arrSlideIndexPaths: [IndexPath] = []
-    private lazy var dicOriSelectStatus: [IndexPath: Bool] = [:]
     private lazy var slideSelectGesture: UIPanGestureRecognizer = {
         let pan = UIPanGestureRecognizer(target: self, action: #selector(slideSelectAction(_:)))
         pan.delegate = self
@@ -82,8 +80,14 @@ final class MPViewController: UIViewController {
     }()
     // **
     
+    private var showedSections: [MPModel.Section] = []
+    
     private var showAddPhotoCell: Bool {
         PHPhotoLibrary.authorizationStatus(for: .readWrite) == .limited && albumModel.isCameraRoll
+    }
+    
+    private var showCameraCell: Bool {
+        MPUIConfiguration.default().showCameraCell && albumModel.isCameraRoll
     }
     
     init(albumModel: MPAlbumModel) {
@@ -170,18 +174,15 @@ final class MPViewController: UIViewController {
     }
     
     private func loadPhotos() {
-        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+        DispatchQueue.global().async { [weak self] in
             guard let strongSelf = self else { return }
             if strongSelf.albumModel.models.isEmpty {
                 strongSelf.albumModel.refetchPhotos()
-                
-                strongSelf.arrModels.removeAll()
-                strongSelf.arrModels.append(contentsOf: strongSelf.albumModel.models)
-                strongSelf.markSelected(source: &strongSelf.arrModels, selected: &strongSelf.arrSelectedModels)
+                strongSelf.dataModel = .init(models: strongSelf.albumModel.models, showAddPhoto: strongSelf.showAddPhotoCell, showCameraCell: strongSelf.showCameraCell)
+                strongSelf.markSelected()
             } else {
-                strongSelf.arrModels.removeAll()
-                strongSelf.arrModels.append(contentsOf: strongSelf.albumModel.models)
-                strongSelf.markSelected(source: &strongSelf.arrModels, selected: &strongSelf.arrSelectedModels)
+                strongSelf.dataModel = .init(models: strongSelf.albumModel.models, showAddPhoto: strongSelf.showAddPhotoCell, showCameraCell: strongSelf.showCameraCell)
+                strongSelf.markSelected()
             }
             
             MPMainAsync {
@@ -192,72 +193,162 @@ final class MPViewController: UIViewController {
     
     private func createLayout() -> UICollectionViewLayout {
         let configuration = UICollectionViewCompositionalLayoutConfiguration()
-        
-        let layout = UICollectionViewCompositionalLayout(sectionProvider: { (sectionIndex: Int, environment: NSCollectionLayoutEnvironment) -> NSCollectionLayoutSection? in
+        configuration.interSectionSpacing = UIScreenPixel
+        let layout = UICollectionViewCompositionalLayout(sectionProvider: { [weak self] (sectionIndex: Int, environment: NSCollectionLayoutEnvironment) -> NSCollectionLayoutSection? in
+            guard let strongSelf = self else { return nil }
+            let section = strongSelf.showedSections[sectionIndex]
             
-            let itemSize: NSCollectionLayoutSize
-            
-            itemSize = NSCollectionLayoutSize(
-                widthDimension: .absolute((environment.container.contentSize.width / 3) - (UIScreenPixel * 2)),
-                heightDimension: .fractionalHeight(1.0)
-            )
-            
-            let item = NSCollectionLayoutItem(layoutSize: itemSize)
-            
-            let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
-                                                   heightDimension: .fractionalWidth(1.0 / 3))
-            let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
-            group.interItemSpacing = .fixed(UIScreenPixel)
-            
-            let section = NSCollectionLayoutSection(group: group)
-            section.interGroupSpacing = UIScreenPixel
-            section.contentInsets = .zero
-            
-            return section
+            switch section {
+            case .cameraRoll:
+                let itemWidth = ((environment.container.contentSize.width - UIScreenPixel * 2) / 3)
+                let cameraGroupHeight = itemWidth * 2 + UIScreenPixel
+                
+                let cameraItem = NSCollectionLayoutItem(
+                    layoutSize: NSCollectionLayoutSize(
+                        widthDimension: .absolute(itemWidth),
+                        heightDimension: .fractionalHeight(1.0)
+                    )
+                )
+                
+                let smallItem = NSCollectionLayoutItem(
+                    layoutSize: NSCollectionLayoutSize(
+                        widthDimension: .absolute(itemWidth),
+                        heightDimension: .absolute(itemWidth)
+                    )
+                )
+                let hGroupSize = NSCollectionLayoutSize(
+                    widthDimension: .fractionalWidth(1.0),
+                    heightDimension: .absolute(itemWidth)
+                )
+                
+                let bigVGroupSize = NSCollectionLayoutSize(
+                    widthDimension: .absolute(cameraGroupHeight),
+                    heightDimension: .absolute(cameraGroupHeight)
+                )
+                
+                let mosaicGroup: [NSCollectionLayoutItem]
+                
+                if #available(iOS 16.0, *) {
+                    let firstHGroup = NSCollectionLayoutGroup.horizontal(layoutSize: hGroupSize, repeatingSubitem: smallItem, count: 2)
+                    firstHGroup.interItemSpacing = .fixed(UIScreenPixel)
+                    let secondHGroup = NSCollectionLayoutGroup.horizontal(layoutSize: hGroupSize, repeatingSubitem: smallItem, count: 2)
+                    secondHGroup.interItemSpacing = .fixed(UIScreenPixel)
+                    
+                    let bigVGroup = NSCollectionLayoutGroup.vertical(layoutSize: bigVGroupSize, subitems: [firstHGroup, secondHGroup])
+                    bigVGroup.interItemSpacing = .fixed(UIScreenPixel)
+                    
+                    mosaicGroup = [
+                        cameraItem,
+                        bigVGroup
+                    ]
+                } else {
+                    let firstHGroup = NSCollectionLayoutGroup.horizontal(layoutSize: hGroupSize, subitem: smallItem, count: 2)
+                    firstHGroup.interItemSpacing = .fixed(UIScreenPixel)
+                    let secondHGroup = NSCollectionLayoutGroup.horizontal(layoutSize: hGroupSize, subitem: smallItem, count: 2)
+                    secondHGroup.interItemSpacing = .fixed(UIScreenPixel)
+                    
+                    let bigVGroup = NSCollectionLayoutGroup.vertical(layoutSize: bigVGroupSize, subitems: [firstHGroup, secondHGroup])
+                    bigVGroup.interItemSpacing = .fixed(UIScreenPixel)
+                    
+                    mosaicGroup = [
+                        cameraItem,
+                        bigVGroup
+                    ]
+                }
+                
+                let cameraGroupSize = NSCollectionLayoutSize(
+                    widthDimension: .fractionalWidth(1.0),
+                    heightDimension: .absolute(cameraGroupHeight)
+                )
+                
+                let cameraGroup = NSCollectionLayoutGroup.horizontal(layoutSize: cameraGroupSize, subitems: mosaicGroup)
+                cameraGroup.interItemSpacing = .fixed(UIScreenPixel)
+                
+                let section = NSCollectionLayoutSection(group: cameraGroup)
+                section.contentInsets = .zero
+                
+                return section
+                
+            case .main:
+                let itemWH = (environment.container.contentSize.width / 3) - ((UIScreenPixel * 2) / 3)
+                
+                let itemSize = NSCollectionLayoutSize(
+                    widthDimension: .absolute(itemWH),
+                    heightDimension: .fractionalHeight(1.0)
+                )
+                
+                let item = NSCollectionLayoutItem(layoutSize: itemSize)
+                
+                let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
+                                                       heightDimension: .absolute(itemWH))
+                let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
+                group.interItemSpacing = .fixed(UIScreenPixel)
+                
+                let section = NSCollectionLayoutSection(group: group)
+                section.interGroupSpacing = UIScreenPixel
+                section.contentInsets = .zero
+                
+                return section
+            }
             
         }, configuration: configuration)
         
         return layout
     }
     
-    private func cellProvider(collectionView: UICollectionView, indexPath: IndexPath, item: any Hashable) -> UICollectionViewCell {
-        let cell = collectionView.mp.cell(MediaPickerCell.self, for: indexPath)
-        
-        cell.selectedBlock = { [weak self] block in
-            guard let strongSelf = self else { return }
-            let currentSelectCount = strongSelf.arrSelectedModels.count
-            if !strongSelf.arrModels[indexPath.row].isSelected {
-                if MPGeneralConfiguration.default().maxMediaSelectCount == 1, currentSelectCount > 0  {
-                    if let selectedIndex = strongSelf.arrModels.firstIndex(where: { $0.isSelected }) {
-                        strongSelf.arrModels[selectedIndex].isSelected = false
-                        strongSelf.arrModels[indexPath.row].isSelected = true
-                        strongSelf.arrSelectedModels = [strongSelf.arrModels[indexPath.row]]
-                        strongSelf.toggleCellSelection(at: selectedIndex)
+    private func cellProvider(collectionView: UICollectionView, indexPath: IndexPath, item: MPModel.Item) -> UICollectionViewCell {
+        switch item {
+        case let .media(model):
+            let cell = collectionView.mp.cell(MediaPickerCell.self, for: indexPath)
+            
+            cell.selectedBlock = { [weak self] block in
+                guard let strongSelf = self else { return }
+                let currentSelectCount = strongSelf.arrSelectedModels.count
+                let item = strongSelf.dataModel.item(indexPath, showCameraCell: strongSelf.showCameraCell)
+                if !item.isSelected {
+                    if MPGeneralConfiguration.default().maxMediaSelectCount == 1, currentSelectCount > 0  {
+                        if let selectedIndex = strongSelf.dataModel.firstSelectedIndex(showCameraCell: strongSelf.showCameraCell) {
+                            strongSelf.dataModel.toggleSelected(indexPath: selectedIndex, showCameraCell: strongSelf.showCameraCell, false)
+                            if let selected = strongSelf.dataModel.toggleSelected(indexPath: indexPath, showCameraCell: strongSelf.showCameraCell, true) {
+                                strongSelf.arrSelectedModels = [selected]
+                            }
+                            strongSelf.toggleCellSelection(at: selectedIndex)
+                            block(true)
+                            strongSelf.refreshCellIndex()
+                        }
+                    } else {
+                        guard strongSelf.canSelectMedia(item, currentSelectCount: currentSelectCount) else { return }
+                        if let selected = strongSelf.dataModel.toggleSelected(indexPath: indexPath, showCameraCell: strongSelf.showCameraCell, true) {
+                            strongSelf.arrSelectedModels.append(selected)
+                        }
                         block(true)
                         strongSelf.refreshCellIndex()
                     }
                 } else {
-                    guard strongSelf.canSelectMedia(strongSelf.arrModels[indexPath.row], currentSelectCount: currentSelectCount) else { return }
-                    strongSelf.arrModels[indexPath.row].isSelected = true
-                    strongSelf.arrSelectedModels.append(strongSelf.arrModels[indexPath.row])
-                    block(true)
+                    if let unselected = strongSelf.dataModel.toggleSelected(indexPath: indexPath, showCameraCell: strongSelf.showCameraCell, false) {
+                        strongSelf.arrSelectedModels.remove(unselected)
+                    }
+                    block(false)
                     strongSelf.refreshCellIndex()
                 }
-            } else {
-                strongSelf.arrModels[indexPath.row].isSelected = false
-                strongSelf.arrSelectedModels.remove(strongSelf.arrModels[indexPath.row])
-                block(false)
-                strongSelf.refreshCellIndex()
+                strongSelf.reloadData()
             }
+            
+            if MPUIConfiguration.default().showCounterOnSelectionButton, let index = arrSelectedModels.firstIndex(where: { $0 == model }) {
+                cell.index = index + 1
+            }
+            
+            cell.model = model
+            
+            return cell
+        case .camera(_):
+            let cell = collectionView.mp.cell(MPCameraCell.self, for: indexPath)
+            cell.startCapture()
+            cell.isEnable = arrSelectedModels.count < MPGeneralConfiguration.default().maxMediaSelectCount
+            return cell
+        case .addPhoto(_):
+            return collectionView.mp.cell(MPAddPhotoCell.self, for: indexPath)
         }
-        
-        if MPUIConfiguration.default().showCounterOnSelectionButton, let index = arrSelectedModels.firstIndex(where: { $0 == arrModels[indexPath.row] }) {
-            setCellIndex(cell, showIndexLabel: true, index: index + 1)
-        }
-        
-        cell.model = arrModels[indexPath.row]
-        
-        return cell
     }
     
     
@@ -269,117 +360,84 @@ final class MPViewController: UIViewController {
             }
         }
     }
-
+    
     @objc private func slideSelectAction(_ pan: UIPanGestureRecognizer) {
         if pan.state == .ended || pan.state == .cancelled {
             stopAutoScroll()
             beginPanSelect = false
             panSelectType = .none
-            arrSlideIndexPaths.removeAll()
-            dicOriSelectStatus.removeAll()
+            reloadData()
             return
         }
         
         let point = pan.location(in: collectionView)
         guard let indexPath = collectionView.indexPathForItem(at: point) else { return }
-        
         let cell = collectionView.mp.cellItem(MediaPickerCell.self, for: indexPath)
         
         if pan.state == .began {
             beginPanSelect = cell != nil
             
             if beginPanSelect {
-                let index = indexPath.row
+                panSelectType = dataModel.item(indexPath, showCameraCell: showCameraCell).isSelected ? .cancel : .select
                 
-                panSelectType = arrModels[index].isSelected ? .cancel : .select
-                beginSlideIndexPath = indexPath
-                
-                if !arrModels[index].isSelected {
-                    if !canSelectMedia(arrModels[indexPath.row], currentSelectCount: arrSelectedModels.count) {
+                if !dataModel.item(indexPath, showCameraCell: showCameraCell).isSelected {
+                    if !canSelectMedia(dataModel.item(indexPath, showCameraCell: showCameraCell), currentSelectCount: arrSelectedModels.count) {
                         panSelectType = .none
                         return
                     }
                     
-                    arrModels[index].isSelected = true
-                    arrSelectedModels.append(arrModels[index])
-                } else if arrModels[index].isSelected {
-                    arrModels[index].isSelected = false
-                    arrSelectedModels.remove(arrModels[index])
+                    if let selected = dataModel.toggleSelected(indexPath: indexPath, showCameraCell: showCameraCell, true) {
+                        arrSelectedModels.append(selected)
+                    }
+                } else if dataModel.item(indexPath, showCameraCell: showCameraCell).isSelected {
+                    if let unselected = dataModel.toggleSelected(indexPath: indexPath, showCameraCell: showCameraCell, false) {
+                        arrSelectedModels.remove(unselected)
+                    }
                 }
                 
-                toggleCellSelection(at: index)
+                toggleCellSelection(at: indexPath)
                 refreshCellIndex()
-                lastSlideIndex = indexPath.row
             }
         } else if pan.state == .changed {
-            if !beginPanSelect || indexPath.row == lastSlideIndex || panSelectType == .none || cell == nil {
+            if !beginPanSelect || panSelectType == .none || cell == nil {
                 return
             }
             
             autoScrollWhenSlideSelect(pan)
             
-            guard let beginIndexPath = beginSlideIndexPath else {
-                return
-            }
             lastPanUpdateTime = CACurrentMediaTime()
             
-            let visiblePaths = collectionView.indexPathsForVisibleItems
             slideCalculateQueue.async { [weak self] in
                 guard let strongSelf = self else { return }
-                strongSelf.lastSlideIndex = indexPath.row
-                let minIndex = min(indexPath.row, beginIndexPath.row)
-                let maxIndex = max(indexPath.row, beginIndexPath.row)
-                let minIsBegin = minIndex == beginIndexPath.row
-                
-                var i = beginIndexPath.row
-                while minIsBegin ? i <= maxIndex : i >= minIndex {
-                    if i != beginIndexPath.row {
-                        let p = IndexPath(row: i, section: 0)
-                        if !strongSelf.arrSlideIndexPaths.contains(p) {
-                            strongSelf.arrSlideIndexPaths.append(p)
-                            strongSelf.dicOriSelectStatus.updateValue(strongSelf.arrModels[i].isSelected, forKey: p)
-                        }
-                    }
-                    i += (minIsBegin ? 1 : -1)
-                }
-                
                 var selectedArrHasChange = false
                 
-                for path in strongSelf.arrSlideIndexPaths {
-                    if !visiblePaths.contains(path) {
-                        continue
+                var item = strongSelf.dataModel.item(indexPath, showCameraCell: strongSelf.showCameraCell)
+                
+                if strongSelf.panSelectType == .select {
+                    if !item.isSelected,
+                       strongSelf.canSelectMedia(item, currentSelectCount: strongSelf.arrSelectedModels.count) {
+                        strongSelf.dataModel.toggleSelected(indexPath: indexPath, showCameraCell: strongSelf.showCameraCell, true)
+                        item.isSelected = true
                     }
-                    let index = path.row
-                    let inSection = path.row >= minIndex && path.row <= maxIndex
-                    
-                    if inSection {
-                        if strongSelf.panSelectType == .select {
-                            if !strongSelf.arrModels[index].isSelected,
-                               strongSelf.canSelectMedia(strongSelf.arrModels[index], currentSelectCount: strongSelf.arrSelectedModels.count) {
-                                strongSelf.arrModels[index].isSelected = true
-                            }
-                        } else if strongSelf.panSelectType == .cancel {
-                            strongSelf.arrModels[index].isSelected = false
-                        }
-                    } else {
-                        strongSelf.arrModels[index].isSelected = strongSelf.dicOriSelectStatus[path] ?? false
+                } else if strongSelf.panSelectType == .cancel {
+                    strongSelf.dataModel.toggleSelected(indexPath: indexPath, showCameraCell: strongSelf.showCameraCell, false)
+                    item.isSelected = false
+                }
+                
+                if !item.isSelected {
+                    if let index = strongSelf.arrSelectedModels.firstIndex(where: { $0 == item }) {
+                        strongSelf.arrSelectedModels.remove(at: index)
+                        selectedArrHasChange = true
                     }
-                    
-                    if !strongSelf.arrModels[index].isSelected {
-                        if let index = strongSelf.arrSelectedModels.firstIndex(where: { $0 == strongSelf.arrModels[index] }) {
-                            strongSelf.arrSelectedModels.remove(at: index)
-                            selectedArrHasChange = true
-                        }
-                    } else {
-                        if !strongSelf.arrSelectedModels.contains(where: { $0 == strongSelf.arrModels[index] }) {
-                            strongSelf.arrSelectedModels.append(strongSelf.arrModels[index])
-                            selectedArrHasChange = true
-                        }
+                } else {
+                    if !strongSelf.arrSelectedModels.contains(where: { $0 == item }) {
+                        strongSelf.arrSelectedModels.append(strongSelf.dataModel.item(indexPath, showCameraCell: strongSelf.showCameraCell))
+                        selectedArrHasChange = true
                     }
-                    
-                    MPMainAsync {
-                        self?.toggleCellSelection(at: path.row, withModel: self?.arrModels[index])
-                    }
+                }
+                
+                MPMainAsync {
+                    self?.toggleCellSelection(at: indexPath, withModel: item)
                 }
                 
                 if selectedArrHasChange {
@@ -465,73 +523,58 @@ final class MPViewController: UIViewController {
     }
     
     private func refreshCellIndex() {
-        let showIndex = MPUIConfiguration.default().showCounterOnSelectionButton
-        
-        guard showIndex else { return }
+        refreshCameraCellStatus()
+        guard MPUIConfiguration.default().showCounterOnSelectionButton else { return }
         
         let visibleIndexPaths = collectionView.indexPathsForVisibleItems
         
         visibleIndexPaths.forEach { indexPath in
             guard let cell = collectionView.mp.cellItem(MediaPickerCell.self, for: indexPath) else { return }
-            let m = arrModels[indexPath.row]
+            let m = dataModel.item(indexPath, showCameraCell: showCameraCell)
             
-            let arrSel = arrSelectedModels
             var show = false
             var idx = 0
-            for (index, selM) in arrSel.enumerated() {
-                if m == selM {
-                    show = true
-                    idx = index + 1
-                    break
-                }
+            if let selectedIndex = arrSelectedModels.firstIndex(where: { $0 == m }) {
+                show = true
+                idx = selectedIndex + 1
             }
             setCellIndex(cell, showIndexLabel: show, index: idx)
         }
     }
     
+    private func refreshCameraCellStatus() {
+        let count = arrSelectedModels.count
+        
+        for cell in collectionView.visibleCells {
+            if let cell = cell.mp.as(MPCameraCell.self) {
+                cell.isEnable = count < MPGeneralConfiguration.default().maxMediaSelectCount
+                break
+            }
+        }
+    }
+    
     private func setCellIndex(_ cell: MediaPickerCell?, showIndexLabel: Bool, index: Int) {
-        guard MPUIConfiguration.default().showCounterOnSelectionButton else {
+        guard MPUIConfiguration.default().showCounterOnSelectionButton, showIndexLabel else {
             return
         }
         cell?.index = index
     }
     
-    private func markSelected(source: inout [MPPhotoModel], selected: inout [MPPhotoModel]) {
-        guard !selected.isEmpty else {
-            return
-        }
-        
-        var selIds: [String: Bool] = [:]
-        var selIdAndIndex: [String: Int] = [:]
-        
-        for (index, m) in selected.enumerated() {
-            selIds[m.id] = true
-            selIdAndIndex[m.id] = index
-        }
-        
-        var i = 0
-        source.forEach { m in
-            if selIds[m.id] == true {
-                source[i].isSelected = true
-                selected[selIdAndIndex[m.id]!] = source[i]
-            } else {
-                source[i].isSelected = false
-            }
-            i += 1
-        }
+    private func markSelected() {
+        guard !arrSelectedModels.isEmpty else { return }
+        dataModel.markAsSelected(selected: &arrSelectedModels)
     }
     
-    private func toggleCellSelection(at index: Int, withModel model: MPPhotoModel? = nil) {
-        let indexPath = IndexPath(item: index, section: 0)
+    private func toggleCellSelection(at indexPath: IndexPath, withModel model: MPPhotoModel? = nil) {
         let cell = collectionView.mp.cellItem(MediaPickerCell.self, for: indexPath)
         if let model {
             cell?.isOn = model.isSelected
         } else {
-            cell?.isOn = arrModels[index].isSelected
+            cell?.isOn = dataModel.item(indexPath, showCameraCell: showCameraCell).isSelected
         }
     }
     
-    func canSelectMedia(_ model: MPPhotoModel, currentSelectCount: Int) -> Bool {
+    private func canSelectMedia(_ model: MPPhotoModel, currentSelectCount: Int) -> Bool {
         if currentSelectCount >= MPGeneralConfiguration.default().maxMediaSelectCount {
             return false
         }
@@ -542,18 +585,110 @@ final class MPViewController: UIViewController {
         
         return true
     }
+    
+    private func showCamera() {
+        let config = MPGeneralConfiguration.default()
+        if !UIImagePickerController.isSourceTypeAvailable(.camera) {
+            showAlertView("Camera is unavailable")
+        } else if MPManager.hasCameraAuthority() {
+            let picker = UIImagePickerController()
+            picker.delegate = self
+            picker.allowsEditing = false
+            picker.videoQuality = .typeHigh
+            picker.sourceType = .camera
+            picker.cameraDevice = .rear
+            picker.cameraFlashMode = .auto
+            var mediaTypes: [String] = []
+            if config.allowImage {
+                mediaTypes.append("public.image")
+            }
+            if config.allowVideo {
+                mediaTypes.append("public.movie")
+            }
+            picker.mediaTypes = mediaTypes
+            present(picker, animated: true)
+        } else {
+            showAlertView("Please allow to access your device's camera in \"Settings\" > \"Privacy\" > \"Camera\"")
+        }
+    }
+    
+    private func showAlertView(_ message: String) {
+        MPMainAsync { [weak self] in
+            let alert = Alert(message: message, {
+                Action.cancel("ok")
+            })
+            
+            self?.present(alert, animated: true)
+        }
+    }
+    
+    private func save(image: UIImage?, videoUrl: URL?) {
+        if let image = image {
+            MPManager.saveImageToAlbum(image: image) { [weak self] suc, asset in
+                if suc, let at = asset {
+                    let model = MPPhotoModel(asset: at)
+                    self?.handleNewAsset(model)
+                } else {
+                    self?.showAlertView("Failed to save the image")
+                }
+            }
+        } else if let videoUrl = videoUrl {
+            MPManager.saveVideoToAlbum(url: videoUrl) { [weak self] suc, asset in
+                if suc, let at = asset {
+                    let model = MPPhotoModel(asset: at)
+                    self?.handleNewAsset(model)
+                } else {
+                    self?.showAlertView("Failed to save the video")
+                }
+            }
+        }
+    }
+    
+    private func handleNewAsset(_ model: MPPhotoModel) {
+        let insertedIndex = dataModel.insertNewModel(model)
+        let indexPath = IndexPath(item: insertedIndex, section: 0)
+        let config = MPGeneralConfiguration.default()
+        
+        if config.maxMediaSelectCount > 1 {
+            if arrSelectedModels.count < config.maxMediaSelectCount, let newSelected = dataModel.toggleSelected(indexPath: indexPath, showCameraCell: showCameraCell, true) {
+                arrSelectedModels.append(newSelected)
+            }
+        } else if config.maxMediaSelectCount == 1 {
+            
+            if let selectedIndex = dataModel.firstSelectedIndex(showCameraCell: true) {
+                if let selected = dataModel.toggleSelected(indexPath: selectedIndex, showCameraCell: showCameraCell, false) {
+                    arrSelectedModels.remove(selected)
+                }
+            }
+            
+            if let newSelected = dataModel.toggleSelected(indexPath: indexPath, showCameraCell: showCameraCell, true) {
+                arrSelectedModels.append(newSelected)
+            }
+        }
+        
+        reloadData()
+        refreshCellIndex()
+    }
 }
 
 // MARK: - ReloadData
 extension MPViewController {
-    private func makeSnapshot() -> NSDiffableDataSourceSnapshot<MPPhotoModel.Section, MPPhotoModel> {
-        var snapshot = NSDiffableDataSourceSnapshot<MPPhotoModel.Section, MPPhotoModel>()
-        snapshot.appendSections([.main])
-        snapshot.appendItems(arrModels, toSection: .main)
+    private func makeSnapshot() -> NSDiffableDataSourceSnapshot<MPModel.Section, MPModel.Item> {
+        var snapshot = NSDiffableDataSourceSnapshot<MPModel.Section, MPModel.Item>()
+        if showCameraCell, dataModel.items.count > 5 {
+            snapshot.appendSections([.cameraRoll, .main])
+            snapshot.appendItems(Array(dataModel.items[0...5]), toSection: .cameraRoll)
+            snapshot.appendItems(Array(dataModel.items[5...]), toSection: .main)
+            showedSections = [.cameraRoll, .main]
+        } else {
+            snapshot.appendSections([.main])
+            snapshot.appendItems(dataModel.items, toSection: .main)
+            showedSections = [.main]
+        }
         return snapshot
     }
     
-    private func reloadData(withItems items: [MPPhotoModel] = [], isAnimate: Bool = true, completion: (() -> Void)? = nil) {
+    private func reloadData(withItems items: [MPModel.Item] = [], isAnimate: Bool = true, completion: (() -> Void)? = nil) {
         guard !items.isEmpty else {
             let snapshot = makeSnapshot()
             dataSource.applySnapshot(snapshot, animated: isAnimate, completion: completion)
@@ -563,9 +698,20 @@ extension MPViewController {
     }
 }
 
+// MARK: - UICollectionViewDelegate
 extension MPViewController: UICollectionViewDelegate {
     public func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        return
+        guard let cell = collectionView.cellForItem(at: indexPath) else { return }
+        switch cell {
+        case cell as MPAddPhotoCell:
+            PHPhotoLibrary.shared().presentLimitedLibraryPicker(from: self)
+        case let cameraCell as MPCameraCell:
+            if cameraCell.isEnable {
+                showCamera()
+            }
+        default:
+            break
+        }
     }
 }
 
@@ -595,6 +741,7 @@ extension MPViewController: PHPhotoLibraryChangeObserver {
     }
 }
 
+// MARK: - UIGestureRecognizerDelegate
 extension MPViewController: UIGestureRecognizerDelegate {
     func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
         let pointInCollectionView = gestureRecognizer.location(in: collectionView)
@@ -606,6 +753,22 @@ extension MPViewController: UIGestureRecognizerDelegate {
     }
 }
 
+// MARK: - UIImagePickerControllerDelegate
+extension MPViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+        picker.dismiss(animated: true)
+    }
+    
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]) {
+        picker.dismiss(animated: true) { [weak self] in
+            let image = info[.originalImage] as? UIImage
+            let url = info[.mediaURL] as? URL
+            self?.save(image: image, videoUrl: url)
+        }
+    }
+}
+
+// MARK: - Slide select & auto scroll states
 extension MPViewController {
     private enum SlideSelectType {
         case none

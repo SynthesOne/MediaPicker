@@ -25,60 +25,6 @@
 import UIKit
 import Photos
 
-fileprivate let cameraIdent = "camera_ident"
-fileprivate let addPhotoIdent = "add_photo_ident"
-
-public struct MPModel {
-    static var empty: MPModel {
-        .init(items: [], offset: 0)
-    }
-    
-    enum Item: Hashable {
-        case media(MPPhotoModel)
-        case addPhoto(String)
-        case camera(String)
-    }
-    
-    enum Section: Hashable {
-        case main
-    }
-    
-    var items: [Item]
-    private var offset: Int
-    
-    func extractMedia() -> [MPPhotoModel] {
-        let slice = items[offset...].compactMap({ $0.unwrapped })
-        return Array(slice)
-    }
-}
-
-extension MPModel {
-    init(assets: [PHAsset], showAddPhoto: Bool) {
-        items = []
-        offset = 0
-        if MPUIConfiguration.default().showCameraCell {
-            items.append(.camera(cameraIdent))
-            offset += 1
-        }
-        
-        if showAddPhoto {
-            items.append(.addPhoto(addPhotoIdent))
-            offset += 1
-        }
-        
-        items.append(contentsOf: assets.map { Item.media(.init(asset: $0)) })
-    }
-}
-
-extension MPModel.Item {
-    var unwrapped: MPPhotoModel? {
-        if case let .media(mPPhotoModel) = self {
-            return mPPhotoModel
-        }
-        return nil
-    }
-}
-
 public struct MPPhotoModel {
     public let id: String
     public let asset: PHAsset

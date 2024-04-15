@@ -33,3 +33,11 @@ extension Array where Element: Equatable {
         remove(at: index)
     }
 }
+
+extension MutableCollection {
+    mutating func mapProperty<T>(_ keyPath: WritableKeyPath<Element, T>, _ value: T) {
+        indices.forEach {
+            self[$0][keyPath: keyPath] = value
+        }
+    }
+}

@@ -32,4 +32,12 @@ extension MPExtensionWrapper where Base: UIImage {
     var template: UIImage {
         base.withRenderingMode(.alwaysTemplate)
     }
+    
+    func hasAlphaChannel() -> Bool {
+        guard let info = base.cgImage?.alphaInfo else {
+            return false
+        }
+        
+        return info == .first || info == .last || info == .premultipliedFirst || info == .premultipliedLast
+    }
 }

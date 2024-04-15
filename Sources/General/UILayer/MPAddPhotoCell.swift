@@ -26,9 +26,10 @@ import UIKit
 
 final class MPAddPhotoCell: CollectionViewCell {
     private let imageView: UIImageView = {
-        let view = UIImageView(image: UIImage(systemName: "plus.circle.fill"))
+        let view = UIImageView(image: .init(systemName: "plus.circle.fill")?.mp.template)
         view.contentMode = .scaleAspectFit
         view.clipsToBounds = true
+        view.tintColor = .white
         return view
     }()
     
@@ -38,8 +39,8 @@ final class MPAddPhotoCell: CollectionViewCell {
     }
     
     override func adaptationLayout() {
-        imageView.frame = CGRect(x: 0, y: 0, width: bounds.width / 3, height: bounds.width / 3)
-        imageView.center = center
+        imageView.frame = CGRect(x: 0, y: 0, width: contentView.bounds.width / 3, height: contentView.bounds.width / 3)
+        imageView.center = contentView.center
     }
     
     deinit {

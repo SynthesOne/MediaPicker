@@ -150,7 +150,7 @@ public enum MPManager {
     
     /// Fetch camera roll album.
     public static func getCameraRollAlbum(allowSelectImage: Bool, allowSelectVideo: Bool, completion: @escaping (MPAlbumModel) -> Void) {
-        DispatchQueue.global(qos: .userInitiated).async {
+        DispatchQueue.global().async {
             let option = PHFetchOptions()
             if !allowSelectImage {
                 option.predicate = NSPredicate(format: "mediaType == %ld", PHAssetMediaType.video.rawValue)
@@ -172,6 +172,101 @@ public enum MPManager {
                 }
             }
         }
+    }
+    
+    // **
+    ///Authority related.
+    static func hasPhotoLibratyAuthority() -> Bool {
+        PHPhotoLibrary.authorizationStatus() == .authorized
+    }
+    
+    static func hasCameraAuthority() -> Bool {
+        let status = AVCaptureDevice.authorizationStatus(for: .video)
+        if status == .restricted || status == .denied {
+            return false
+        }
+        return true
+    }
+    
+    static func hasMicrophoneAuthority() -> Bool {
+        let status = AVCaptureDevice.authorizationStatus(for: .audio)
+        if status == .restricted || status == .denied {
+            return false
+        }
+        return true
+    }
+    // **
+    
+    /// Save image to album.
+    public static func saveImageToAlbum(image: UIImage, completion: ((Bool, PHAsset?) -> Void)?) {
+        let status = PHPhotoLibrary.authorizationStatus()
+        
+        if status == .denied || status == .restricted {
+            completion?(false, nil)
+            return
+        }
+        var placeholderAsset: PHObjectPlaceholder?
+        let completionHandler: ((Bool, Error?) -> Void) = { suc, _ in
+            if suc {
+                let asset = getAsset(from: placeholderAsset?.localIdentifier)
+                MPMainAsync {
+                    completion?(suc, asset)
+                }
+            } else {
+                MPMainAsync {
+                    completion?(false, nil)
+                }
+            }
+        }
+
+        if image.mp.hasAlphaChannel(), let data = image.pngData() {
+            PHPhotoLibrary.shared().performChanges({
+                let newAssetRequest = PHAssetCreationRequest.forAsset()
+                newAssetRequest.addResource(with: .photo, data: data, options: nil)
+                placeholderAsset = newAssetRequest.placeholderForCreatedAsset
+            }, completionHandler: completionHandler)
+        } else {
+            PHPhotoLibrary.shared().performChanges({
+                let newAssetRequest = PHAssetChangeRequest.creationRequestForAsset(from: image)
+                placeholderAsset = newAssetRequest.placeholderForCreatedAsset
+            }, completionHandler: completionHandler)
+        }
+    }
+    
+    /// Save video to album.
+    public static func saveVideoToAlbum(url: URL, completion: ((Bool, PHAsset?) -> Void)?) {
+        let status = PHPhotoLibrary.authorizationStatus()
+        
+        if status == .denied || status == .restricted {
+            completion?(false, nil)
+            return
+        }
+        
+        var placeholderAsset: PHObjectPlaceholder?
+        PHPhotoLibrary.shared().performChanges({
+            let newAssetRequest = PHAssetChangeRequest.creationRequestForAssetFromVideo(atFileURL: url)
+            placeholderAsset = newAssetRequest?.placeholderForCreatedAsset
+        }) { suc, _ in
+            if suc {
+                let asset = getAsset(from: placeholderAsset?.localIdentifier)
+                MPMainAsync {
+                    completion?(suc, asset)
+                }
+            } else {
+                MPMainAsync {
+                    completion?(false, nil)
+                }
+            }
+        }
+    }
+    
+    private static func getAsset(from localIdentifier: String?) -> PHAsset? {
+        guard let id = localIdentifier else {
+            return nil
+        }
+        
+        let result = PHAsset.fetchAssets(withLocalIdentifiers: [id], options: nil)
+        return result.firstObject
     }
     
     // MARK: - Private API

@@ -50,7 +50,7 @@ final class MediaPickerCell: CollectionViewCell {
     
     private var smallImageRequestID: PHImageRequestID = PHInvalidImageRequestID
     
-    private var bigImageReqeustID: PHImageRequestID = PHInvalidImageRequestID
+//    private var bigImageReqeustID: PHImageRequestID = PHInvalidImageRequestID
     
     let imageView: UIImageView = {
         let view = UIImageView()
@@ -113,7 +113,7 @@ final class MediaPickerCell: CollectionViewCell {
     }
     
     override func reuseBlock() {
-        
+        selectionButton.isOn = false
     }
     
     private func configureCell() {
@@ -135,9 +135,9 @@ final class MediaPickerCell: CollectionViewCell {
         }
         
         if model.isSelected {
-            fetchBigImage()
+//            fetchBigImage()
         } else {
-            cancelFetchBigImage()
+//            cancelFetchBigImage()
         }
         
         fetchSmallImage()
@@ -146,11 +146,11 @@ final class MediaPickerCell: CollectionViewCell {
     private func selectionBlock() {
         selectedBlock?({ [weak self] isSelected in
             self?.selectionButton.isOn = isSelected
-            
+            debugPrint("selectionBlock cell")
             if isSelected {
-                self?.fetchBigImage()
+//                self?.fetchBigImage()
             } else {
-                self?.cancelFetchBigImage()
+//                self?.cancelFetchBigImage()
             }
         })
     }
@@ -182,30 +182,30 @@ final class MediaPickerCell: CollectionViewCell {
         })
     }
     
-    private func fetchBigImage() {
-        cancelFetchBigImage()
+//    private func fetchBigImage() {
+//        cancelFetchBigImage()
         
-        bigImageReqeustID = MPManager.fetchOriginalImageData(for: model.asset, progress: { [weak self] progress, _, _, _ in
-            if self?.model.isSelected == true {
-                //self?.progressView.isHidden = false
-                //self?.progressView.progress = max(0.1, progress)
-                //self?.imageView.alpha = 0.5
-                if progress >= 1 {
-                    //self?.resetProgressViewStatus()
-                }
-            } else {
-                self?.cancelFetchBigImage()
-            }
-        }, completion: { [weak self] _, _, _ in
-            //self?.resetProgressViewStatus()
-        })
-    }
+//        bigImageReqeustID = MPManager.fetchOriginalImageData(for: model.asset, progress: { [weak self] progress, _, _, _ in
+//            if self?.model.isSelected == true {
+//                //self?.progressView.isHidden = false
+//                //self?.progressView.progress = max(0.1, progress)
+//                //self?.imageView.alpha = 0.5
+//                if progress >= 1 {
+//                    //self?.resetProgressViewStatus()
+//                }
+//            } else {
+//                self?.cancelFetchBigImage()
+//            }
+//        }, completion: { [weak self] _, _, _ in
+//            //self?.resetProgressViewStatus()
+//        })
+//    }
     
-    private func cancelFetchBigImage() {
-        if bigImageReqeustID > PHInvalidImageRequestID {
-            PHImageManager.default().cancelImageRequest(bigImageReqeustID)
-        }
-        //resetProgressViewStatus()
-    }
+//    private func cancelFetchBigImage() {
+//        if bigImageReqeustID > PHInvalidImageRequestID {
+//            PHImageManager.default().cancelImageRequest(bigImageReqeustID)
+//        }
+//        //resetProgressViewStatus()
+//    }
 }
 

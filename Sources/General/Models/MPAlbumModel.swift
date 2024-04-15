@@ -66,7 +66,7 @@ public struct MPAlbumModel {
             allowImage: MPGeneralConfiguration.default().allowImage,
             allowVideo: MPGeneralConfiguration.default().allowVideo
         )
-        self.models.removeAll()
+        self.models = []
         self.models.append(contentsOf: models)
     }
     

@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		502AD2C32BC688D400C5CD3C /* MediaPicker in Frameworks */ = {isa = PBXBuildFile; productRef = 502AD2C22BC688D400C5CD3C /* MediaPicker */; };
+		50895DE72BC9522200128719 /* PhotosUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50895DE62BC9522200128719 /* PhotosUI.framework */; };
 		50E466DB2BBFD9B0004DD4C1 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50E466DA2BBFD9B0004DD4C1 /* AppDelegate.swift */; };
 		50E466DF2BBFD9B0004DD4C1 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50E466DE2BBFD9B0004DD4C1 /* ViewController.swift */; };
 		50E466E42BBFD9B1004DD4C1 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 50E466E32BBFD9B1004DD4C1 /* Assets.xcassets */; };
@@ -16,6 +17,7 @@
 
 /* Begin PBXFileReference section */
 		502AD2BF2BC680E300C5CD3C /* MediaPickerExpample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MediaPickerExpample.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		50895DE62BC9522200128719 /* PhotosUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = PhotosUI.framework; path = System/Library/Frameworks/PhotosUI.framework; sourceTree = SDKROOT; };
 		50E466DA2BBFD9B0004DD4C1 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		50E466DE2BBFD9B0004DD4C1 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		50E466E32BBFD9B1004DD4C1 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -29,6 +31,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				502AD2C32BC688D400C5CD3C /* MediaPicker in Frameworks */,
+				50895DE72BC9522200128719 /* PhotosUI.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -38,6 +41,7 @@
 		502AD2C12BC688D400C5CD3C /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				50895DE62BC9522200128719 /* PhotosUI.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
