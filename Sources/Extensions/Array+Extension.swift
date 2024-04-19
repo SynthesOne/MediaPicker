@@ -41,3 +41,16 @@ extension MutableCollection {
         }
     }
 }
+
+extension Sequence where Element: Hashable {
+    func uniqued() -> [Element] {
+        var set = Set<Element>()
+        return filter { set.insert($0).inserted }
+    }
+}
+
+extension Collection where Indices.Iterator.Element == Index {
+    subscript(optional index: Index) -> Iterator.Element? {
+        indices.contains(index) ? self[index] : nil
+    }
+}

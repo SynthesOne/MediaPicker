@@ -31,7 +31,7 @@ public struct MPNavigationAppearance {
     let backgroundEffectStyle: UIBlurEffect.Style
     
     static var `default`: Self = .init(
-        tintColor: .systemBlue,
+        tintColor: .systemPink,
         shadowColor: UIColor.mp.borderColor,
         backgroundColor: .systemBackground,
         backgroundEffectStyle: .regular

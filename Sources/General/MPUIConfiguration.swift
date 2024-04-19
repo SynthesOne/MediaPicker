@@ -45,19 +45,13 @@ public final class MPUIConfiguration: NSObject {
     public var showCounterOnSelectionButton = true
     
     /// Color scheme for the selection button
-    public var selectionButtonColorStyle = MPCheckboxColor(
-        activeColor: .systemBlue,
-        activeBorderColor: .white,
-        inactiveColor: .clear,
-        inactiveBorderColor: .white,
-        checkMarkColor: .white
-    )
+    public var selectionButtonColorStyle = MPCheckboxColor.default
     
     /// Selection button rounding style
     public var selectionButtonCornersStyle = MPCheckboxStyle.circle
     
     /// Define primary color of library
-    public var navigationAppearance: MPNavigationAppearance = .default
+    public var navigationAppearance = MPNavigationAppearance.default
     
     /// Define background colors of main screen
     public var primaryBackgroundColor = UIColor.systemBackground

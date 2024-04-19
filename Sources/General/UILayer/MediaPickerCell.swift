@@ -25,11 +25,23 @@
 import UIKit
 import Photos
 
+final class ObsImageView: UIImageView {
+    var changeIsHidden: ((Bool) -> ())? = nil
+    
+    override var isHidden: Bool {
+        get {
+            super.isHidden
+        }
+        set {
+            changeIsHidden?(newValue)
+            super.isHidden = newValue
+        }
+    }
+}
+
 final class MediaPickerCell: CollectionViewCell {
     
     private let selectBtnWH: CGFloat = 24
-    
-    private let containerView = UIView()
     
     private lazy var bottomShadowView: ViewGradient = {
         let view = ViewGradient()
@@ -50,22 +62,30 @@ final class MediaPickerCell: CollectionViewCell {
     
     private var smallImageRequestID: PHImageRequestID = PHInvalidImageRequestID
     
-//    private var bigImageReqeustID: PHImageRequestID = PHInvalidImageRequestID
+    private var bigImageReqeustID: PHImageRequestID = PHInvalidImageRequestID
     
-    let imageView: UIImageView = {
-        let view = UIImageView()
+    private let imageView: ObsImageView = {
+        let view = ObsImageView()
         view.contentMode = .scaleAspectFill
         view.clipsToBounds = true
         return view
     }()
     
-    let selectionButton: MPCheckboxButton = {
+    private let selectionButton: MPCheckboxButton = {
         let view = MPCheckboxButton(frame: .zero)
         view.contentMode = .center
         view.contentVerticalAlignment = .center
         view.increasedInsets = .init(top: 8, left: 8, bottom: 8, right: 8)
         return view
     }()
+    
+    var referencedView: UIView {
+        imageView
+    }
+    
+    var referencedImage: UIImage? {
+        imageView.image
+    }
     
     var model: MPPhotoModel! {
         didSet {
@@ -81,7 +101,7 @@ final class MediaPickerCell: CollectionViewCell {
     
     var isOn = false {
         didSet {
-            selectionButton.isOn = isOn
+            selectionButton.setIsOn(isOn)
         }
     }
     
@@ -93,27 +113,24 @@ final class MediaPickerCell: CollectionViewCell {
     
     override func setupSubviews() {
         contentView.addSubview(imageView)
-        contentView.addSubview(containerView)
-        containerView.addSubview(selectionButton)
-        containerView.addSubview(bottomShadowView)
+        contentView.addSubview(selectionButton)
+        contentView.addSubview(bottomShadowView)
         bottomShadowView.addSubview(descLabel)
-        selectionButton.mp.action(selectionBlock, forEvent: .touchUpInside)
-    }
-    
-    override func setupLayout() {
-        
+        selectionButton.mp.action({ [weak self] in self?.selectionBlock() }, forEvent: .touchUpInside)
+        imageView.changeIsHidden = { [weak self] (isHidden) in
+            self?.handleTransitionForPreview(isHidden)
+        }
     }
     
     override func adaptationLayout() {
         imageView.frame = bounds
-        containerView.frame = bounds
         selectionButton.frame = .init(x: bounds.maxX - 8 - selectBtnWH, y: 8, width: selectBtnWH, height: selectBtnWH)
         bottomShadowView.frame = CGRect(x: 0, y: bounds.height - 25, width: bounds.width, height: 25)
         descLabel.frame = CGRect(x: 0, y: 4, width: bounds.width - 8, height: 17)
     }
     
     override func reuseBlock() {
-        selectionButton.isOn = false
+        selectionButton.setIsOn(false, isAnimate: false)
     }
     
     private func configureCell() {
@@ -130,14 +147,12 @@ final class MediaPickerCell: CollectionViewCell {
             bottomShadowView.isHidden = true
         }
         
-        UIView.performWithoutAnimation {
-            selectionButton.isOn = model.isSelected
-        }
+        selectionButton.setIsOn(model.isSelected, isAnimate: false)
         
         if model.isSelected {
-//            fetchBigImage()
+            fetchBigImage()
         } else {
-//            cancelFetchBigImage()
+            cancelFetchBigImage()
         }
         
         fetchSmallImage()
@@ -145,12 +160,11 @@ final class MediaPickerCell: CollectionViewCell {
     
     private func selectionBlock() {
         selectedBlock?({ [weak self] isSelected in
-            self?.selectionButton.isOn = isSelected
-            debugPrint("selectionBlock cell")
+            self?.selectionButton.setIsOn(isSelected)
             if isSelected {
-//                self?.fetchBigImage()
+                self?.fetchBigImage()
             } else {
-//                self?.cancelFetchBigImage()
+                self?.cancelFetchBigImage()
             }
         })
     }
@@ -182,30 +196,44 @@ final class MediaPickerCell: CollectionViewCell {
         })
     }
     
-//    private func fetchBigImage() {
-//        cancelFetchBigImage()
+    private func fetchBigImage() {
+        cancelFetchBigImage()
         
-//        bigImageReqeustID = MPManager.fetchOriginalImageData(for: model.asset, progress: { [weak self] progress, _, _, _ in
-//            if self?.model.isSelected == true {
-//                //self?.progressView.isHidden = false
-//                //self?.progressView.progress = max(0.1, progress)
-//                //self?.imageView.alpha = 0.5
-//                if progress >= 1 {
-//                    //self?.resetProgressViewStatus()
-//                }
-//            } else {
-//                self?.cancelFetchBigImage()
-//            }
-//        }, completion: { [weak self] _, _, _ in
-//            //self?.resetProgressViewStatus()
-//        })
-//    }
+        bigImageReqeustID = MPManager.fetchOriginalImageData(for: model.asset, progress: { [weak self] progress, _, _, _ in
+            if self?.model.isSelected == true {
+                //self?.progressView.isHidden = false
+                //self?.progressView.progress = max(0.1, progress)
+                //self?.imageView.alpha = 0.5
+                if progress >= 1 {
+                    //self?.resetProgressViewStatus()
+                }
+            } else {
+                self?.cancelFetchBigImage()
+            }
+        }, completion: { [weak self] _, _, _ in
+            //self?.resetProgressViewStatus()
+        })
+    }
     
-//    private func cancelFetchBigImage() {
-//        if bigImageReqeustID > PHInvalidImageRequestID {
-//            PHImageManager.default().cancelImageRequest(bigImageReqeustID)
-//        }
-//        //resetProgressViewStatus()
-//    }
+    private func cancelFetchBigImage() {
+        if bigImageReqeustID > PHInvalidImageRequestID {
+            PHImageManager.default().cancelImageRequest(bigImageReqeustID)
+        }
+        //resetProgressViewStatus()
+    }
+    
+    private func handleTransitionForPreview(_ isHidden: Bool) {
+        selectionButton.mp.setIsHidden(isHidden, duration: 0.3)
+    }
+    
+    func dismissalAnimationDidFinish() {
+//        imageView.isHidden = false
+//        selectionButton.isHidden = true
+//        selectionButton.mp.setIsHidden(false, duration: 0.3)
+    }
+    
+    func presentingAnimationWillStart() {
+//        selectionButton.mp.setIsHidden(true, duration: 0.3)
+    }
 }
 

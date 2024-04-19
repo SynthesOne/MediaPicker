@@ -36,4 +36,8 @@ extension MPExtensionWrapper where Base: UIApplication {
             .windows
             .filter({ $0.isKeyWindow }).first
     }
+    
+    var isLandscape: Bool? {
+        UIApplication.shared.mp.scene?.interfaceOrientation.isLandscape
+    }
 }

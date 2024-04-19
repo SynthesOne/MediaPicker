@@ -41,4 +41,11 @@ public struct MPCheckboxColor {
         self.checkMarkColor = checkMarkColor
     }
     
+    static var `default`: Self = .init(
+        activeColor: .systemPink,
+        activeBorderColor: .white,
+        inactiveColor: .clear,
+        inactiveBorderColor: .white,
+        checkMarkColor: .white
+    )
 }

@@ -66,6 +66,10 @@ public final class MPAlbumListViewController: UIViewController, UIPopoverPresent
         .none
     }
     
+    public func adaptivePresentationStyle(for controller: UIPresentationController, traitCollection: UITraitCollection) -> UIModalPresentationStyle {
+        .none
+    }
+    
     public func presentationControllerWillDismiss(_ presentationController: UIPresentationController) {
         PHPhotoLibrary.shared().unregisterChangeObserver(self)
         closeBlock?()

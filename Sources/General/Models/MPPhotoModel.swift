@@ -55,11 +55,11 @@ public struct MPPhotoModel {
     
     public var previewSize: CGSize {
         if ratio > 1 {
-            let h = min(UIScreenHeight, MaxImageWidth) * UIScreenScale
+            let h = min(UIScreenHeight(), MaxImageWidth) * UIScreenScale
             let w = h * ratio
             return .init(width: w, height: h)
         } else {
-            let w = min(UIScreenWidth, MaxImageWidth) * UIScreenScale
+            let w = min(UIScreenWidth(), MaxImageWidth) * UIScreenScale
             let h = w / ratio
             return .init(width: w, height: h)
         }

@@ -26,13 +26,22 @@ import UIKit
 import Photos
 
 public final class MPPresenter: NSObject {
-    weak var sender: UIViewController?
-    var preSelectedResults: [MPPhotoModel]
+    private weak var sender: UIViewController?
+    private var preSelectedResults: [MPPhotoModel]
+    public var selectedResult: (([MPResultModel]) -> ())? = nil
+    private var preSelectedResult: (([MPPhotoModel]) -> ())? = nil
+    
+    private let fetchImageQueue: OperationQueue = {
+        let queue = OperationQueue()
+        queue.maxConcurrentOperationCount = 3
+        return queue
+    }()
     
     public init(sender: UIViewController?, preSelectedResults: [MPPhotoModel] = []) {
         self.sender = sender
         self.preSelectedResults = preSelectedResults
         super.init()
+        fetchSelectedResult()
     }
     
     public func showMediaPicker() {
@@ -64,9 +73,9 @@ public final class MPPresenter: NSObject {
     }
     
     private func showLibraryMP() {
-        MPManager.getCameraRollAlbum(allowSelectImage: MPGeneralConfiguration.default().allowImage, allowSelectVideo: MPGeneralConfiguration.default().allowVideo, completion: { [weak self] (album) in
-            dump(album, name: "album")
+        MPManager.getCameraRollAlbum(allowSelectImage: MPGeneralConfiguration.default().allowImage, allowSelectVideo: MPGeneralConfiguration.default().allowVideo, limitCount: 20, completion: { [weak self] (album) in
             let gallery = MPViewController(albumModel: album)
+            gallery.preSelectedResult = self?.preSelectedResult
             let navWrapper = MPNavigationViewController(rootViewController: gallery)
             
             let sheet = navWrapper.sheetPresentationController
@@ -75,6 +84,58 @@ public final class MPPresenter: NSObject {
             
             self?.sender?.present(navWrapper, animated: true)
         })
+    }
+    
+    private func fetchSelectedResult() {
+        preSelectedResult = { [weak self] (selectedModels) in
+            guard let strongSelf = self, !selectedModels.isEmpty else {
+                self?.sender?.presentedViewController?.dismiss(animated: true)
+                return
+            }
+            let callback = { (models: [MPResultModel], errorAssets: [PHAsset], errorIndexs: [Int]) in
+                func call() {
+                    self?.selectedResult?(models)
+                }
+                
+                self?.sender?.presentedViewController?.dismiss(animated: true) {
+                    call()
+                }
+            }
+            
+            var results: [MPResultModel?] = Array(repeating: nil, count: selectedModels.count)
+            var errorAssets: [PHAsset] = []
+            var errorIndexs: [Int] = []
+            
+            var sucCount = 0
+            let totalCount = selectedModels.count
+            
+            for (i, m) in selectedModels.enumerated() {
+                let operation = MPFetchImageOperation(model: m) { image, asset in
+                    sucCount += 1
+                    
+                    if let image = image {
+                        let model = MPResultModel(
+                            asset: asset ?? m.asset,
+                            image: image,
+                            index: i
+                        )
+                        results[i] = model
+                    } else {
+                        errorAssets.append(m.asset)
+                        errorIndexs.append(i)
+                    }
+                    
+                    guard sucCount >= totalCount else { return }
+                    
+                    callback(
+                        results.compactMap { $0 },
+                        errorAssets,
+                        errorIndexs
+                    )
+                }
+                strongSelf.fetchImageQueue.addOperation(operation)
+            }
+        }
     }
     
 }

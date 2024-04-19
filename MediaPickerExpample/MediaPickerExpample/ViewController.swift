@@ -43,6 +43,12 @@ class ViewController: UIViewController {
 //            .showCameraCell(false)
         
         mp = MPPresenter(sender: self)
+        
+        mp?.selectedResult = { [weak self] (result) in
+            guard let strongSelf = self else { return }
+            debugPrint("selectedResult count \(result.count)")
+        }
+        
         mp?.showMediaPicker()
     }
 }

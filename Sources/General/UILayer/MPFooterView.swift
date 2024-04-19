@@ -25,7 +25,6 @@
 import UIKit
 
 final class FillButton: UIButton {
-
     var highlightColor: UIColor? = nil {
         didSet {
             setNeedsDisplay()
@@ -46,6 +45,32 @@ final class FillButton: UIButton {
 }
 
 final class MPFooterView: UIView {
+    private lazy var toolTipDescription: UILabel = {
+       let view = UILabel()
+        view.textAlignment = .left
+        view.textColor = .secondaryLabel
+        view.font = .systemFont(ofSize: 14, weight: .regular)
+        view.text = "You have not allowed the app to access all photos."
+        view.lineBreakMode = .byWordWrapping
+        view.numberOfLines = 0
+        return view
+    }()
+    
+    private lazy var toolTipButton: FillButton = {
+        let view = FillButton(type: .custom)
+        view.layer.masksToBounds = true
+        view.setTitle("CONTROL", for: .normal)
+        view.setTitleColor(.white, for: .normal)
+        view.titleLabel?.font = .systemFont(ofSize: 14, weight: .medium)
+        let uiConfig = MPUIConfiguration.default()
+        view.backgroundColor = uiConfig.navigationAppearance.tintColor
+        view.fillColor = uiConfig.navigationAppearance.tintColor
+        view.highlightColor = uiConfig.navigationAppearance.tintColor.mp.darker()
+        view.contentVerticalAlignment = .center
+        view.contentHorizontalAlignment = .center
+        return view
+    }()
+    
     private let counter: Counter = {
        let view = Counter()
         view.layer.masksToBounds = true
@@ -74,9 +99,13 @@ final class MPFooterView: UIView {
         return view
     }()
     
-    var onTap: (() -> ())? = nil
+    private let showAddToolTip: Bool
     
-    init() {
+    var actionButtonTap: (() -> ())? = nil
+    var toolTipButtonTap: (() -> ())? = nil
+    
+    init(showAddToolTip: Bool) {
+        self.showAddToolTip = showAddToolTip
         super.init(frame: .zero)
         setupSubviews()
     }
@@ -86,29 +115,51 @@ final class MPFooterView: UIView {
     }
     
     private func setupSubviews() {
-        //backgroundColor = .red
         self.mp.addSubviews(blurContainer, actionButton)
+        if showAddToolTip {
+            self.mp.addSubviews(toolTipDescription, toolTipButton)
+            toolTipButton.mp.action({ [weak self] in self?.toolTipButtonTap?() }, forEvent: .touchUpInside)
+        }
         actionButton.addSubview(counter)
-        actionButton.mp.action({ [weak self] in self?.onTap?() }, forEvent: .touchUpInside)
+        actionButton.mp.action({ [weak self] in self?.actionButtonTap?() }, forEvent: .touchUpInside)
     }
     
     override func layoutSubviews() {
         super.layoutSubviews()
         blurContainer.frame = bounds
-        actionButton.frame = .init(x: 8, y: 8, width: bounds.width - 16, height: 44)
+        let sideInset = safeAreaInsets.left > 0 ? safeAreaInsets.left : 16
+        if showAddToolTip {
+            let (buttonWidth, buttonHeight, textWidth, textHeight) = simulateToolTipSizes(sideInset: sideInset)
+            toolTipButton.layer.cornerRadius = buttonHeight / 2
+            toolTipButton.frame = .init(x: bounds.maxX - buttonWidth - sideInset, y: 12, width: buttonWidth, height: buttonHeight)
+            toolTipDescription.frame = .init(x: sideInset, y: 12, width: textWidth, height: textHeight)
+            let finalHeight = buttonHeight > textHeight ? buttonHeight : textHeight
+            actionButton.frame = .init(x: sideInset, y: 24 + finalHeight, width: bounds.width - sideInset * 2, height: 44)
+        } else {
+            actionButton.frame = .init(x: sideInset, y: 8, width: bounds.width - sideInset * 2, height: 44)
+        }
         updateCounterPosition()
     }
     
-    func setCounter(_ counter: Int) {
-        actionButton.setTitle(counter <= 0 ? "Cancel" : "Add", for: .normal)
-        if counter == 1 && self.counter.isHidden {
-            showCounterAnimation()
-            self.counter.setCounter(counter)
-        } else if counter <= 0 && !self.counter.isHidden {
-            hideCounterAnimation()
+    override var intrinsicContentSize: CGSize {
+        if showAddToolTip {
+            let sideInset = safeAreaInsets.left > 0 ? safeAreaInsets.left : 16
+            let (_, buttonHeight, _, textHeight) = simulateToolTipSizes(sideInset: sideInset)
+            // We round to get an integer height, otherwise the view won't go all the way to the bottom
+            let finalHeight = (buttonHeight > textHeight ? buttonHeight : textHeight).rounded(.up)
+            return .init(width: super.intrinsicContentSize.width, height: finalHeight + 24 + 44)
         } else {
-            self.counter.setCounter(counter)
+            return .init(width: super.intrinsicContentSize.width, height: 52)
         }
+    }
+    
+    private func simulateToolTipSizes(sideInset: CGFloat) -> (CGFloat, CGFloat, CGFloat, CGFloat) {
+        let buttonWidth = (toolTipButton.titleLabel?.mp.textWidth() ?? 0.0) + 16
+        let buttonHeight = (toolTipButton.titleLabel?.mp.textHeight(width: buttonWidth) ?? 0.0) + 8
+        let textWidth = bounds.width - (buttonWidth + sideInset * 2 + 8)
+        let textHeight = toolTipDescription.mp.textHeight(width: textWidth)
+        
+        return (buttonWidth, buttonHeight, textWidth, textHeight)
     }
     
     private func updateButtonActionButtond(hasCount: Bool) {
@@ -158,5 +209,23 @@ final class MPFooterView: UIView {
             self?.counter.alpha = 1.0
             self?.counter.transform = .identity
         })
+    }
+    
+    //func validLayout(in view: UIView) {
+    //    let bottomInset = view.safeAreaInsets.bottom == 0 ? 8 : view.safeAreaInsets.bottom
+    //    let height = intrinsicContentSize.height
+    //    frame = .init(x: .zero, y: view.frame.maxY - bottomInset - height, width: view.frame.width, height: height + bottomInset)
+    //}
+    
+    func setCounter(_ counter: Int) {
+        actionButton.setTitle(counter <= 0 ? "Cancel" : "Add", for: .normal)
+        if counter == 1 && self.counter.isHidden {
+            showCounterAnimation()
+            self.counter.setCounter(counter)
+        } else if counter <= 0 && !self.counter.isHidden {
+            hideCounterAnimation()
+        } else {
+            self.counter.setCounter(counter)
+        }
     }
 }

@@ -26,32 +26,75 @@ import UIKit
 
 // MARK:- CheckboxButton
 final class MPCheckboxButton: MPControl {
-    private var sizeChangeObserver: NSKeyValueObservation?
+    let animationId = "path"
     
     private lazy var counterLabel: UILabel = {
        let view = UILabel()
-        view.font = .systemFont(ofSize: 15, weight: .semibold)
         view.textAlignment = .center
-        view.adjustsFontSizeToFitWidth = true
-        view.minimumScaleFactor = 0.5
         return view
     }()
     
     private var outerLayer = CAShapeLayer()
     private var checkMarkLayer = CAShapeLayer()
     private var backgroundLayer = CAShapeLayer()
-    private var selfSize: CGFloat = 24
     
-    /// Set checkbox color to customise the buttons
-    private var checkBoxColor: MPCheckboxColor! {
+    private var _checkBoxColor: MPCheckboxColor! {
         didSet {
-            checkMarkLayer.strokeColor = checkBoxColor.checkMarkColor.resolvedColor(with: traitCollection).cgColor
-            updateSelectionState()
+            updateSelectionState(isAnimate: false)
         }
     }
     
-    private var style: MPCheckboxStyle = .circle {
+    private var _style: MPCheckboxStyle = .circle {
         didSet {
+            setupLayer()
+        }
+    }
+    
+    private var _showCounterInCheckbox: Bool = false {
+        didSet {
+            if _showCounterInCheckbox {
+                if !subviews.contains(counterLabel) {
+                    addSubview(counterLabel)
+                    counterLabel.textColor = _checkBoxColor.checkMarkColor
+                    counterLabel.isHidden = true
+                    counterLabel.font = .systemFont(ofSize: selfSize - 9, weight: .semibold)
+                }
+            } else {
+                counterLabel.removeFromSuperview()
+            }
+        }
+    }
+    
+    var showCounterInCheckbox: Bool? {
+        didSet {
+            if let showCounterInCheckbox {
+                _showCounterInCheckbox = showCounterInCheckbox
+            }
+        }
+    }
+    
+    /// Set checkbox color to customise the buttons
+    var checkBoxColor: MPCheckboxColor? = nil {
+        didSet {
+            if let checkBoxColor {
+                _checkBoxColor = checkBoxColor
+            }
+        }
+    }
+    
+    /// Set checkbox corners style to customise the buttons
+    var style: MPCheckboxStyle? = nil {
+        didSet {
+            if let style {
+                _style = style
+            }
+        }
+    }
+    
+    /// Update buttons size
+    var selfSize: CGFloat = 24 {
+        didSet {
+            counterLabel.font = .systemFont(ofSize: selfSize - 9, weight: .semibold)
             setupLayer()
         }
     }
@@ -59,19 +102,18 @@ final class MPCheckboxButton: MPControl {
     /// Indicates the index of the selected media
     var counter: Int = 1 {
         didSet {
-            if MPUIConfiguration.default().showCounterOnSelectionButton && counter != 0 {
+            if _showCounterInCheckbox && counter != 0 {
                 counterLabel.text = "\(counter)"
             }
         }
     }
     
-    var isOn = false {
-        didSet {
-            if isOn != oldValue {
-                updateSelectionState()
-                animationBlock()
-            }
-        }
+    fileprivate var isOn = false
+    
+    func setIsOn(_ isOn: Bool, isAnimate: Bool = true) {
+        guard self.isOn != isOn else { return }
+        self.isOn = isOn
+        updateSelectionState(isAnimate: isAnimate)
     }
     
     override init(frame: CGRect) {
@@ -84,38 +126,56 @@ final class MPCheckboxButton: MPControl {
         setup()
     }
     
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        setupLayer()
+    }
+    
     deinit {
-        sizeChangeObserver?.invalidate()
-        sizeChangeObserver = nil
         Logger.log("deinit MPCheckboxButton")
     }
     
-    func updateSelectionState() {
+    func updateSelectionState(isAnimate: Bool) {
+        checkMarkLayer.strokeColor = _checkBoxColor.checkMarkColor.resolvedColor(with: traitCollection).cgColor
+        if _showCounterInCheckbox {
+            counterLabel.textColor = _checkBoxColor.checkMarkColor
+        }
         if isOn {
-            updateActiveLayer()
+            updateActiveLayer(isAnimate: isAnimate)
         } else {
-            updateInactiveLayer()
+            updateInactiveLayer(isAnimate: isAnimate)
+        }
+        if isAnimate {
+            animationBlock()
         }
     }
     
     /// Set default color of chebox
     func setup() {
-        checkBoxColor = MPUIConfiguration.default().selectionButtonColorStyle
-        style = MPUIConfiguration.default().selectionButtonCornersStyle
-        if MPUIConfiguration.default().showCounterOnSelectionButton {
-            addSubview(counterLabel)
-            counterLabel.textColor = MPUIConfiguration.default().selectionButtonColorStyle.checkMarkColor
-            counterLabel.isHidden = true
+        if let checkBoxColor {
+            _checkBoxColor = checkBoxColor
+        } else {
+            _checkBoxColor = MPUIConfiguration.default().selectionButtonColorStyle
         }
-        addObserverSizeChange()
-        setupLayer()
+        
+        if let showCounterInCheckbox {
+            _showCounterInCheckbox = showCounterInCheckbox
+        } else {
+            _showCounterInCheckbox = MPUIConfiguration.default().showCounterOnSelectionButton
+        }
+        
+        if let style {
+            _style = style
+        } else {
+            _style = MPUIConfiguration.default().selectionButtonCornersStyle
+        }
     }
 
     /// Setup layer of check box
     func setupLayer() {
         let origin = CGPoint(x: 0, y: 0)
         let rect = CGRect(origin: origin, size: .init(width: selfSize, height: selfSize))
-        switch style {
+        switch _style {
         case .rounded(let radius):
             outerLayer.path = UIBezierPath(roundedRect: rect, cornerRadius: radius).cgPath
         case .circle:
@@ -124,9 +184,9 @@ final class MPCheckboxButton: MPControl {
             outerLayer.path = UIBezierPath(rect: rect).cgPath
         }
         backgroundLayer.path = UIBezierPath(roundedRect: .init(origin: .init(x: selfSize / 2, y: selfSize / 2), size: .zero), cornerRadius: .zero).cgPath
-        backgroundLayer.fillColor = checkBoxColor.activeColor.resolvedColor(with: traitCollection).cgColor
+        backgroundLayer.fillColor = _checkBoxColor.activeColor.resolvedColor(with: traitCollection).cgColor
         outerLayer.fillColor = .none
-        outerLayer.lineWidth = 1
+        outerLayer.lineWidth = 1.5
         outerLayer.shadowColor = UIColor.black.cgColor
         outerLayer.shadowOpacity = 0.4
         outerLayer.shadowRadius = 1.0
@@ -135,7 +195,7 @@ final class MPCheckboxButton: MPControl {
         layer.insertSublayer(outerLayer, at: 0)
         layer.insertSublayer(backgroundLayer, at: 0)
         
-        if !MPUIConfiguration.default().showCounterOnSelectionButton {
+        if !_showCounterInCheckbox {
             let path = UIBezierPath()
             var xPos: CGFloat = (rect.width * 0.25) + origin.x
             var yPos = rect.midY
@@ -151,7 +211,7 @@ final class MPCheckboxButton: MPControl {
             }
             
             checkMarkLayer.lineWidth = 2
-            checkMarkLayer.strokeColor = checkBoxColor.checkMarkColor.resolvedColor(with: traitCollection).cgColor
+            checkMarkLayer.strokeColor = _checkBoxColor.checkMarkColor.resolvedColor(with: traitCollection).cgColor
             checkMarkLayer.path = path.cgPath
             checkMarkLayer.lineCap = .round
             checkMarkLayer.lineJoin = .round
@@ -162,39 +222,73 @@ final class MPCheckboxButton: MPControl {
             counterLabel.frame = bounds
             bringSubviewToFront(counterLabel)
         }
-        updateSelectionState()
+        updateSelectionState(isAnimate: false)
     }
     
     /// Update active layer and apply animation
-    func updateActiveLayer() {
-        if let activeBorderColor = checkBoxColor.activeBorderColor {
+    func updateActiveLayer(isAnimate: Bool) {
+        if let activeBorderColor = _checkBoxColor.activeBorderColor {
             outerLayer.strokeColor = activeBorderColor.resolvedColor(with: traitCollection).cgColor
         } else {
-            outerLayer.strokeColor = checkBoxColor.activeColor.resolvedColor(with: traitCollection).cgColor
+            outerLayer.strokeColor = _checkBoxColor.activeColor.resolvedColor(with: traitCollection).cgColor
+        }
+        backgroundLayer.fillColor = _checkBoxColor.activeColor.resolvedColor(with: traitCollection).cgColor
+        if !isAnimate {
+            CATransaction.begin()
+            CATransaction.setDisableActions(true)
+            backgroundLayer.removeAnimation(forKey: animationId)
+            let _radius: CGFloat
+            switch _style {
+            case .rounded(let radius):
+                _radius = radius
+            case .circle:
+                _radius = selfSize / 2
+            case .square:
+                _radius = 0
+            }
+            backgroundLayer.path = UIBezierPath(roundedRect: CGRect(x: 0, y: 0, width: selfSize, height: selfSize), cornerRadius: _radius).cgPath
+            
+            if _showCounterInCheckbox {
+                counterLabel.mp.setIsHidden(false, duration: 0.0)
+            } else {
+                checkMarkLayer.mp.animateStrokeEnd(from: 0, to: 1)
+            }
+            CATransaction.commit()
         }
     }
     
     /// Update inactive layer apply animation
-    func updateInactiveLayer() {
-        outerLayer.strokeColor = checkBoxColor.inactiveBorderColor.resolvedColor(with: traitCollection).cgColor
+    func updateInactiveLayer(isAnimate: Bool) {
+        outerLayer.strokeColor = _checkBoxColor.inactiveBorderColor.resolvedColor(with: traitCollection).cgColor
+        if !isAnimate {
+            CATransaction.begin()
+            CATransaction.setDisableActions(true)
+            backgroundLayer.removeAnimation(forKey: animationId)
+            backgroundLayer.path = UIBezierPath(roundedRect: .init(origin: .init(x: selfSize / 2, y: selfSize / 2), size: .zero), cornerRadius: .zero).cgPath
+            
+            if _showCounterInCheckbox {
+                counterLabel.mp.setIsHidden(true, duration: 0.0)
+            } else {
+                checkMarkLayer.mp.animateStrokeEnd(from: 1, to: 0)
+            }
+            CATransaction.commit()
+        }
     }
     
     func animationBlock() {
         if isOn {
-            if !MPUIConfiguration.default().showCounterOnSelectionButton {
+            if !_showCounterInCheckbox {
                 checkMarkLayer.mp.animateStrokeEnd(from: 0, to: 1)
             }
             
             // Bounce animation
-            let pulse = CASpringAnimation(keyPath: "transform.scale")
-            pulse.fromValue = 0.85
-            pulse.toValue = 1.0
-            pulse.damping = 2.0
-            pulse.duration = 0.3
-            layer.add(pulse, forKey: nil)
+            let bounceAnimation = CAKeyframeAnimation(keyPath: "transform.scale")
+            bounceAnimation.values = [0.85, 0.95, 1.0, 1.1, 1.2, 1.1, 1.0]
+            bounceAnimation.duration = TimeInterval(0.3)
+            bounceAnimation.calculationMode = CAAnimationCalculationMode.cubic
+            layer.add(bounceAnimation, forKey: nil)
             
             // Background filling animation
-            let animationId = "path"
             let animation = CABasicAnimation(keyPath: animationId)
             animation.duration = 0.25
             animation.fillMode = .forwards
@@ -202,11 +296,11 @@ final class MPCheckboxButton: MPControl {
             animation.isRemovedOnCompletion = false
             
             // Create current path
-            let fromPath = backgroundLayer.path
+            let fromPath = UIBezierPath(roundedRect: .init(origin: .init(x: selfSize / 2, y: selfSize / 2), size: .zero), cornerRadius: .zero).cgPath
             
             // Create a new path.
             let _radius: CGFloat
-            switch style {
+            switch _style {
             case .rounded(let radius):
                 _radius = radius
             case .circle:
@@ -222,11 +316,11 @@ final class MPCheckboxButton: MPControl {
             
             // Start the animation.
             backgroundLayer.add(animation, forKey: animationId)
-            if MPUIConfiguration.default().showCounterOnSelectionButton {
+            if _showCounterInCheckbox {
                 counterLabel.mp.setIsHidden(false)
             }
         } else {
-            if !MPUIConfiguration.default().showCounterOnSelectionButton {
+            if !_showCounterInCheckbox {
                 checkMarkLayer.mp.animateStrokeEnd(from: 1, to: 0)
             }
             
@@ -248,7 +342,7 @@ final class MPCheckboxButton: MPControl {
             
             // Create current path
             let _radius: CGFloat
-            switch style {
+            switch _style {
             case .rounded(let radius):
                 _radius = radius
             case .circle:
@@ -267,7 +361,7 @@ final class MPCheckboxButton: MPControl {
             
             // Start the animation.
             backgroundLayer.add(animation, forKey: animationId)
-            if MPUIConfiguration.default().showCounterOnSelectionButton {
+            if _showCounterInCheckbox {
                 counterLabel.mp.setIsHidden(true)
             }
         }
@@ -276,18 +370,7 @@ final class MPCheckboxButton: MPControl {
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
         super.traitCollectionDidChange(previousTraitCollection)
         if traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) {
-            checkMarkLayer.strokeColor = checkBoxColor.checkMarkColor.resolvedColor(with: traitCollection).cgColor
-            updateSelectionState()
+            updateSelectionState(isAnimate: false)
         }
-    }
-}
-
-extension MPCheckboxButton {
-    private func addObserverSizeChange() {
-        sizeChangeObserver = observe(\MPCheckboxButton.frame, changeHandler: sizeChangeObseveHandler)
-    }
-    
-    private func sizeChangeObseveHandler(_ object: MPCheckboxButton, _ change: NSKeyValueObservedChange<CGRect>) {
-        setupLayer()
     }
 }

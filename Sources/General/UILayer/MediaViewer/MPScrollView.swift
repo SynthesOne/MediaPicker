@@ -1,7 +1,7 @@
 //
-//  CAShapeLayer+MPExtension.swift
+//  MPScrollView.swift
 //
-//  Created by Валентин Панчишен on 11.04.2024.
+//  Created by Валентин Панчишен on 16.04.2024.
 //  Copyright © 2024 Валентин Панчишен. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,9 +24,27 @@
     
 import UIKit
 
-extension MPExtensionWrapper where Base: CAShapeLayer {
-    func animateStrokeEnd(from: CGFloat, to: CGFloat) {
-        base.strokeEnd = from
-        base.strokeEnd = to
+public final class MPScrollView: UIScrollView {
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        panGestureRecognizer.delegate = self
+    }
+
+    required public init?(coder aDecoder: NSCoder) {
+        super.init(coder: aDecoder)
+    }
+}
+
+//MARK: UIGestureRecognizerDelegate
+
+extension MPScrollView: UIGestureRecognizerDelegate {
+    public override func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
+        if gestureRecognizer == panGestureRecognizer {
+            if gestureRecognizer.numberOfTouches == 1 && zoomScale == 1.0 {
+                return false
+            }
+        }
+
+        return true
     }
 }

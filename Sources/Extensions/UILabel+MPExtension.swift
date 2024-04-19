@@ -29,6 +29,33 @@ extension MPExtensionWrapper where Base: UILabel {
         UILabel.mp.textWidth(label: base, text: text)
     }
     
+    func textHeight(width: CGFloat? = nil) -> CGFloat {
+        UILabel.mp.textHeight(label: base, width: width)
+    }
+    
+    static func textHeight(label: UILabel, width: CGFloat?) -> CGFloat {
+        guard let text = label.text else {
+            return 0.0
+        }
+        if let width {
+            return textHeight(withWidth: width, font: label.font, text: text)
+        } else {
+            return textHeight(withWidth: textWidth(label: label, text: text), font: label.font, text: text)
+        }
+    }
+    
+    static func textHeight(withWidth width: CGFloat, font: UIFont, text: String) -> CGFloat {
+        let size = CGSize(width: width, height: 1000)
+        
+        let options = NSStringDrawingOptions.usesFontLeading.union(.usesLineFragmentOrigin)
+        
+        let attributes = [NSAttributedString.Key.font: font]
+        
+        let rectangleHeight = String(text).boundingRect(with: size, options: options, attributes: attributes, context: nil).height
+        
+        return rectangleHeight
+    }
+    
     static func textWidth(label: UILabel, text: String?) -> CGFloat {
         var _text: String = ""
         if let text {

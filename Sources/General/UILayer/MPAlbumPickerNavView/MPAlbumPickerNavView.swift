@@ -80,8 +80,7 @@ final class MPAlbumPickerNavView: UIView {
             } else if let superMinX = superview?.frame.minX, superMinX > 0 {
                 minX = superMinX
             }
-            
-            let offset: CGFloat = abs((frame.width + minX) - UIScreenWidth) - minX
+            let offset: CGFloat = abs((frame.width + minX) - UIScreenWidth()) - minX
             var leftOffset = offset
             if leftOffset < 0 {
                 leftOffset = 0

@@ -1,7 +1,7 @@
 //
-//  MPAddPhotoCell.swift
+//  MPResultModel.swift
 //
-//  Created by Валентин Панчишен on 11.04.2024.
+//  Created by Валентин Панчишен on 15.04.2024.
 //  Copyright © 2024 Валентин Панчишен. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -21,29 +21,21 @@
 //  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
-    
-import UIKit
 
-final class MPAddPhotoCell: CollectionViewCell {
-    private let imageView: UIImageView = {
-        let view = UIImageView(image: .init(systemName: "plus.circle.fill")?.mp.template)
-        view.contentMode = .scaleAspectFit
-        view.clipsToBounds = true
-        view.tintColor = .white
-        return view
-    }()
+import UIKit
+import Photos
+
+public struct MPResultModel {
+    public let asset: PHAsset
     
-    override func setupSubviews() {
-        backgroundColor = .systemGray
-        contentView.addSubview(imageView)
-    }
+    public let image: UIImage
     
-    override func adaptationLayout() {
-        imageView.frame = CGRect(x: 0, y: 0, width: contentView.bounds.width / 3, height: contentView.bounds.width / 3)
-        imageView.center = contentView.center
-    }
-    
-    deinit {
-        Logger.log("deinit MPAddPhotoCell")
+    /// The order in which the user selects the models in the album. This index is not necessarily equal to the order of the model's index in the array, as some PHAssets requests may fail.
+    public let index: Int
+}
+
+extension MPResultModel: Equatable {
+    public static func ==(lhs: MPResultModel, rhs: MPResultModel) -> Bool {
+        return lhs.asset == rhs.asset
     }
 }

@@ -26,10 +26,18 @@ import UIKit
 import Photos
 
 let MaxImageWidth: CGFloat = 500
-let UIScreenHeight = UIScreen.mp.current?.bounds.height ?? 1.0
-let UIScreenWidth = UIScreen.mp.current?.bounds.width ?? 1.0
+//let UIScreenHeight = UIScreen.mp.current?.bounds.height ?? 1.0
+//let UIScreenWidth = UIScreen.mp.current?.bounds.width ?? 1.0
 let UIScreenScale = UIScreen.mp.current?.scale ?? 1.0
 let UIScreenPixel = 1.0 / UIScreenScale
+
+func UIScreenWidth() -> CGFloat {
+    UIScreen.mp.current?.bounds.width ?? 1.0
+}
+
+func UIScreenHeight() -> CGFloat {
+    UIScreen.mp.current?.bounds.height ?? 1.0
+}
 
 func MPMainAsync(after: TimeInterval = 0, handler: @escaping (() -> ())) {
     if after > 0 {
@@ -43,51 +51,59 @@ func MPMainAsync(after: TimeInterval = 0, handler: @escaping (() -> ())) {
     }
 }
 
-@available(iOS 17.0, *)
-#Preview {
-    let uiConfig = MPUIConfiguration.default()
-
-    let viewController = UIViewController()
-    viewController.view.backgroundColor = .systemBackground
-    viewController.view.insetsLayoutMarginsFromSafeArea = false
+func canSelectMedia(_ model: MPPhotoModel, currentSelectCount: Int) -> Bool {
+    if currentSelectCount >= MPGeneralConfiguration.default().maxMediaSelectCount {
+        return false
+    }
     
-    let button: UIButton = {
-        let view = UIButton(frame: .init(origin: .zero, size: .init(width: 120, height: 44)))
-        view.setTitle("Add", for: .normal)
-        view.setTitleColor(.white, for: .normal)
-        view.backgroundColor = .systemRed
-        return view
-    }()
-    
-    let button2: UIButton = {
-        let view = UIButton(frame: .init(origin: .zero, size: .init(width: 120, height: 44)))
-        view.setTitle("Subtract", for: .normal)
-        view.setTitleColor(.white, for: .normal)
-        view.backgroundColor = .systemRed
-        return view
-    }()
-    
-    let footer = MPFooterView()
-    viewController.view.mp.addSubviews(button, button2, footer)
-    button.center = viewController.view.center
-    button2.center = .init(x: viewController.view.center.x, y: viewController.view.center.y + 52)
-    var counter = 0
-    button.mp.action({
-        counter += 1
-        footer.setCounter(counter)
-    }, forEvent: .touchUpInside)
-    
-    button2.mp.action({
-        counter -= 1
-        footer.setCounter(counter)
-    }, forEvent: .touchUpInside)
-    
-    footer.frame = .init(
-        x: 0,
-        y: viewController.view.safeAreaLayoutGuide.layoutFrame.maxY - 88,
-        width: viewController.view.bounds.width,
-        height: 88
-    )
-    
-    return viewController
+    return true
 }
+
+//@available(iOS 17.0, *)
+//#Preview {
+//    let uiConfig = MPUIConfiguration.default()
+//
+//    let viewController = UIViewController()
+//    viewController.view.backgroundColor = .systemBackground
+//    viewController.view.insetsLayoutMarginsFromSafeArea = false
+//    
+//    let button: UIButton = {
+//        let view = UIButton(frame: .init(origin: .zero, size: .init(width: 120, height: 44)))
+//        view.setTitle("Add", for: .normal)
+//        view.setTitleColor(.white, for: .normal)
+//        view.backgroundColor = .systemRed
+//        return view
+//    }()
+//    
+//    let button2: UIButton = {
+//        let view = UIButton(frame: .init(origin: .zero, size: .init(width: 120, height: 44)))
+//        view.setTitle("Subtract", for: .normal)
+//        view.setTitleColor(.white, for: .normal)
+//        view.backgroundColor = .systemRed
+//        return view
+//    }()
+//    
+//    let footer = MPFooterView()
+//    viewController.view.mp.addSubviews(button, button2, footer)
+//    button.center = viewController.view.center
+//    button2.center = .init(x: viewController.view.center.x, y: viewController.view.center.y + 52)
+//    var counter = 0
+//    button.mp.action({
+//        counter += 1
+//        footer.setCounter(counter)
+//    }, forEvent: .touchUpInside)
+//    
+//    button2.mp.action({
+//        counter -= 1
+//        footer.setCounter(counter)
+//    }, forEvent: .touchUpInside)
+//    
+//    footer.frame = .init(
+//        x: 0,
+//        y: viewController.view.safeAreaLayoutGuide.layoutFrame.maxY - 88,
+//        width: viewController.view.bounds.width,
+//        height: 88
+//    )
+//    
+//    return viewController
+//}

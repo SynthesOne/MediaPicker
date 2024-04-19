@@ -1,7 +1,7 @@
 //
-//  CAShapeLayer+MPExtension.swift
+//  UIInterfaceOrientation+MPExtension.swift
 //
-//  Created by Валентин Панчишен on 11.04.2024.
+//  Created by Валентин Панчишен on 19.04.2024.
 //  Copyright © 2024 Валентин Панчишен. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -21,12 +21,18 @@
 //  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
-    
-import UIKit
 
-extension MPExtensionWrapper where Base: CAShapeLayer {
-    func animateStrokeEnd(from: CGFloat, to: CGFloat) {
-        base.strokeEnd = from
-        base.strokeEnd = to
+import UIKit
+import AVFoundation
+
+extension UIInterfaceOrientation {
+    var videoOrientation: AVCaptureVideoOrientation? {
+        switch self {
+        case .portraitUpsideDown: return .portraitUpsideDown
+        case .landscapeRight: return .landscapeRight
+        case .landscapeLeft: return .landscapeLeft
+        case .portrait: return .portrait
+        default: return nil
+        }
     }
 }

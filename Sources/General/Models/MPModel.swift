@@ -28,7 +28,6 @@ import Photos
 fileprivate let cameraIdent = "camera_ident"
 fileprivate let addPhotoIdent = "add_photo_ident"
 
-//
 public struct MPModel {
     static var empty: MPModel {
         .init(items: [], offset: 0)
@@ -36,7 +35,6 @@ public struct MPModel {
     
     enum Item: Hashable {
         case media(MPPhotoModel)
-        case addPhoto(String)
         case camera(String)
     }
     
@@ -46,18 +44,39 @@ public struct MPModel {
     
     var items: [Item]
     private var offset: Int
+    private var currentOrientationIsLandscape: Bool = false
     
-    //private func extractedMedia() -> [MPPhotoModel] {
-    //    items.compactMap({ $0.unwrapped })
-    //}
+    func extractedMedia(forSelectedIndexPath indexPath: IndexPath, showCameraCell: Bool) -> ([MPPhotoModel], Int) {
+        let index = getIndexWithOffset(indexPath, showCameraCell: showCameraCell) - offset
+        return (items.compactMap({ $0.unwrapped }), index)
+    }
+    
+    func getIndexPath(forMedia model: MPPhotoModel) -> IndexPath? {
+        if let index = items.firstIndex(where: { $0.unwrapped == model }) {
+            var itemsOffset = 5
+            if currentOrientationIsLandscape {
+                itemsOffset += 4
+            }
+            if index > itemsOffset - 1 {
+                return IndexPath(item: index - itemsOffset, section: 1)
+            } else {
+                return IndexPath(item: index, section: 0)
+            }
+        }
+        return nil
+    }
     
     private func getIndexWithOffset(_ indexPath: IndexPath, showCameraCell: Bool) -> Int {
         let indexItem: Int
         if showCameraCell {
+            var itemsOffset = 5
+            if currentOrientationIsLandscape {
+                itemsOffset += 4
+            }
             if indexPath.section == 0 {
                 indexItem = indexPath.item
             } else {
-                indexItem = indexPath.item + 5
+                indexItem = indexPath.item + itemsOffset
             }
         } else {
             indexItem = indexPath.item
@@ -67,18 +86,21 @@ public struct MPModel {
     
     func item(_ indexPath: IndexPath, showCameraCell: Bool) -> MPPhotoModel {
         let indexItem = getIndexWithOffset(indexPath, showCameraCell: showCameraCell)
-        //let index = indexItem - offset
-        return items[indexItem].unwrapped!// extractedMedia()[index]
+        return items[indexItem].unwrapped!
     }
     
     func firstSelectedIndex(showCameraCell: Bool) -> IndexPath? {
         if showCameraCell {
+            var itemsOffset = 5
+            if currentOrientationIsLandscape {
+                itemsOffset += 4
+            }
             if let indexWithOffset = items.firstIndex(where: { ($0.unwrapped?.isSelected ?? false) }) {
-                var trueIndex = indexWithOffset// + offset
+                var trueIndex = indexWithOffset
                 let section: Int
-                if trueIndex > 4 {
+                if trueIndex > itemsOffset - 1 {
                     section = 1
-                    trueIndex -= 5
+                    trueIndex -= itemsOffset
                 } else {
                     section = 0
                 }
@@ -109,7 +131,7 @@ public struct MPModel {
     
     @discardableResult
     mutating func insertNewModel(_ model: MPPhotoModel) -> Int{
-        items.insert(.media(model), at: offset)
+        //items.insert(.media(model), at: offset)
         return offset
     }
     
@@ -121,7 +143,6 @@ public struct MPModel {
             selIds[m.id] = true
             selIdAndIndex[m.id] = index
         }
-        
         var i = 0
         items.forEach { item in
             if let model = item.unwrapped {
@@ -132,16 +153,19 @@ public struct MPModel {
                 } else {
                     toggleSelected(indexWithoutOffset: i, false)
                 }
-                i += 1
-            } else {
+                //Increment only if the enum stores a PHAsset model
                 i += 1
             }
         }
     }
+    
+    mutating func setOrinetation(isLandscape: Bool) {
+        currentOrientationIsLandscape = isLandscape
+    }
 }
 
 extension MPModel {
-    init(assets: [PHAsset], showAddPhoto: Bool, showCameraCell: Bool) {
+    init(assets: [PHAsset], showCameraCell: Bool) {
         items = []
         offset = 0
         if showCameraCell {
@@ -149,15 +173,10 @@ extension MPModel {
             offset += 1
         }
         
-        if showAddPhoto {
-            items.append(.addPhoto(addPhotoIdent))
-            offset += 1
-        }
-        
-        items.append(contentsOf: assets.map { Item.media(.init(asset: $0)) })
+        items.append(contentsOf: assets.uniqued().map { Item.media(.init(asset: $0)) })
     }
     
-    init(models: [MPPhotoModel], showAddPhoto: Bool, showCameraCell: Bool) {
+    init(models: [MPPhotoModel], showCameraCell: Bool) {
         items = []
         offset = 0
         if showCameraCell {
@@ -165,12 +184,7 @@ extension MPModel {
             offset += 1
         }
         
-        if showAddPhoto {
-            items.append(.addPhoto(addPhotoIdent))
-            offset += 1
-        }
-        
-        items.append(contentsOf: models.map { Item.media($0) })
+        items.append(contentsOf: models.uniqued().map { Item.media($0) })
     }
 }
 

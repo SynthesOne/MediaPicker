@@ -26,13 +26,22 @@ import UIKit
 import AVFoundation
 
 final class MPCameraCell: CollectionViewCell {
-    private let imageView: UIImageView = {
+    private let iconCameraView: UIImageView = {
         let view = UIImageView(image: .init(systemName: "camera.fill")?.mp.template)
         view.contentMode = .scaleAspectFit
-        view.clipsToBounds = true
         view.tintColor = .white
         return view
     }()
+    
+    private let backgroundThumgnail: UIImageView = {
+        let view = UIImageView()
+        view.contentMode = .scaleAspectFill
+        view.clipsToBounds = true
+        view.isHidden = true
+        return view
+    }()
+    
+    private let videoQueue = DispatchQueue(label: "com.mediapicker.videodata", qos: .userInitiated)
     
     private var session: AVCaptureSession?
     
@@ -41,6 +50,10 @@ final class MPCameraCell: CollectionViewCell {
     private var photoOutput: AVCapturePhotoOutput?
     
     private var previewLayer: AVCaptureVideoPreviewLayer?
+    
+    private var videoOutput: AVCaptureVideoDataOutput?
+    
+    var processSampleBuffer: ((CMSampleBuffer, CVImageBuffer, AVCaptureConnection) -> Void)?
     
     var isEnable = true {
         didSet {
@@ -51,24 +64,34 @@ final class MPCameraCell: CollectionViewCell {
     deinit {
         session?.stopRunning()
         session = nil
+        videoOutput?.setSampleBufferDelegate(nil, queue: nil)
         Logger.log("deinit MPCameraCell")
     }
     
-    override func reuseBlock() {
-        //session?.stopRunning()
-        //session = nil
-    }
-    
     override func setupSubviews() {
-        backgroundColor = .systemGray
-        contentView.addSubview(imageView)
+        contentView.addSubview(backgroundThumgnail)
+        contentView.addSubview(iconCameraView)
+        setPlaceholderImage()
+        iconCameraView.mp.setIsHidden(false)
     }
     
     override func adaptationLayout() {
-        imageView.frame = CGRect(x: 0, y: 0, width: contentView.bounds.width / 3, height: contentView.bounds.width / 3)
-        imageView.center = contentView.center
-        
+        backgroundThumgnail.frame = contentView.bounds
+        backgroundThumgnail.center = contentView.center
+        iconCameraView.frame = .init(x: bounds.maxX - 40, y: 8, width: 32, height: 32)
         previewLayer?.frame = contentView.layer.bounds
+        updateVideoOrientation()
+    }
+    
+    private func setPlaceholderImage() {
+        let imagePath = NSTemporaryDirectory() + "cameraCaptureImage.jpg"
+        if let data = try? Data(contentsOf: URL(fileURLWithPath: imagePath)), let image = UIImage(data: data) {
+            backgroundThumgnail.image = image
+            backgroundColor = .none
+        } else {
+            backgroundThumgnail.image = nil
+            backgroundColor = .systemGray
+        }
     }
     
     private func setupSession() {
@@ -76,32 +99,47 @@ final class MPCameraCell: CollectionViewCell {
             return
         }
         session?.stopRunning()
+        backgroundThumgnail.mp.setIsHidden(false)
         if let input = videoInput {
             session?.removeInput(input)
         }
-        if let output = photoOutput {
-            session?.removeOutput(output)
+        if let pOutput = photoOutput {
+            session?.removeOutput(pOutput)
+        }
+        if let vOutput = videoOutput {
+            session?.removeOutput(vOutput)
         }
         session = nil
         previewLayer?.removeFromSuperlayer()
         previewLayer = nil
         
-        guard let camera = backCamera() else {
-            return
-        }
-        guard let input = try? AVCaptureDeviceInput(device: camera) else {
+        guard let camera = backCamera(), let input = try? AVCaptureDeviceInput(device: camera) else {
             return
         }
         videoInput = input
         photoOutput = AVCapturePhotoOutput()
+        videoOutput = AVCaptureVideoDataOutput()
         
         session = AVCaptureSession()
         
         if session?.canAddInput(input) == true {
             session?.addInput(input)
         }
+        
         if session?.canAddOutput(photoOutput!) == true {
             session?.addOutput(photoOutput!)
+        }
+        
+        if session?.canAddOutput(videoOutput!) == true {
+            session?.addOutput(videoOutput!)
+            
+            videoOutput?.alwaysDiscardsLateVideoFrames = false
+            videoOutput?.videoSettings = [kCVPixelBufferPixelFormatTypeKey: kCVPixelFormatType_32BGRA] as [String : Any]
+            
+            // It is necessary to wait at least 1 second, because at the start the camera is not stable and the image is dark.
+            Timer.scheduledTimer(withTimeInterval: 1, repeats: false, block: { [weak self] (_) in
+                self?.videoOutput?.setSampleBufferDelegate(self, queue: self?.videoQueue)
+            })
         }
         
         previewLayer = AVCaptureVideoPreviewLayer(session: session!)
@@ -110,19 +148,30 @@ final class MPCameraCell: CollectionViewCell {
         previewLayer?.videoGravity = .resizeAspectFill
         contentView.layer.insertSublayer(previewLayer!, at: 0)
         
-        DispatchQueue.global().async { [weak self] in
+        DispatchQueue.mp.background(background: { [weak self] in
             self?.session?.startRunning()
-        }
+        }, completion: { [weak self] in
+            self?.backgroundThumgnail.mp.setIsHidden(true, duration: 0.3)
+        })
     }
     
     private func backCamera() -> AVCaptureDevice? {
-        let devices = AVCaptureDevice.DiscoverySession(deviceTypes: [.builtInWideAngleCamera], mediaType: .video, position: .back).devices
-        for device in devices {
-            if device.position == .back {
-                return device
-            }
+        if let device = AVCaptureDevice.DiscoverySession(deviceTypes: [.builtInWideAngleCamera], mediaType: .video, position: .back).devices.first {
+            return device
         }
         return nil
+    }
+    
+    private func updateVideoOrientation() {
+        guard let previewLayer else { return }
+        guard previewLayer.connection!.isVideoOrientationSupported else {
+            return
+        }
+        let statusBarOrientation = UIApplication.shared.mp.scene?.interfaceOrientation
+        let videoOrientation: AVCaptureVideoOrientation = statusBarOrientation?.videoOrientation ?? .portrait
+        previewLayer.frame = contentView.layer.bounds
+        previewLayer.connection?.videoOrientation = videoOrientation
+        previewLayer.removeAllAnimations()
     }
     
     func startCapture() {
@@ -146,3 +195,12 @@ final class MPCameraCell: CollectionViewCell {
     }
 }
 
+extension MPCameraCell: AVCaptureVideoDataOutputSampleBufferDelegate {
+    func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
+        guard CMSampleBufferDataIsReady(sampleBuffer) else { return }
+        
+        if let videoPixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) {
+            processSampleBuffer?(sampleBuffer, videoPixelBuffer, connection)
+        }
+    }
+}

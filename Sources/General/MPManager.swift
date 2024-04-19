@@ -78,10 +78,10 @@ public enum MPManager {
     /// Fetch photos from result.
     public static func fetchPhoto(in result: PHFetchResult<PHAsset>, allowImage: Bool, allowVideo: Bool, limitCount: Int = .max) -> [MPPhotoModel] {
         var models: [MPPhotoModel] = []
-        let option: NSEnumerationOptions = .reverse
+        //let option: NSEnumerationOptions = .reverse
         var count = 1
         
-        result.enumerateObjects(options: option) { asset, _, stop in
+        result.enumerateObjects/*(options: option)*/ { asset, _, stop in
             let m = MPPhotoModel(asset: asset)
             
             if m.type == .image, !allowImage {
@@ -149,8 +149,8 @@ public enum MPManager {
     }
     
     /// Fetch camera roll album.
-    public static func getCameraRollAlbum(allowSelectImage: Bool, allowSelectVideo: Bool, completion: @escaping (MPAlbumModel) -> Void) {
-        DispatchQueue.global().async {
+    public static func getCameraRollAlbum(allowSelectImage: Bool, allowSelectVideo: Bool, limitCount: Int = 0, completionInMain: Bool = true, completion: @escaping (MPAlbumModel) -> Void) {
+        DispatchQueue.global(qos: .userInteractive).async {
             let option = PHFetchOptions()
             if !allowSelectImage {
                 option.predicate = NSPredicate(format: "mediaType == %ld", PHAssetMediaType.video.rawValue)
@@ -159,6 +159,9 @@ public enum MPManager {
                 option.predicate = NSPredicate(format: "mediaType == %ld", PHAssetMediaType.image.rawValue)
             }
             
+            option.fetchLimit = limitCount
+            option.sortDescriptors = [.init(keyPath: \PHAsset.creationDate, ascending: false)]
+            
             let smartAlbums = PHAssetCollection.fetchAssetCollections(with: .smartAlbum, subtype: .albumRegular, options: nil)
             smartAlbums.enumerateObjects { collection, _, stop in
                 if collection.assetCollectionSubtype == .smartAlbumUserLibrary {
@@ -166,10 +169,54 @@ public enum MPManager {
                     
                     let result = PHAsset.fetchAssets(in: collection, options: option)
                     let albumModel = MPAlbumModel(title: getCollectionTitle(collection), result: result, collection: collection, option: option, isCameraRoll: true)
-                    MPMainAsync {
+                    
+                    if completionInMain {
+                        MPMainAsync {
+                            completion(albumModel)
+                        }
+                    } else {
                         completion(albumModel)
                     }
                 }
+            }
+        }
+    }
+    
+    public static func fetchLivePhoto(for asset: PHAsset, completion: @escaping (PHLivePhoto?, [AnyHashable: Any]?, Bool) -> Void) -> PHImageRequestID {
+        let option = PHLivePhotoRequestOptions()
+        option.version = .current
+        option.deliveryMode = .opportunistic
+        option.isNetworkAccessAllowed = true
+        
+        return PHImageManager.default().requestLivePhoto(for: asset, targetSize: PHImageManagerMaximumSize, contentMode: .aspectFit, options: option) { livePhoto, info in
+            let isDegraded = (info?[PHImageResultIsDegradedKey] as? Bool ?? false)
+            completion(livePhoto, info, isDegraded)
+        }
+    }
+    
+    public static func fetchVideo(for asset: PHAsset, progress: ((CGFloat, Error?, UnsafeMutablePointer<ObjCBool>, [AnyHashable: Any]?) -> Void)? = nil, completion: @escaping (AVPlayerItem?, [AnyHashable: Any]?, Bool) -> Void) -> PHImageRequestID {
+        let option = PHVideoRequestOptions()
+        option.isNetworkAccessAllowed = true
+        option.progressHandler = { pro, error, stop, info in
+            MPMainAsync {
+                progress?(CGFloat(pro), error, stop, info)
+            }
+        }
+        
+        if asset.mp.isInCloud {
+            return PHImageManager.default().requestExportSession(forVideo: asset, options: option, exportPreset: AVAssetExportPresetHighestQuality, resultHandler: { session, info in
+                let isDegraded = (info?[PHImageResultIsDegradedKey] as? Bool ?? false)
+                if let avAsset = session?.asset {
+                    let item = AVPlayerItem(asset: avAsset)
+                    completion(item, info, isDegraded)
+                } else {
+                    completion(nil, nil, true)
+                }
+            })
+        } else {
+            return PHImageManager.default().requestPlayerItem(forVideo: asset, options: option) { item, info in
+                let isDegraded = (info?[PHImageResultIsDegradedKey] as? Bool ?? false)
+                completion(item, info, isDegraded)
             }
         }
     }
@@ -298,5 +345,15 @@ public enum MPManager {
                 }
             }
         }
+    }
+    
+    static func isFetchImageError(_ error: Error?) -> Bool {
+        guard let error = error as NSError? else {
+            return false
+        }
+        if error.domain == "CKErrorDomain" || error.domain == "CloudPhotoLibraryErrorDomain" {
+            return true
+        }
+        return false
     }
 }

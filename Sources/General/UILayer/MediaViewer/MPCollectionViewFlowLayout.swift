@@ -1,7 +1,7 @@
 //
-//  CAShapeLayer+MPExtension.swift
+//  MPCollectionViewFlowLayout.swift
 //
-//  Created by Валентин Панчишен on 11.04.2024.
+//  Created by Валентин Панчишен on 16.04.2024.
 //  Copyright © 2024 Валентин Панчишен. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,9 +24,20 @@
     
 import UIKit
 
-extension MPExtensionWrapper where Base: CAShapeLayer {
-    func animateStrokeEnd(from: CGFloat, to: CGFloat) {
-        base.strokeEnd = from
-        base.strokeEnd = to
+final class MPCollectionViewFlowLayout: UICollectionViewFlowLayout {
+    var currentIndex: Int?
+
+    override func shouldInvalidateLayout(forBoundsChange newBounds: CGRect) -> Bool {
+        invalidateLayout()
+        return true
+    }
+
+    override func targetContentOffset(forProposedContentOffset proposedContentOffset: CGPoint) -> CGPoint {
+        if let index = currentIndex, let collectionView {
+            currentIndex = nil
+            return CGPoint(x: CGFloat(index) * collectionView.frame.size.width, y: 0)
+        }
+
+        return super.targetContentOffset(forProposedContentOffset: proposedContentOffset)
     }
 }

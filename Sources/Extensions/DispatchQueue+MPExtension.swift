@@ -1,7 +1,7 @@
 //
-//  CAShapeLayer+MPExtension.swift
+//  DispatchQueue+MPExtension.swift
 //
-//  Created by Валентин Панчишен on 11.04.2024.
+//  Created by Валентин Панчишен on 19.04.2024.
 //  Copyright © 2024 Валентин Панчишен. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -22,11 +22,18 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
     
-import UIKit
 
-extension MPExtensionWrapper where Base: CAShapeLayer {
-    func animateStrokeEnd(from: CGFloat, to: CGFloat) {
-        base.strokeEnd = from
-        base.strokeEnd = to
+import Foundation
+
+extension MPExtensionWrapper where Base: DispatchQueue {
+    static func background(qos: DispatchQoS.QoSClass = .default, background: (() -> Void)? = nil, completion: (() -> Void)? = nil) {
+        Base.global(qos: qos).async {
+            background?()
+            if let completion {
+                Base.main.async {
+                    completion()
+                }
+            }
+        }
     }
 }
