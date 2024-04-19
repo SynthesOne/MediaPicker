@@ -78,7 +78,7 @@ final class MPCameraCell: CollectionViewCell {
     override func adaptationLayout() {
         backgroundThumgnail.frame = contentView.bounds
         backgroundThumgnail.center = contentView.center
-        iconCameraView.frame = .init(x: bounds.maxX - 40, y: 8, width: 32, height: 32)
+        iconCameraView.frame = .init(x: bounds.maxX - 40, y: 4, width: 32, height: 32)
         previewLayer?.frame = contentView.layer.bounds
         updateVideoOrientation()
     }
