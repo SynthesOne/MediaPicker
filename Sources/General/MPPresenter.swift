@@ -65,8 +65,8 @@ public final class MPPresenter: NSObject {
     }
     
     private func showNoAuthAlert() {
-        let alert = Alert(message: "Enable access to upload photos and attach them", {
-            Action.cancel("ok")
+        let alert = Alert(message: Lang.notAuthPhotos, {
+            Action.cancel(Lang.ok)
         })
         
         sender?.present(alert, animated: true)
@@ -80,6 +80,7 @@ public final class MPPresenter: NSObject {
             
             let sheet = navWrapper.sheetPresentationController
             sheet?.detents = [.medium(), .large()]
+            sheet?.delegate = gallery
             sheet?.selectedDetentIdentifier = .medium
             
             self?.sender?.present(navWrapper, animated: true)
@@ -110,15 +111,11 @@ public final class MPPresenter: NSObject {
             let totalCount = selectedModels.count
             
             for (i, m) in selectedModels.enumerated() {
-                let operation = MPFetchImageOperation(model: m) { image, asset in
+                let operation = MPFetchImageOperation(model: m) { (image) in
                     sucCount += 1
                     
-                    if let image = image {
-                        let model = MPResultModel(
-                            asset: asset ?? m.asset,
-                            image: image,
-                            index: i
-                        )
+                    if let image {
+                        let model = MPResultModel(m, image: image, index: i)
                         results[i] = model
                     } else {
                         errorAssets.append(m.asset)

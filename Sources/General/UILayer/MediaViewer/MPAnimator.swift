@@ -23,6 +23,7 @@
 //  THE SOFTWARE.
     
 import UIKit
+
 private let kInitialSpringVelocity: CGFloat = 2.0
 private let kDampingRatio: CGFloat = 0.75
 

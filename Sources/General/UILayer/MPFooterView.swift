@@ -50,7 +50,7 @@ final class MPFooterView: UIView {
         view.textAlignment = .left
         view.textColor = .secondaryLabel
         view.font = .systemFont(ofSize: 14, weight: .regular)
-        view.text = "You have not allowed the app to access all photos."
+        view.text = Lang.limitedAccessTip
         view.lineBreakMode = .byWordWrapping
         view.numberOfLines = 0
         return view
@@ -59,7 +59,7 @@ final class MPFooterView: UIView {
     private lazy var toolTipButton: FillButton = {
         let view = FillButton(type: .custom)
         view.layer.masksToBounds = true
-        view.setTitle("CONTROL", for: .normal)
+        view.setTitle(Lang.toolTipControl, for: .normal)
         view.setTitleColor(.white, for: .normal)
         view.titleLabel?.font = .systemFont(ofSize: 14, weight: .medium)
         let uiConfig = MPUIConfiguration.default()
@@ -85,7 +85,7 @@ final class MPFooterView: UIView {
         view.layer.masksToBounds = true
         view.layer.cornerRadius = 8
         view.setTitleColor(.white, for: .normal)
-        view.setTitle("Cancel", for: .normal)
+        view.setTitle(Lang.cancelButton, for: .normal)
         view.titleLabel?.font = .systemFont(ofSize: 18, weight: .medium)
         view.backgroundColor = .systemGray
         view.fillColor = .systemGray
@@ -164,12 +164,12 @@ final class MPFooterView: UIView {
     
     private func updateButtonActionButtond(hasCount: Bool) {
         if hasCount {
-            actionButton.setTitle("Add", for: .normal)
+            actionButton.setTitle(Lang.attach, for: .normal)
             actionButton.backgroundColor = MPUIConfiguration.default().navigationAppearance.tintColor
             actionButton.fillColor = MPUIConfiguration.default().navigationAppearance.tintColor
             actionButton.highlightColor = MPUIConfiguration.default().navigationAppearance.tintColor.mp.darker()
         } else {
-            actionButton.setTitle("Cancel", for: .normal)
+            actionButton.setTitle(Lang.cancelButton, for: .normal)
             actionButton.backgroundColor = .systemGray
             actionButton.fillColor = .systemGray
             actionButton.highlightColor = .systemGray.mp.darker()
@@ -218,7 +218,7 @@ final class MPFooterView: UIView {
     //}
     
     func setCounter(_ counter: Int) {
-        actionButton.setTitle(counter <= 0 ? "Cancel" : "Add", for: .normal)
+        actionButton.setTitle(counter <= 0 ? Lang.cancelButton : Lang.attach, for: .normal)
         if counter == 1 && self.counter.isHidden {
             showCounterAnimation()
             self.counter.setCounter(counter)

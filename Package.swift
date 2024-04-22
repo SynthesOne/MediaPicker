@@ -21,7 +21,8 @@ let package = Package(
             name: "MediaPicker",
             path: "Sources",
             resources: [
-                .copy("PrivacyInfo.xcprivacy")
+                .process("Resources/Localizable.xcstrings"),
+                .copy("Resources/PrivacyInfo.xcprivacy")
             ]
         ),
         .testTarget(

@@ -149,23 +149,12 @@ final class MediaPickerCell: CollectionViewCell {
         
         selectionButton.setIsOn(model.isSelected, isAnimate: false)
         
-        if model.isSelected {
-            fetchBigImage()
-        } else {
-            cancelFetchBigImage()
-        }
-        
         fetchSmallImage()
     }
     
     private func selectionBlock() {
         selectedBlock?({ [weak self] isSelected in
             self?.selectionButton.setIsOn(isSelected)
-            if isSelected {
-                self?.fetchBigImage()
-            } else {
-                self?.cancelFetchBigImage()
-            }
         })
     }
     
@@ -196,44 +185,8 @@ final class MediaPickerCell: CollectionViewCell {
         })
     }
     
-    private func fetchBigImage() {
-        cancelFetchBigImage()
-        
-        bigImageReqeustID = MPManager.fetchOriginalImageData(for: model.asset, progress: { [weak self] progress, _, _, _ in
-            if self?.model.isSelected == true {
-                //self?.progressView.isHidden = false
-                //self?.progressView.progress = max(0.1, progress)
-                //self?.imageView.alpha = 0.5
-                if progress >= 1 {
-                    //self?.resetProgressViewStatus()
-                }
-            } else {
-                self?.cancelFetchBigImage()
-            }
-        }, completion: { [weak self] _, _, _ in
-            //self?.resetProgressViewStatus()
-        })
-    }
-    
-    private func cancelFetchBigImage() {
-        if bigImageReqeustID > PHInvalidImageRequestID {
-            PHImageManager.default().cancelImageRequest(bigImageReqeustID)
-        }
-        //resetProgressViewStatus()
-    }
-    
     private func handleTransitionForPreview(_ isHidden: Bool) {
         selectionButton.mp.setIsHidden(isHidden, duration: 0.3)
-    }
-    
-    func dismissalAnimationDidFinish() {
-//        imageView.isHidden = false
-//        selectionButton.isHidden = true
-//        selectionButton.mp.setIsHidden(false, duration: 0.3)
-    }
-    
-    func presentingAnimationWillStart() {
-//        selectionButton.mp.setIsHidden(true, duration: 0.3)
     }
 }
 

@@ -32,8 +32,8 @@ public struct MPPhotoModel {
     public var duration = ""
     public var isSelected = false
     
-    private var pre_dataSize: CGFloat?
-    public mutating func dataSize() -> CGFloat? {
+    private var pre_dataSize: Int?
+    public mutating func dataSize() -> Int? {
         if let pre_dataSize {
             return pre_dataSize
         }

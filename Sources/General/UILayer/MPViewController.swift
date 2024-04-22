@@ -37,7 +37,7 @@ final class MPViewController: UIViewController {
     }()
     
     private let albumListNavView: MPAlbumPickerNavView = {
-        let view = MPAlbumPickerNavView(title: "Recents", isCenterAlignment: true)
+        let view = MPAlbumPickerNavView(title: Lang.recents, isCenterAlignment: true)
         return view
     }()
     
@@ -147,24 +147,24 @@ final class MPViewController: UIViewController {
             if strongSelf.selectedModels.count > 0 {
                 strongSelf.preSelectedResult?(strongSelf.selectedModels)
             } else {
-                strongSelf.dismiss(animated: true)
+                strongSelf.dismissAlert(needDismiss: true)
             }
         }
         
         footer.toolTipButtonTap = { [weak self] in
             guard let strongSelf = self else { return }
             let actionSheet = ActionSheet({
-                Action.default("Select more photos", action: {
+                Action.default(Lang.selectMorePhotos, action: {
                     self?.presentLimitedLibraryPicker()
                 })
-                Action.default("Change settings", action: {
+                Action.default(Lang.changeSettings, action: {
                     if let url = URL(string: UIApplication.openSettingsURLString) {
                         if UIApplication.shared.canOpenURL(url) {
                             UIApplication.shared.open(url, options: [:], completionHandler: nil)
                         }
                     }
                 })
-                Action.cancel("Cancel")
+                Action.cancel(Lang.cancelButton)
             })
             actionSheet.view.tintColor = MPUIConfiguration.default().navigationAppearance.tintColor
             strongSelf.present(actionSheet, animated: true)
@@ -651,7 +651,7 @@ final class MPViewController: UIViewController {
     private func showCamera() {
         let config = MPGeneralConfiguration.default()
         if !UIImagePickerController.isSourceTypeAvailable(.camera) {
-            showAlertView("Camera is unavailable")
+            showAlertView(Lang.сameraUnavailable)
         } else if MPManager.hasCameraAuthority() {
             let picker = UIImagePickerController()
             picker.delegate = self
@@ -670,14 +670,14 @@ final class MPViewController: UIViewController {
             picker.mediaTypes = mediaTypes
             present(picker, animated: true)
         } else {
-            showAlertView("Please allow to access your device's camera in \"Settings\" > \"Privacy\" > \"Camera\"")
+            showAlertView(Lang.cameraAccessMessage)
         }
     }
     
     private func showAlertView(_ message: String) {
         MPMainAsync { [weak self] in
             let alert = Alert(message: message, {
-                Action.cancel("ok")
+                Action.cancel(Lang.ok)
             })
             
             self?.present(alert, animated: true)
@@ -691,7 +691,7 @@ final class MPViewController: UIViewController {
                     let model = MPPhotoModel(asset: at)
                     self?.handleNewAsset(model)
                 } else {
-                    self?.showAlertView("Failed to save the image")
+                    self?.showAlertView(Lang.errorSaveImage)
                 }
             }
         } else if let videoUrl = videoUrl {
@@ -700,7 +700,7 @@ final class MPViewController: UIViewController {
                     let model = MPPhotoModel(asset: at)
                     self?.handleNewAsset(model)
                 } else {
-                    self?.showAlertView("Failed to save the video")
+                    self?.showAlertView(Lang.errorSaveVideo)
                 }
             }
         }
@@ -740,6 +740,25 @@ final class MPViewController: UIViewController {
             } else {
                 self?.wasCreateSnapshot = false
             }
+        }
+    }
+    
+    private func showDismissAlertIfNeed() {
+        let alert = Alert(message: Lang.cancelSelect, { [weak self] in
+            Action.default(Lang.yes, action: {
+                self?.dismiss(animated: true)
+            })
+            Action.cancel(Lang.no)
+        })
+        
+        present(alert, animated: true)
+    }
+    
+    private func dismissAlert(needDismiss: Bool = false) {
+        if !selectedModels.isEmpty {
+            showDismissAlertIfNeed()
+        } else {
+            if needDismiss { dismiss(animated: true) }
         }
     }
 }
@@ -897,6 +916,20 @@ extension MPViewController: MediaPreviewControllerDelegate {
     func toggleSelected(forModel model: MPPhotoModel) {
         if let indexPath = dataModel.getIndexPath(forMedia: model) {
             selectionBlock(indexPath: indexPath)
+        }
+    }
+}
+
+// MARK: - UISheetPresentationControllerDelegate
+extension MPViewController: UISheetPresentationControllerDelegate {
+    func presentationControllerShouldDismiss(_ presentationController: UIPresentationController) -> Bool {
+        if selectedModels.isEmpty {
+            return true
+        } else {
+            // I don't use the presentationControllerDidAttemptToDismiss for call dismissAlert()
+            // Because it is not called when user tap from the outside sheet
+            dismissAlert()
+            return false
         }
     }
 }

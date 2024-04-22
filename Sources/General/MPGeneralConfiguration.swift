@@ -23,8 +23,13 @@
 //  THE SOFTWARE.
     
 import UIKit
+
 // MPGeneralConfiguration+discardable
 public final class MPGeneralConfiguration: NSObject {
+    public enum StringCatalogType {
+        case xcstrings, lproj
+    }
+    
     private override init() {
         super.init()
     }
@@ -53,4 +58,18 @@ public final class MPGeneralConfiguration: NSObject {
     
     /// Maximum number of media that can be selected
     public var maxMediaSelectCount = 20
+    
+    /// If the property is set, this Bundle will be used for localisation. For correct operation see keys in enum `Lang`.
+    /// If the `keysLangsDeploy` property is not set, you must specify your localisation options for all localisation table keys from the library.
+    public var bundleLangsDeploy: Bundle? = nil
+    
+    /// You can use keys from your localisation tables.
+    /// Set the key from the `Lang` enum as the key
+    /// As the value set the key from your table
+    /// Example: ["MPCancelButton": "CustomKeyFromYourApp"]
+    public var keysLangsDeploy: [String: String] = [:]
+    
+    /// Change this value if you are using an old localisation type.
+    /// In case of change - it is obligatory to set `bundleLangDeploy`.
+    public var stringCatalogType: StringCatalogType = .xcstrings
 }

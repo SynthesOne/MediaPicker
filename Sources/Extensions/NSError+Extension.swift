@@ -1,7 +1,7 @@
 //
-//  MPUIConfiguration+Chaining.swift
+//  NSError+Extension.swift
 //
-//  Created by Валентин Панчишен on 11.04.2024.
+//  Created by Валентин Панчишен on 22.04.2024.
 //  Copyright © 2024 Валентин Панчишен. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -21,37 +21,24 @@
 //  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
+    
+import Foundation
 
-import UIKit
+extension NSError {
+    convenience init(message: String) {
+        let userInfo = [NSLocalizedDescriptionKey: message]
+        self.init(domain: "com.MediaPicker.error", code: -1, userInfo: userInfo)
+    }
+}
 
-public extension MPUIConfiguration {
-    @discardableResult
-    func setShowCounterOnSelectionButton(_ value: Bool) -> MPUIConfiguration {
-        showCounterOnSelectionButton = value
-        return self
-    }
+extension NSError {
+    static let videoMergeError = NSError(message: "Video merge failed")
     
-    @discardableResult
-    func setSelectionButtonCornersStyle(_ value: MPCheckboxStyle) -> MPUIConfiguration {
-        selectionButtonCornersStyle = value
-        return self
-    }
+    static let videoExportTypeError = NSError(message: "The mediaType of asset must be video")
     
-    @discardableResult
-    func setNavigationAppearance(_ value: MPNavigationAppearance) -> MPUIConfiguration {
-        navigationAppearance = value
-        return self
-    }
+    static let videoExportError = NSError(message: "Video export failed")
     
-    @discardableResult
-    func setPrimaryBackgroundColor(_ value: UIColor) -> MPUIConfiguration {
-        primaryBackgroundColor = value
-        return self
-    }
+    static let assetSaveError = NSError(message: "Asset save failed")
     
-    @discardableResult
-    func setShowCameraCell(_ value: Bool) -> MPUIConfiguration {
-        showCameraCell = value
-        return self
-    }
+    static let timeoutError = NSError(message: "Timeout")
 }

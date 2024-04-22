@@ -26,8 +26,6 @@ import UIKit
 import Photos
 
 let MaxImageWidth: CGFloat = 500
-//let UIScreenHeight = UIScreen.mp.current?.bounds.height ?? 1.0
-//let UIScreenWidth = UIScreen.mp.current?.bounds.width ?? 1.0
 let UIScreenScale = UIScreen.mp.current?.scale ?? 1.0
 let UIScreenPixel = 1.0 / UIScreenScale
 

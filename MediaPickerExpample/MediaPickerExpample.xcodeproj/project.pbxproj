@@ -9,19 +9,21 @@
 /* Begin PBXBuildFile section */
 		502AD2C32BC688D400C5CD3C /* MediaPicker in Frameworks */ = {isa = PBXBuildFile; productRef = 502AD2C22BC688D400C5CD3C /* MediaPicker */; };
 		50895DE72BC9522200128719 /* PhotosUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50895DE62BC9522200128719 /* PhotosUI.framework */; };
+		50CCA7872BD6644D00D5308F /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 50CCA7862BD6644D00D5308F /* Localizable.xcstrings */; };
 		50E466DB2BBFD9B0004DD4C1 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50E466DA2BBFD9B0004DD4C1 /* AppDelegate.swift */; };
 		50E466DF2BBFD9B0004DD4C1 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50E466DE2BBFD9B0004DD4C1 /* ViewController.swift */; };
 		50E466E42BBFD9B1004DD4C1 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 50E466E32BBFD9B1004DD4C1 /* Assets.xcassets */; };
-		50E466E72BBFD9B1004DD4C1 /* Base in Resources */ = {isa = PBXBuildFile; fileRef = 50E466E62BBFD9B1004DD4C1 /* Base */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		502AD2BF2BC680E300C5CD3C /* MediaPickerExpample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MediaPickerExpample.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		507BE3672BD642AB00C78F60 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = en; path = en.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		507BE3682BD642BD00C78F60 /* ru */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = ru; path = ru.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		50895DE62BC9522200128719 /* PhotosUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = PhotosUI.framework; path = System/Library/Frameworks/PhotosUI.framework; sourceTree = SDKROOT; };
+		50CCA7862BD6644D00D5308F /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		50E466DA2BBFD9B0004DD4C1 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		50E466DE2BBFD9B0004DD4C1 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		50E466E32BBFD9B1004DD4C1 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		50E466E62BBFD9B1004DD4C1 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		50E466E82BBFD9B1004DD4C1 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -63,6 +65,7 @@
 				50E466E32BBFD9B1004DD4C1 /* Assets.xcassets */,
 				50E466E52BBFD9B1004DD4C1 /* LaunchScreen.storyboard */,
 				50E466E82BBFD9B1004DD4C1 /* Info.plist */,
+				50CCA7862BD6644D00D5308F /* Localizable.xcstrings */,
 			);
 			path = MediaPickerExpample;
 			sourceTree = "<group>";
@@ -111,7 +114,7 @@
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
-				Base,
+				ru,
 			);
 			mainGroup = 50E466CE2BBFD9B0004DD4C1;
 			packageReferences = (
@@ -130,8 +133,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				50CCA7872BD6644D00D5308F /* Localizable.xcstrings in Resources */,
 				50E466E42BBFD9B1004DD4C1 /* Assets.xcassets in Resources */,
-				50E466E72BBFD9B1004DD4C1 /* Base in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -153,7 +156,8 @@
 		50E466E52BBFD9B1004DD4C1 /* LaunchScreen.storyboard */ = {
 			isa = PBXVariantGroup;
 			children = (
-				50E466E62BBFD9B1004DD4C1 /* Base */,
+				507BE3672BD642AB00C78F60 /* en */,
+				507BE3682BD642BD00C78F60 /* ru */,
 			);
 			name = LaunchScreen.storyboard;
 			sourceTree = "<group>";
@@ -166,6 +170,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
@@ -229,6 +234,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
@@ -285,9 +291,10 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 285ZUVQSK7;
+				DEVELOPMENT_TEAM = B4ZP7P7M79;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = MediaPickerExpample/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = MediaPicker;
@@ -304,8 +311,9 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.synthesdev.MediaPickerExpample;
+				PRODUCT_BUNDLE_IDENTIFIER = com.vpdev.mediapickerexample;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -317,9 +325,10 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 285ZUVQSK7;
+				DEVELOPMENT_TEAM = B4ZP7P7M79;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = MediaPickerExpample/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = MediaPicker;
@@ -336,8 +345,9 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.synthesdev.MediaPickerExpample;
+				PRODUCT_BUNDLE_IDENTIFIER = com.vpdev.mediapickerexample;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";

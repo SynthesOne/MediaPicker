@@ -27,13 +27,13 @@ import Photos
 
 public enum MPManager {
     // MARK: - Public API
-    public static func fetchAssetSize(forAsset asset: PHAsset) -> CGFloat? {
+    public static func fetchAssetSize(forAsset asset: PHAsset) -> Int? {
         guard let resource = PHAssetResource.assetResources(for: asset).first,
-              let size = resource.value(forKey: "fileSize") as? CGFloat else {
+              let size = resource.value(forKey: "fileSize") as? Int else {
             return nil
         }
         
-        return size / 1024
+        return size
     }
     
     @discardableResult
@@ -65,7 +65,7 @@ public enum MPManager {
         let resultHandler: (Data?, [AnyHashable: Any]?) -> Void = { data, info in
             let cancel = info?[PHImageCancelledKey] as? Bool ?? false
             let isDegraded = (info?[PHImageResultIsDegradedKey] as? Bool ?? false)
-            if !cancel, let data = data {
+            if !cancel, let data {
                 completion(data, info, isDegraded)
             }
         }
@@ -78,10 +78,9 @@ public enum MPManager {
     /// Fetch photos from result.
     public static func fetchPhoto(in result: PHFetchResult<PHAsset>, allowImage: Bool, allowVideo: Bool, limitCount: Int = .max) -> [MPPhotoModel] {
         var models: [MPPhotoModel] = []
-        //let option: NSEnumerationOptions = .reverse
         var count = 1
         
-        result.enumerateObjects/*(options: option)*/ { asset, _, stop in
+        result.enumerateObjects { asset, _, stop in
             let m = MPPhotoModel(asset: asset)
             
             if m.type == .image, !allowImage {
@@ -127,7 +126,7 @@ public enum MPManager {
                 if collection.assetCollectionSubtype == .smartAlbumAllHidden {
                     return
                 }
-                if #available(iOS 11.0, *), collection.assetCollectionSubtype.rawValue > PHAssetCollectionSubtype.smartAlbumLongExposures.rawValue {
+                if collection.assetCollectionSubtype.rawValue > PHAssetCollectionSubtype.smartAlbumLongExposures.rawValue {
                     return
                 }
                 let result = PHAsset.fetchAssets(in: collection, options: option)
@@ -310,18 +309,16 @@ public enum MPManager {
     }
     
     private static func getAsset(from localIdentifier: String?) -> PHAsset? {
-        guard let id = localIdentifier else {
-            return nil
-        }
+        guard let localIdentifier else { return nil }
         
-        let result = PHAsset.fetchAssets(withLocalIdentifiers: [id], options: nil)
+        let result = PHAsset.fetchAssets(withLocalIdentifiers: [localIdentifier], options: nil)
         return result.firstObject
     }
     
     // MARK: - Private API
     /// Conversion collection title.
     private static func getCollectionTitle(_ collection: PHAssetCollection) -> String {
-        return collection.localizedTitle ?? "empty title"
+        return collection.localizedTitle ?? Lang.unknownAlbum
     }
     
     /// Fetch image for asset.
@@ -337,7 +334,7 @@ public enum MPManager {
         
         return PHImageManager.default().requestImage(for: asset, targetSize: size, contentMode: .aspectFill, options: option) { image, info in
             var downloadFinished = false
-            if let info = info {
+            if let info {
                 downloadFinished = !(info[PHImageCancelledKey] as? Bool ?? false) && (info[PHImageErrorKey] == nil)
             }
             let isDegraded = (info?[PHImageResultIsDegradedKey] as? Bool ?? false)

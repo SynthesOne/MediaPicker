@@ -26,32 +26,50 @@ import UIKit
 
 public extension MPGeneralConfiguration {
     @discardableResult
-    func allowImage(_ value: Bool) -> MPGeneralConfiguration {
+    func setAllowImage(_ value: Bool) -> MPGeneralConfiguration {
         allowImage = value
         return self
     }
     
     @discardableResult
-    func allowGif(_ value: Bool) -> MPGeneralConfiguration {
+    func setAllowGif(_ value: Bool) -> MPGeneralConfiguration {
         allowGif = value
         return self
     }
     
     @discardableResult
-    func allowVideo(_ value: Bool) -> MPGeneralConfiguration {
+    func setAllowVideo(_ value: Bool) -> MPGeneralConfiguration {
         allowVideo = value
         return self
     }
     
     @discardableResult
-    func allowLivePhoto(_ value: Bool) -> MPGeneralConfiguration {
+    func setAllowLivePhoto(_ value: Bool) -> MPGeneralConfiguration {
         allowLivePhoto = value
         return self
     }
     
     @discardableResult
-    func maxMediaSelectCount(_ value: Int) -> MPGeneralConfiguration {
+    func setMaxMediaSelectCount(_ value: Int) -> MPGeneralConfiguration {
         maxMediaSelectCount = value
+        return self
+    }
+    
+    @discardableResult
+    func setBundleLangsDeploy(_ value: Bundle) -> MPGeneralConfiguration {
+        bundleLangsDeploy = value
+        return self
+    }
+    
+    @discardableResult
+    func setKeysLangsDeploy(_ value: [String: String]) -> MPGeneralConfiguration {
+        keysLangsDeploy = value
+        return self
+    }
+    
+    @discardableResult
+    func setStringCatalogType(_ value: MPGeneralConfiguration.StringCatalogType) -> MPGeneralConfiguration {
+        stringCatalogType = value
         return self
     }
 }

@@ -1,7 +1,7 @@
 //
-//  MPUIConfiguration+Chaining.swift
+//  String+MPExtension.swift
 //
-//  Created by Валентин Панчишен on 11.04.2024.
+//  Created by Валентин Панчишен on 22.04.2024.
 //  Copyright © 2024 Валентин Панчишен. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -21,37 +21,19 @@
 //  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
+    
+import Foundation
 
-import UIKit
-
-public extension MPUIConfiguration {
-    @discardableResult
-    func setShowCounterOnSelectionButton(_ value: Bool) -> MPUIConfiguration {
-        showCounterOnSelectionButton = value
-        return self
+extension String {
+    func fileExtension() -> String {
+        (self as NSString).pathExtension
     }
     
-    @discardableResult
-    func setSelectionButtonCornersStyle(_ value: MPCheckboxStyle) -> MPUIConfiguration {
-        selectionButtonCornersStyle = value
-        return self
+    func fileName() -> String {
+        (self as NSString).deletingPathExtension
     }
     
-    @discardableResult
-    func setNavigationAppearance(_ value: MPNavigationAppearance) -> MPUIConfiguration {
-        navigationAppearance = value
-        return self
-    }
-    
-    @discardableResult
-    func setPrimaryBackgroundColor(_ value: UIColor) -> MPUIConfiguration {
-        primaryBackgroundColor = value
-        return self
-    }
-    
-    @discardableResult
-    func setShowCameraCell(_ value: Bool) -> MPUIConfiguration {
-        showCameraCell = value
-        return self
+    static func locale(_ keyName: String, bundle: Bundle) -> String {
+        String(localized: .init(keyName), bundle: bundle)
     }
 }

@@ -30,7 +30,7 @@ final class MPFetchImageOperation: Operation {
     
     private let progress: ((CGFloat, Error?, UnsafeMutablePointer<ObjCBool>, [AnyHashable: Any]?) -> Void)?
     
-    private let completion: (UIImage?, PHAsset?) -> Void
+    private let completion: (UIImage?) -> Void
     
     private var preIsExecuting = false {
         willSet {
@@ -76,7 +76,7 @@ final class MPFetchImageOperation: Operation {
     init(
         model: MPPhotoModel,
         progress: ((CGFloat, Error?, UnsafeMutablePointer<ObjCBool>, [AnyHashable: Any]?) -> Void)? = nil,
-        completion: @escaping ((UIImage?, PHAsset?) -> Void)
+        completion: @escaping ((UIImage?) -> Void)
     ) {
         self.model = model
         self.progress = progress
@@ -95,28 +95,19 @@ final class MPFetchImageOperation: Operation {
             requestImageID = MPManager.fetchOriginalImageData(for: model.asset) { [weak self] data, _, isDegraded in
                 if !isDegraded {
                     let image = UIImage.mp.gif(data: data)
-                    self?.completion(image, nil)
+                    self?.completion(image)
                     self?.fetchFinish()
                 }
             }
             return
         }
         
-//        if isOriginal {
-            requestImageID = MPManager.fetchOriginalImage(for: model.asset, progress: progress) { [weak self] image, isDegraded in
-                if !isDegraded {
-                    self?.completion(image?.mp.upOrientationImage(), nil)
-                    self?.fetchFinish()
-                }
+        requestImageID = MPManager.fetchOriginalImage(for: model.asset, progress: progress) { [weak self] image, isDegraded in
+            if !isDegraded {
+                self?.completion(image?.mp.upOrientationImage())
+                self?.fetchFinish()
             }
-//        } else {
-//            requestImageID = MPManager.fetchImage(for: model.asset, size: model.previewSize, progress: progress) { [weak self] image, isDegraded in
-//                if !isDegraded {
-//                    self?.completion(self?.scaleImage(image?.mp.upOrientationImage()), nil)
-//                    self?.fetchFinish()
-//                }
-//            }
-//        }
+        }
     }
     
     override func cancel() {
