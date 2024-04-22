@@ -124,7 +124,6 @@ final class MPViewController: UIViewController {
         let height = footer.intrinsicContentSize.height
         collectionView.verticalScrollIndicatorInsets.bottom = height
         collectionView.contentInset.bottom = height
-        //footer.validLayout(in: view)
         footer.frame = .init(x: .zero, y: view.frame.maxY - bottomInset - height, width: view.frame.width, height: height + bottomInset)
     }
     
