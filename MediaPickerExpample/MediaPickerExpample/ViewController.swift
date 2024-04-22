@@ -38,8 +38,11 @@ class ViewController: UIViewController {
 
     @objc func openG() {
         MPGeneralConfiguration.default()
-            //.setBundleLangsDeploy(.main)
-            //.setKeysLangsDeploy(["MPAttach": "testKeyDeploy"])
+            .setBundleLangsDeploy(.main)
+            .setKeysLangsDeploy([
+                "MPAttach": "MPAttach",
+                "MPCancelButton": "MPCancelButton"
+            ])
             //.maxMediaSelectCount(1)
         
         MPUIConfiguration.default()

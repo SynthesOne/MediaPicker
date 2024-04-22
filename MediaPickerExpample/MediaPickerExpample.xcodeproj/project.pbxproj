@@ -10,6 +10,7 @@
 		502AD2C32BC688D400C5CD3C /* MediaPicker in Frameworks */ = {isa = PBXBuildFile; productRef = 502AD2C22BC688D400C5CD3C /* MediaPicker */; };
 		50895DE72BC9522200128719 /* PhotosUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50895DE62BC9522200128719 /* PhotosUI.framework */; };
 		50CCA7872BD6644D00D5308F /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 50CCA7862BD6644D00D5308F /* Localizable.xcstrings */; };
+		50D44F242BD68B7300697261 /* MediaPicker in Frameworks */ = {isa = PBXBuildFile; productRef = 50D44F232BD68B7300697261 /* MediaPicker */; };
 		50E466DB2BBFD9B0004DD4C1 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50E466DA2BBFD9B0004DD4C1 /* AppDelegate.swift */; };
 		50E466DF2BBFD9B0004DD4C1 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50E466DE2BBFD9B0004DD4C1 /* ViewController.swift */; };
 		50E466E42BBFD9B1004DD4C1 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 50E466E32BBFD9B1004DD4C1 /* Assets.xcassets */; };
@@ -17,10 +18,15 @@
 
 /* Begin PBXFileReference section */
 		502AD2BF2BC680E300C5CD3C /* MediaPickerExpample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MediaPickerExpample.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		503BA8E02BD68A0500A927B4 /* fr */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = fr; path = fr.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		503BA8E12BD68A0B00A927B4 /* de */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = de; path = de.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		503BA8E22BD68A1800A927B4 /* ja */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = ja; path = ja.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		503BA8E32BD68A2400A927B4 /* es */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = es; path = es.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		507BE3672BD642AB00C78F60 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = en; path = en.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		507BE3682BD642BD00C78F60 /* ru */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = ru; path = ru.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		50895DE62BC9522200128719 /* PhotosUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = PhotosUI.framework; path = System/Library/Frameworks/PhotosUI.framework; sourceTree = SDKROOT; };
 		50CCA7862BD6644D00D5308F /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
+		50D44F252BD68C3B00697261 /* pl */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = pl; path = pl.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		50E466DA2BBFD9B0004DD4C1 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		50E466DE2BBFD9B0004DD4C1 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		50E466E32BBFD9B1004DD4C1 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -34,6 +40,7 @@
 			files = (
 				502AD2C32BC688D400C5CD3C /* MediaPicker in Frameworks */,
 				50895DE72BC9522200128719 /* PhotosUI.framework in Frameworks */,
+				50D44F242BD68B7300697261 /* MediaPicker in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -88,6 +95,7 @@
 			name = MediaPickerExpample;
 			packageProductDependencies = (
 				502AD2C22BC688D400C5CD3C /* MediaPicker */,
+				50D44F232BD68B7300697261 /* MediaPicker */,
 			);
 			productName = MediaPickerExpample;
 			productReference = 502AD2BF2BC680E300C5CD3C /* MediaPickerExpample.app */;
@@ -115,9 +123,15 @@
 			knownRegions = (
 				en,
 				ru,
+				fr,
+				de,
+				ja,
+				es,
+				pl,
 			);
 			mainGroup = 50E466CE2BBFD9B0004DD4C1;
 			packageReferences = (
+				50D44F222BD68B7300697261 /* XCRemoteSwiftPackageReference "MediaPicker" */,
 			);
 			productRefGroup = 50E466CE2BBFD9B0004DD4C1;
 			projectDirPath = "";
@@ -158,6 +172,11 @@
 			children = (
 				507BE3672BD642AB00C78F60 /* en */,
 				507BE3682BD642BD00C78F60 /* ru */,
+				503BA8E02BD68A0500A927B4 /* fr */,
+				503BA8E12BD68A0B00A927B4 /* de */,
+				503BA8E22BD68A1800A927B4 /* ja */,
+				503BA8E32BD68A2400A927B4 /* es */,
+				50D44F252BD68C3B00697261 /* pl */,
 			);
 			name = LaunchScreen.storyboard;
 			sourceTree = "<group>";
@@ -377,9 +396,25 @@
 		};
 /* End XCConfigurationList section */
 
+/* Begin XCRemoteSwiftPackageReference section */
+		50D44F222BD68B7300697261 /* XCRemoteSwiftPackageReference "MediaPicker" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SynthesOne/MediaPicker.git";
+			requirement = {
+				branch = dev;
+				kind = branch;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
 /* Begin XCSwiftPackageProductDependency section */
 		502AD2C22BC688D400C5CD3C /* MediaPicker */ = {
 			isa = XCSwiftPackageProductDependency;
+			productName = MediaPicker;
+		};
+		50D44F232BD68B7300697261 /* MediaPicker */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 50D44F222BD68B7300697261 /* XCRemoteSwiftPackageReference "MediaPicker" */;
 			productName = MediaPicker;
 		};
 /* End XCSwiftPackageProductDependency section */
