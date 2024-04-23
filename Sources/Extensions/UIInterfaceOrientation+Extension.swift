@@ -1,5 +1,5 @@
 //
-//  UIInterfaceOrientation+MPExtension.swift
+//  UIInterfaceOrientation+Extension.swift
 //
 //  Created by Валентин Панчишен on 19.04.2024.
 //  Copyright © 2024 Валентин Панчишен. All rights reserved.

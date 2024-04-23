@@ -50,6 +50,12 @@ final class MPAlbumPickerNavView: UIView {
     
     var onTap: ((MPAlbumPickerNavView, Bool) -> ())? = nil
     
+    var containerViewSize: CGFloat = UIScreenWidth() {
+        didSet {
+            layoutSubviews()
+        }
+    }
+    
     required public init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
@@ -80,7 +86,7 @@ final class MPAlbumPickerNavView: UIView {
             } else if let superMinX = superview?.frame.minX, superMinX > 0 {
                 minX = superMinX
             }
-            let offset: CGFloat = abs((frame.width + minX) - UIScreenWidth()) - minX
+            let offset: CGFloat = abs((frame.width + minX) - containerViewSize) - minX
             var leftOffset = offset
             if leftOffset < 0 {
                 leftOffset = 0

@@ -88,6 +88,8 @@ final class MPViewController: UIViewController {
     
     private var wasCreateSnapshot: Bool = false
     
+    private var didAttemptToDismissWasCall = false
+    
     var preSelectedResult: (([MPPhotoModel]) -> ())? = nil
     
     
@@ -125,6 +127,7 @@ final class MPViewController: UIViewController {
         collectionView.verticalScrollIndicatorInsets.bottom = height
         collectionView.contentInset.bottom = height
         footer.frame = .init(x: .zero, y: view.frame.maxY - bottomInset - height, width: view.frame.width, height: height + bottomInset)
+        albumListNavView.containerViewSize = view.bounds.width
     }
     
     override func viewWillTransition(to size: CGSize, with coordinator: any UIViewControllerTransitionCoordinator) {
@@ -241,28 +244,28 @@ final class MPViewController: UIViewController {
                 columnCount += 2
             }
             let totalW = strongSelf.view.safeAreaLayoutGuide.layoutFrame.width - CGFloat(columnCount - 1) * UIScreenPixel
+            let itemWH = totalW / CGFloat(columnCount)
             
             switch section {
             case .cameraRoll:
-                let itemWidth = totalW / CGFloat(columnCount)
-                let cameraGroupHeight = itemWidth * 2 + UIScreenPixel
+                let cameraGroupHeight = itemWH * 2 + UIScreenPixel
                 
                 let cameraItem = NSCollectionLayoutItem(
                     layoutSize: NSCollectionLayoutSize(
-                        widthDimension: .absolute(itemWidth),
+                        widthDimension: .absolute(itemWH),
                         heightDimension: .fractionalHeight(1.0)
                     )
                 )
                 
                 let smallItem = NSCollectionLayoutItem(
                     layoutSize: NSCollectionLayoutSize(
-                        widthDimension: .absolute(itemWidth),
-                        heightDimension: .absolute(itemWidth)
+                        widthDimension: .absolute(itemWH),
+                        heightDimension: .absolute(itemWH)
                     )
                 )
                 let hGroupSize = NSCollectionLayoutSize(
                     widthDimension: .fractionalWidth(1.0),
-                    heightDimension: .absolute(itemWidth)
+                    heightDimension: .absolute(itemWH)
                 )
                 
                 let bigVGroupSize = NSCollectionLayoutSize(
@@ -314,8 +317,6 @@ final class MPViewController: UIViewController {
                 return section
                 
             case .main:
-                let itemWH = totalW / CGFloat(columnCount)
-                
                 let itemSize = NSCollectionLayoutSize(
                     widthDimension: .absolute(itemWH),
                     heightDimension: .fractionalHeight(1.0)
@@ -679,6 +680,10 @@ final class MPViewController: UIViewController {
                 Action.cancel(Lang.ok)
             })
             
+            if isIpad {
+                alert.popoverPresentationController?.sourceView = self.view
+            }
+            
             self.present(alert, animated: true)
         }
     }
@@ -749,6 +754,10 @@ final class MPViewController: UIViewController {
             })
             Action.cancel(Lang.no)
         })
+        
+        if isIpad {
+            alert.popoverPresentationController?.sourceView = view
+        }
         
         present(alert, animated: true)
     }
@@ -921,20 +930,21 @@ extension MPViewController: MediaPreviewControllerDelegate {
 // MARK: - UISheetPresentationControllerDelegate
 extension MPViewController: UISheetPresentationControllerDelegate {
     func presentationControllerShouldDismiss(_ presentationController: UIPresentationController) -> Bool {
-        debugPrint("MPVC presentationControllerShouldDismiss")
         if selectedModels.isEmpty {
             return true
         } else {
-            // I don't use the presentationControllerDidAttemptToDismiss for call dismissAlert()
-            // Because it is not called when user tap from the outside sheet
-            MPMainAsync(after: 0.3) {
-                self.dismissAlert()
-            }
+            // scheduledTimer is required to handle cases of attempting to close the sheet with tap outside
+            didAttemptToDismissWasCall = false
+            Timer.scheduledTimer(withTimeInterval: 0.3, repeats: false, block: { [weak self] (_) in
+                guard let strongSelf = self, !strongSelf.didAttemptToDismissWasCall else { return }
+                strongSelf.dismissAlert()
+            })
             return false
         }
     }
     
     func presentationControllerDidAttemptToDismiss(_ presentationController: UIPresentationController) {
-        debugPrint("MPVC presentationControllerDidAttemptToDismiss")
+        didAttemptToDismissWasCall = true
+        dismissAlert()
     }
 }

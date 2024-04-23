@@ -57,6 +57,10 @@ func canSelectMedia(_ model: MPPhotoModel, currentSelectCount: Int) -> Bool {
     return true
 }
 
+var isIpad: Bool {
+    UIDevice.current.userInterfaceIdiom == .pad
+}
+
 //@available(iOS 17.0, *)
 //#Preview {
 //    let uiConfig = MPUIConfiguration.default()

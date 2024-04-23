@@ -98,7 +98,7 @@ class MPPreviewCell: CollectionViewCell {
         
         var width = viewW
         
-        if UIApplication.shared.mp.isLandscape == true {
+        if UIApplication.shared.mp.isLandscape == true || isIpad {
             let height = viewH
             frame.size.height = height
             
@@ -137,7 +137,7 @@ class MPPreviewCell: CollectionViewCell {
         
         imageView.frame = frame
         
-        if UIApplication.shared.mp.isLandscape == true {
+        if UIApplication.shared.mp.isLandscape == true || isIpad {
             if frame.height < viewH {
                 imageView.center = CGPoint(x: viewW / 2, y: viewH / 2)
             } else {
@@ -430,7 +430,9 @@ class MPVideoPreviewCell: MPPreviewCell {
     deinit {
         cancelDownloadVideo()
         NotificationCenter.default.removeObserver(self)
-        try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+        do {
+            try AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+        } catch { }
         Logger.log("deinit MPVideoPreviewCell")
     }
 
@@ -441,6 +443,11 @@ class MPVideoPreviewCell: MPPreviewCell {
         contentView.addSubview(progressView)
         contentView.addSubview(playBtn)
         contentView.addGestureRecognizer(singleTapGes)
+        playBtn.mp.action({ [weak self] in
+            self?.playBtnClick()
+        }, forEvent: .touchUpInside)
+        
+        singleTapGes.addTarget(self, action: #selector(playBtnClick))
         
         NotificationCenter.default.addObserver(self, selector: #selector(appWillResignActive), name: UIApplication.willResignActiveNotification, object: nil)
     }
@@ -506,8 +513,8 @@ class MPVideoPreviewCell: MPPreviewCell {
     
     private func fetchVideo() {
         videoRequestID = MPManager.fetchVideo(for: model.asset, progress: { progress, _, _, _ in
-            self.progressView.isAnimating = progress < 1
             self.progressView.isHidden = progress >= 1
+            self.progressView.isAnimating = progress < 1
         }, completion: { item, info, isDegraded in
             let error = info?[PHImageErrorKey] as? Error
             let isFetchError = MPManager.isFetchImageError(error)
@@ -745,7 +752,7 @@ final class MPPreviewView: UIView {
     
     func resetSubViewSize() {
         let size: CGSize
-        if let model = model {
+        if let model {
             size = CGSize(width: model.asset.pixelWidth, height: model.asset.pixelHeight)
         } else {
             size = imageView.image?.size ?? bounds.size
@@ -758,7 +765,7 @@ final class MPPreviewView: UIView {
         
         var width = viewW
         
-        if UIApplication.shared.mp.isLandscape == true {
+        if UIApplication.shared.mp.isLandscape == true || isIpad {
             let height = viewH
             frame.size.height = height
             
@@ -805,7 +812,7 @@ final class MPPreviewView: UIView {
         containerView.frame = frame
         
         var contenSize: CGSize = .zero
-        if UIApplication.shared.mp.isLandscape == true {
+        if UIApplication.shared.mp.isLandscape == true || isIpad {
             contenSize = CGSize(width: width, height: max(viewH, frame.height))
             if frame.height < viewH {
                 containerView.center = CGPoint(x: viewW / 2, y: viewH / 2)

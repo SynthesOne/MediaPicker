@@ -203,7 +203,6 @@ public enum MPManager {
                 progress?(CGFloat(pro), error, stop, info)
             }
         }
-        
         if asset.mp.isInCloud {
             return PHImageManager.default().requestExportSession(forVideo: asset, options: option, exportPreset: AVAssetExportPresetHighestQuality, resultHandler: { session, info in
                 let isDegraded = (info?[PHImageResultIsDegradedKey] as? Bool ?? false)

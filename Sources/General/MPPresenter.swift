@@ -73,6 +73,10 @@ public final class MPPresenter: NSObject {
             Action.cancel(Lang.ok)
         })
         
+        if isIpad {
+            alert.popoverPresentationController?.sourceView = sender?.view
+        }
+        
         sender?.present(alert, animated: true)
     }
     
