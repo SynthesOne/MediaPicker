@@ -160,8 +160,7 @@ extension MPExtensionWrapper where Base: UIImage {
             }
 
             // At it's delay in cs
-            let delaySeconds = UIImage.mp.delayForImageAtIndex(Int(index),
-                    source: source)
+            let delaySeconds = UIImage.mp.delayForImageAtIndex(Int(index), source: source)
             delays.append(Int(delaySeconds * 1000.0)) // Seconds to ms
         }
 
@@ -192,8 +191,7 @@ extension MPExtensionWrapper where Base: UIImage {
         }
 
         // Heyhey
-        let animation = UIImage.animatedImage(with: frames,
-                duration: Double(duration) / 1000.0)
+        let animation = UIImage.animatedImage(with: frames, duration: Double(duration) / 1000.0)
 
         return animation
     }

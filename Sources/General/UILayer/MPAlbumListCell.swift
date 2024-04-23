@@ -65,8 +65,7 @@ final class MPAlbumListCell: CollectionViewCell {
     private let imageView: UIImageView = {
         let view = UIImageView()
         view.contentMode = .scaleAspectFill
-        view.layer.masksToBounds = true
-        view.layer.cornerRadius = 8
+        view.mp.setRadius(8)
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
@@ -98,9 +97,9 @@ final class MPAlbumListCell: CollectionViewCell {
         
         imageIdentifier = model.headImageAsset?.localIdentifier
         if let asset = model.headImageAsset {
-            MPManager.fetchImage(for: asset, size: CGSize(width: albumPreviewSize, height: albumPreviewSize)) { [weak self] image, _ in
-                if self?.imageIdentifier == model.headImageAsset?.localIdentifier {
-                    self?.imageView.image = image
+            MPManager.fetchImage(for: asset, size: CGSize(width: albumPreviewSize, height: albumPreviewSize)) { image, _ in
+                if self.imageIdentifier == model.headImageAsset?.localIdentifier {
+                    self.imageView.image = image
                 }
             }
         }

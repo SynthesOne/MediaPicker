@@ -92,20 +92,20 @@ final class MPFetchImageOperation: Operation {
         preIsExecuting = true
         
         if MPGeneralConfiguration.default().allowGif, model.type == .gif {
-            requestImageID = MPManager.fetchOriginalImageData(for: model.asset) { [weak self] data, _, isDegraded in
+            requestImageID = MPManager.fetchOriginalImageData(for: model.asset) { data, _, isDegraded in
                 if !isDegraded {
                     let image = UIImage.mp.gif(data: data)
-                    self?.completion(image)
-                    self?.fetchFinish()
+                    self.completion(image)
+                    self.fetchFinish()
                 }
             }
             return
         }
         
-        requestImageID = MPManager.fetchOriginalImage(for: model.asset, progress: progress) { [weak self] image, isDegraded in
+        requestImageID = MPManager.fetchOriginalImage(for: model.asset, progress: progress) { image, isDegraded in
             if !isDegraded {
-                self?.completion(image?.mp.upOrientationImage())
-                self?.fetchFinish()
+                self.completion(image?.mp.upOrientationImage())
+                self.fetchFinish()
             }
         }
     }

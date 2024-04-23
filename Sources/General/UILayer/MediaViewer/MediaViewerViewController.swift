@@ -152,10 +152,9 @@ public class MediaViewerViewController: UIViewController {
 
         imageView.image = image
         if model[index].type == .image {
-            MPManager.fetchImage(for: model[index].asset, size: model[index].previewSize, progress: nil, completion: { [weak self] image, isDegraded in
-                guard let strongSelf = self else { return }
-                UIView.transition(with: strongSelf.imageView, duration: 0.15, options: .transitionCrossDissolve, animations: {
-                    self?.imageView.image = image
+            MPManager.fetchImage(for: model[index].asset, size: model[index].previewSize, progress: nil, completion: { image, isDegraded in
+                UIView.transition(with: self.imageView, duration: 0.15, options: .transitionCrossDissolve, animations: {
+                    self.imageView.image = image
                 })
             })
         }
@@ -603,13 +602,13 @@ extension MediaViewerViewController: UICollectionViewDataSource {
 //MARK: Open methods
 extension MediaViewerViewController {
     public func scrollToPhoto(at index: Int, animated: Bool) {
-        collectionView.performBatchUpdates({ [weak self] in
-            self?.collectionView.scrollToItem(at: IndexPath(row: index, section: 0), at: .centeredHorizontally, animated: false)
-        }) { [weak self] _ in
-            self?.didScrollToPhoto(at: index)
-            self?.reloadCurrentCell()
+        collectionView.performBatchUpdates({
+            self.collectionView.scrollToItem(at: IndexPath(row: index, section: 0), at: .centeredHorizontally, animated: false)
+        }) { _ in
+            self.didScrollToPhoto(at: index)
+            self.reloadCurrentCell()
             MPMainAsync(after: 0.08) {
-                self?._hideImageView(true)
+                self._hideImageView(true)
             }
         }
     }

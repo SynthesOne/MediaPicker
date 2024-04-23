@@ -38,7 +38,7 @@ final class Counter: UIView {
         unreadCounter.text
     }
     
-    var textWidth: CGFloat {
+    func textWidth() -> CGFloat {
         unreadCounter.mp.textWidth()
     }
     

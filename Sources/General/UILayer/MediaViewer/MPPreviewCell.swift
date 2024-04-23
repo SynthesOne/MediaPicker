@@ -325,8 +325,8 @@ class MPLivePhotoPreviewCell: MPPreviewCell {
         size.height /= 4
         
         resizeImageView(imageView: imageView, asset: model.asset)
-        imageRequestID = MPManager.fetchImage(for: model.asset, size: size, completion: { [weak self] image, _ in
-            self?.imageView.image = image
+        imageRequestID = MPManager.fetchImage(for: model.asset, size: size, completion: { image, _ in
+            self.imageView.image = image
         })
     }
     
@@ -358,7 +358,7 @@ class MPLivePhotoPreviewCell: MPPreviewCell {
 // MARK: video preview cell
 class MPVideoPreviewCell: MPPreviewCell {
     override var currentImage: UIImage? {
-        return imageView.image
+        imageView.image
     }
     
     private let progressView: MPPreloaderView = {
@@ -380,16 +380,10 @@ class MPVideoPreviewCell: MPPreviewCell {
         config.background.image = UIImage(systemName: "play.circle.fill", withConfiguration: sConfig)
         config.background.imageContentMode = .scaleAspectFill
         let btn = UIButton(configuration: config)
-//        btn.mp.action({ [weak self] in self?.playBtnClick() }, forEvent: .touchUpInside)
         return btn
     }()
     
     private let singleTapGes = UITapGestureRecognizer()
-//    {
-//        let ges = UITapGestureRecognizer()
-//        ges.addTarget(self, action: #selector(playBtnClick))
-//        return ges
-//    }()
     
     private let syncErrorLabel: UILabel = {
         let attStr = NSMutableAttributedString()
@@ -437,8 +431,9 @@ class MPVideoPreviewCell: MPPreviewCell {
         cancelDownloadVideo()
         NotificationCenter.default.removeObserver(self)
         try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+        Logger.log("deinit MPVideoPreviewCell")
     }
-    
+
     override func setupSubviews() {
         contentView.addSubview(playerView)
         contentView.addSubview(imageView)
@@ -504,25 +499,25 @@ class MPVideoPreviewCell: MPPreviewCell {
         size.height /= 2
         
         resizeImageView(imageView: imageView, asset: model.asset)
-        imageRequestID = MPManager.fetchImage(for: model.asset, size: size, completion: { [weak self] image, _ in
-            self?.imageView.image = image
+        imageRequestID = MPManager.fetchImage(for: model.asset, size: size, completion: { image, _ in
+            self.imageView.image = image
         })
     }
     
     private func fetchVideo() {
-        videoRequestID = MPManager.fetchVideo(for: model.asset, progress: { [weak self] progress, _, _, _ in
-            self?.progressView.isAnimating = progress < 1
-            self?.progressView.isHidden = progress >= 1
-        }, completion: { [weak self] item, info, isDegraded in
+        videoRequestID = MPManager.fetchVideo(for: model.asset, progress: { progress, _, _, _ in
+            self.progressView.isAnimating = progress < 1
+            self.progressView.isHidden = progress >= 1
+        }, completion: { item, info, isDegraded in
             let error = info?[PHImageErrorKey] as? Error
             let isFetchError = MPManager.isFetchImageError(error)
             if isFetchError {
-                self?.syncErrorLabel.isHidden = false
-                self?.playBtn.mp.setIsHidden(true)
+                self.syncErrorLabel.isHidden = false
+                self.playBtn.mp.setIsHidden(true)
             }
             if !isDegraded, item != nil {
-                self?.fetchVideoDone = true
-                self?.configurePlayerLayer(item!)
+                self.fetchVideoDone = true
+                self.configurePlayerLayer(item!)
             }
         })
     }
@@ -693,16 +688,16 @@ final class MPPreviewView: UIView {
     }
     
     private func loadPhoto() {
-        imageRequestID = MPManager.fetchImage(for: model.asset, size: requestPhotoSize(gif: false), progress: { [weak self] progress, _, _, _ in
-            self?.progressView.isAnimating = progress < 1
-            self?.progressView.isHidden = progress >= 1
-        }, completion: { [weak self] image, isDegraded in
-            guard self?.imageIdentifier == self?.model.id else { return }
-            self?.imageView.image = image
-            self?.resetSubViewSize()
+        imageRequestID = MPManager.fetchImage(for: model.asset, size: requestPhotoSize(gif: false), progress: { progress, _, _, _ in
+            self.progressView.isAnimating = progress < 1
+            self.progressView.isHidden = progress >= 1
+        }, completion: { image, isDegraded in
+            guard self.imageIdentifier == self.model.id else { return }
+            self.imageView.image = image
+            self.resetSubViewSize()
             if !isDegraded {
-                self?.progressView.isHidden = true
-                self?.imageRequestID = PHInvalidImageRequestID
+                self.progressView.isHidden = true
+                self.imageRequestID = PHInvalidImageRequestID
             }
         })
     }
@@ -711,13 +706,11 @@ final class MPPreviewView: UIView {
         onFetchingGif = false
         fetchGifDone = false
         
-        imageRequestID = MPManager.fetchImage(for: model.asset, size: requestPhotoSize(gif: true), completion: { [weak self] image, _ in
-            guard self?.imageIdentifier == self?.model.id else {
-                return
-            }
-            if self?.fetchGifDone == false {
-                self?.imageView.image = image
-                self?.resetSubViewSize()
+        imageRequestID = MPManager.fetchImage(for: model.asset, size: requestPhotoSize(gif: true), completion: { image, _ in
+            guard self.imageIdentifier == self.model.id else { return }
+            if self.fetchGifDone == false {
+                self.imageView.image = image
+                self.resetSubViewSize()
             }
         })
     }
@@ -734,19 +727,18 @@ final class MPPreviewView: UIView {
         imageView.layer.speed = 1
         imageView.layer.timeOffset = 0
         imageView.layer.beginTime = 0
-        gifImageRequestID = MPManager.fetchOriginalImageData(for: model.asset, progress: { [weak self] progress, _, _, _ in
-            self?.progressView.isAnimating = progress < 1
-            self?.progressView.isHidden = progress >= 1
-        }, completion: { [weak self] data, info, isDegraded in
-            guard let strongSelf = self else { return }
-            guard strongSelf.imageIdentifier == strongSelf.model.id else {
+        gifImageRequestID = MPManager.fetchOriginalImageData(for: model.asset, progress: { progress, _, _, _ in
+            self.progressView.isAnimating = progress < 1
+            self.progressView.isHidden = progress >= 1
+        }, completion: { data, info, isDegraded in
+            guard self.imageIdentifier == self.model.id else {
                 return
             }
             
             if !isDegraded {
-                strongSelf.fetchGifDone = true
-                strongSelf.imageView.image = UIImage.mp.gif(data: data)
-                strongSelf.resetSubViewSize()
+                self.fetchGifDone = true
+                self.imageView.image = UIImage.mp.gif(data: data)
+                self.resetSubViewSize()
             }
         })
     }
@@ -837,10 +829,7 @@ final class MPPreviewView: UIView {
     }
     
     func resumeGif() {
-        guard let m = model else { return }
-        guard MPGeneralConfiguration.default().allowGif, m.type == .gif else { return }
-        
-        guard imageView.layer.speed != 1 else { return }
+        guard let m = model, MPGeneralConfiguration.default().allowGif, m.type == .gif, imageView.layer.speed != 1 else { return }
         
         let pauseTime = imageView.layer.timeOffset
         imageView.layer.speed = 1
@@ -851,10 +840,7 @@ final class MPPreviewView: UIView {
     }
     
     func pauseGif() {
-        guard let m = model else { return }
-        guard MPGeneralConfiguration.default().allowGif, m.type == .gif else { return }
-        
-        guard imageView.layer.speed != 0 else { return }
+        guard let m = model, MPGeneralConfiguration.default().allowGif, m.type == .gif, imageView.layer.speed != 0 else { return }
         
         let pauseTime = imageView.layer.convertTime(CACurrentMediaTime(), from: nil)
         imageView.layer.speed = 0

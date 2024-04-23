@@ -28,9 +28,10 @@ import UIKit
 final class MPPreloaderView: UIView {
     
     // MARK: - Initialization
-    public init(frame: CGRect,
-                color: UIColor,
-                lineWidth: CGFloat
+    public init(
+        frame: CGRect,
+        color: UIColor,
+        lineWidth: CGFloat
     ) {
         self.color = color
         self.lineWidth = lineWidth
@@ -50,7 +51,7 @@ final class MPPreloaderView: UIView {
     public override func layoutSubviews() {
         super.layoutSubviews()
         
-        layer.cornerRadius = frame.width / 2
+        mp.setRadius(frame.width / 2)
         
         let path = UIBezierPath(
             ovalIn:
@@ -66,7 +67,6 @@ final class MPPreloaderView: UIView {
     }
     
     // MARK: - Animations
-    
     public func animateStroke() {
         let startAnimation = MPStrokeAnimation(
             type: .start,

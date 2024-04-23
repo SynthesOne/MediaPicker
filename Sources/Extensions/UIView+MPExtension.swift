@@ -47,4 +47,9 @@ extension MPExtensionWrapper where Base: UIView {
     var globalFrame: CGRect? {
         base.superview?.convert(base.frame, to: nil)
     }
+    
+    func setRadius(_ radius: CGFloat) {
+        base.layer.masksToBounds = true
+        base.layer.cornerRadius = radius
+    }
 }

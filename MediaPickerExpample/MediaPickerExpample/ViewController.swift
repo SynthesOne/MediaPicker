@@ -11,7 +11,7 @@ import MediaPicker
 
 class ViewController: UIViewController {
     
-    var mp: MPPresenter?
+//    var mp: MPPresenter?
     
     let button: UIButton = {
         let view = UIButton(frame: CGRect(origin: .zero, size: .init(width: 120, height: 44)))
@@ -37,6 +37,84 @@ class ViewController: UIViewController {
     }
 
     @objc func openG() {
+//        MPGeneralConfiguration.default()
+//            //.setBundleLangsDeploy(.main)
+//            //.setKeysLangsDeploy([
+//            //    "MPAttach": "MPAttach",
+//            //    "MPCancelButton": "MPCancelButton"
+//            //])
+//            //.maxMediaSelectCount(1)
+//        
+//        MPUIConfiguration.default()
+////            .showCameraCell(false)
+//        
+//        mp = MPPresenter(sender: self)
+//        
+//        let formatter = ByteCountFormatter()
+//        mp?.selectedResult = { [weak self] (result) in
+//            guard let strongSelf = self else { return }
+//            debugPrint("Example selectedResult count \(result.count)")
+//            result.forEach({
+//                debugPrint("--------------------------------------------------")
+//                debugPrint("Example selectedResult size \(String(describing: $0.size))")
+//                debugPrint("Example selectedResult readableUnit \(formatter.string(fromByteCount: Int64($0.size ?? 0)))")
+//                debugPrint("Example selectedResult fullFileName \(String(describing: $0.fullFileName))")
+//                debugPrint("Example selectedResult fileName \(String(describing: $0.fileName))")
+//                debugPrint("Example selectedResult mediaExtension \(String(describing: $0.fileExtension))")
+//                debugPrint("Example selectedResult mimeType \(String(describing: $0.mimeType))")
+//                debugPrint("Example selectedResult type \($0.type)")
+//            })
+//        }
+//        
+//        mp?.showMediaPicker()
+        
+        let testVc = TestVC()
+        testVc.modalPresentationStyle = .fullScreen
+        present(testVc, animated: true)
+    }
+}
+
+// ViewController for testing MPPresenter deletion from memory
+class TestVC: UIViewController {
+    var mp: MPPresenter?
+    
+    let button: UIButton = {
+        let view = UIButton(frame: CGRect(origin: .zero, size: .init(width: 120, height: 44)))
+        view.setTitle("Gallery", for: .normal)
+        view.setTitleColor(.label, for: .normal)
+        view.backgroundColor = .systemRed
+        view.layer.cornerRadius = 8
+        view.layer.masksToBounds = true
+        return view
+    }()
+    
+    let button2: UIButton = {
+        let view = UIButton(frame: CGRect(origin: .zero, size: .init(width: 120, height: 44)))
+        view.setTitle("Close", for: .normal)
+        view.setTitleColor(.label, for: .normal)
+        view.backgroundColor = .systemRed
+        view.layer.cornerRadius = 8
+        view.layer.masksToBounds = true
+        return view
+    }()
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        // Do any additional setup after loading the view.
+        view.backgroundColor = .systemBackground
+        view.addSubview(button)
+        view.addSubview(button2)
+        button.addTarget(self, action: #selector(openG), for: .touchUpInside)
+        button2.addTarget(self, action: #selector(closeG), for: .touchUpInside)
+    }
+    
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        button.center = view.center
+        button2.center = .init(x: view.center.x, y: view.center.y + 60)
+    }
+
+    @objc func openG() {
         MPGeneralConfiguration.default()
             //.setBundleLangsDeploy(.main)
             //.setKeysLangsDeploy([
@@ -50,10 +128,10 @@ class ViewController: UIViewController {
         
         mp = MPPresenter(sender: self)
         
+        let formatter = ByteCountFormatter()
         mp?.selectedResult = { [weak self] (result) in
             guard let strongSelf = self else { return }
             debugPrint("Example selectedResult count \(result.count)")
-            let formatter = ByteCountFormatter()
             result.forEach({
                 debugPrint("--------------------------------------------------")
                 debugPrint("Example selectedResult size \(String(describing: $0.size))")
@@ -67,6 +145,10 @@ class ViewController: UIViewController {
         }
         
         mp?.showMediaPicker()
+    }
+    
+    @objc func closeG() {
+        dismiss(animated: true)
     }
 }
 

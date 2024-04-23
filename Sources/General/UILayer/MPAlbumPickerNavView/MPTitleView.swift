@@ -124,14 +124,12 @@ final class MPTitleView: UIView {
     }
     
     func rotateArrow(isShow: Bool) {
-        UIView.animate(withDuration: 0.3,
-                       animations: { [weak self] in
-            guard let strongSelf = self else { return }
+        UIView.animate(withDuration: 0.3, animations: {
             if isShow {
-                strongSelf.arrowView.transform = CGAffineTransform.identity.rotated(by: 180 * CGFloat(Double.pi))
-                strongSelf.arrowView.transform = CGAffineTransform.identity.rotated(by: -1 * CGFloat(Double.pi))
+                self.arrowView.transform = CGAffineTransform.identity.rotated(by: 180 * CGFloat(Double.pi))
+                self.arrowView.transform = CGAffineTransform.identity.rotated(by: -1 * CGFloat(Double.pi))
             } else {
-                strongSelf.arrowView.transform = CGAffineTransform.identity
+                self.arrowView.transform = CGAffineTransform.identity
             }
         })
     }

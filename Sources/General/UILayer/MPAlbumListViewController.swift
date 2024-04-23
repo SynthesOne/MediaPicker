@@ -79,18 +79,18 @@ public final class MPAlbumListViewController: UIViewController, UIPopoverPresent
         super.viewWillAppear(animated)
         guard shouldReloadAlbumList else { return }
         
-        DispatchQueue.global().async { [weak self] in
+        DispatchQueue.global().async {
             MPManager.getPhotoAlbumList(
                 ascending: false,
                 allowSelectImage: MPGeneralConfiguration.default().allowImage,
                 allowSelectVideo: MPGeneralConfiguration.default().allowVideo
             ) { albumList in
-                self?.arrModels = []
-                self?.arrModels.append(contentsOf: albumList)
+                self.arrModels = []
+                self.arrModels.append(contentsOf: albumList)
                 
-                self?.shouldReloadAlbumList = false
+                self.shouldReloadAlbumList = false
                 MPMainAsync {
-                    self?.reloadData {
+                    self.reloadData { [weak self] in
                         self?.viewDidLayoutSubviews()
                     }
                 }

@@ -44,17 +44,21 @@ public final class MPPresenter: NSObject {
         fetchSelectedResult()
     }
     
+    deinit {
+        Logger.log("deinit MPPresenter")
+    }
+    
     public func showMediaPicker() {
         let status = PHPhotoLibrary.authorizationStatus()
         if status == .restricted || status == .denied {
             showNoAuthAlert()
         } else if status == .notDetermined {
             PHPhotoLibrary.requestAuthorization(for: .readWrite, handler: { (status) in
-                MPMainAsync { [weak self] in
+                MPMainAsync {
                     if status == .denied {
-                        self?.showNoAuthAlert()
+                        self.showNoAuthAlert()
                     } else if status == .authorized {
-                        self?.showLibraryMP()
+                        self.showLibraryMP()
                     }
                 }
             })
@@ -73,17 +77,16 @@ public final class MPPresenter: NSObject {
     }
     
     private func showLibraryMP() {
-        MPManager.getCameraRollAlbum(allowSelectImage: MPGeneralConfiguration.default().allowImage, allowSelectVideo: MPGeneralConfiguration.default().allowVideo, limitCount: 20, completion: { [weak self] (album) in
+        MPManager.getCameraRollAlbum(allowSelectImage: MPGeneralConfiguration.default().allowImage, allowSelectVideo: MPGeneralConfiguration.default().allowVideo, limitCount: 20, completion: { (album) in
             let gallery = MPViewController(albumModel: album)
-            gallery.preSelectedResult = self?.preSelectedResult
+            gallery.preSelectedResult = self.preSelectedResult
             let navWrapper = MPNavigationViewController(rootViewController: gallery)
             
             let sheet = navWrapper.sheetPresentationController
             sheet?.detents = [.medium(), .large()]
-            sheet?.delegate = gallery
             sheet?.selectedDetentIdentifier = .medium
             
-            self?.sender?.present(navWrapper, animated: true)
+            self.sender?.present(navWrapper, animated: true)
         })
     }
     

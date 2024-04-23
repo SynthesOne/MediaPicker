@@ -50,10 +50,9 @@ final class MPViewController: UIViewController {
     private var dataModel: MPModel = .empty
     private var selectedModels: [MPPhotoModel] = [] {
         didSet {
-            MPMainAsync { [weak self] in
-                guard let strongSelf = self else { return }
-                if strongSelf.selectedModels.count != oldValue.count {
-                    strongSelf.footer.setCounter(strongSelf.selectedModels.count)
+            MPMainAsync {
+                if self.selectedModels.count != oldValue.count {
+                    self.footer.setCounter(self.selectedModels.count)
                 }
             }
         }
@@ -110,6 +109,7 @@ final class MPViewController: UIViewController {
     
     override func loadView() {
         super.loadView()
+        navigationController?.sheetPresentationController?.delegate = self
         setupSubviews()
         setupNavigationView()
         setupFooterView()
@@ -204,20 +204,19 @@ final class MPViewController: UIViewController {
     }
     
     private func loadPhotos() {
-        DispatchQueue.global(qos: .userInteractive).async { [weak self] in
-            guard let strongSelf = self else { return }
-            if strongSelf.albumModel.models.isEmpty {
-                strongSelf.albumModel.refetchPhotos()
-                strongSelf.dataModel = .init(models: strongSelf.albumModel.models, showCameraCell: strongSelf.showCameraCell)
-                strongSelf.markSelected()
+        DispatchQueue.global(qos: .userInteractive).async {
+            if self.albumModel.models.isEmpty {
+                self.albumModel.refetchPhotos()
+                self.dataModel = .init(models: self.albumModel.models, showCameraCell: self.showCameraCell)
+                self.markSelected()
             } else {
-                strongSelf.dataModel = .init(models: strongSelf.albumModel.models, showCameraCell: strongSelf.showCameraCell)
-                strongSelf.markSelected()
+                self.dataModel = .init(models: self.albumModel.models, showCameraCell: self.showCameraCell)
+                self.markSelected()
             }
             
             MPMainAsync {
-                self?.dataModel.setOrinetation(isLandscape: UIApplication.shared.mp.isLandscape == true)
-                self?.reloadData()
+                self.dataModel.setOrinetation(isLandscape: UIApplication.shared.mp.isLandscape == true)
+                self.reloadData()
             }
         }
     }
@@ -225,9 +224,9 @@ final class MPViewController: UIViewController {
     // The first request was at a limit of 30, so you need to re-request the entire album
     /// completionInMain == false, so that the `loadPhotos()` does not switch the context
     private func firstLoadPhotos() {
-        MPManager.getCameraRollAlbum(allowSelectImage: MPGeneralConfiguration.default().allowImage, allowSelectVideo: MPGeneralConfiguration.default().allowVideo, completionInMain: false, completion: { [weak self] (album) in
-            self?.albumModel = album
-            self?.loadPhotos()
+        MPManager.getCameraRollAlbum(allowSelectImage: MPGeneralConfiguration.default().allowImage, allowSelectVideo: MPGeneralConfiguration.default().allowVideo, completionInMain: false, completion: { (album) in
+            self.albumModel = album
+            self.loadPhotos()
         })
     }
     
@@ -511,12 +510,12 @@ final class MPViewController: UIViewController {
                 }
                 
                 MPMainAsync {
-                    self?.toggleCellSelection(at: indexPath, withModel: item)
+                    strongSelf.toggleCellSelection(at: indexPath, withModel: item)
                 }
                 
                 if selectedArrHasChange {
                     MPMainAsync {
-                        self?.refreshCellIndex()
+                        strongSelf.refreshCellIndex()
                     }
                 }
             }
@@ -675,32 +674,32 @@ final class MPViewController: UIViewController {
     }
     
     private func showAlertView(_ message: String) {
-        MPMainAsync { [weak self] in
+        MPMainAsync {
             let alert = Alert(message: message, {
                 Action.cancel(Lang.ok)
             })
             
-            self?.present(alert, animated: true)
+            self.present(alert, animated: true)
         }
     }
     
     private func save(image: UIImage?, videoUrl: URL?) {
         if let image = image {
-            MPManager.saveImageToAlbum(image: image) { [weak self] suc, asset in
+            MPManager.saveImageToAlbum(image: image) { (suc, asset) in
                 if suc, let at = asset {
                     let model = MPPhotoModel(asset: at)
-                    self?.handleNewAsset(model)
+                    self.handleNewAsset(model)
                 } else {
-                    self?.showAlertView(Lang.errorSaveImage)
+                    self.showAlertView(Lang.errorSaveImage)
                 }
             }
         } else if let videoUrl = videoUrl {
-            MPManager.saveVideoToAlbum(url: videoUrl) { [weak self] suc, asset in
+            MPManager.saveVideoToAlbum(url: videoUrl) { (suc, asset) in
                 if suc, let at = asset {
                     let model = MPPhotoModel(asset: at)
-                    self?.handleNewAsset(model)
+                    self.handleNewAsset(model)
                 } else {
-                    self?.showAlertView(Lang.errorSaveVideo)
+                    self.showAlertView(Lang.errorSaveVideo)
                 }
             }
         }
@@ -724,7 +723,7 @@ final class MPViewController: UIViewController {
     private func handleProcessBuffer(sampleBuffer: CMSampleBuffer, imageBuffer: CVImageBuffer, connection: AVCaptureConnection) {
         guard !wasCreateSnapshot else { return }
         wasCreateSnapshot = true
-        DispatchQueue.global().async { [weak self] in
+        DispatchQueue.global().async {
             var ciImage = CIImage(cvPixelBuffer: imageBuffer)
             let size = ciImage.extent.size
             ciImage = ciImage.clampedToExtent().applyingGaussianBlur(sigma: 100).cropped(to: CGRect(origin: .zero, size: size))
@@ -736,9 +735,9 @@ final class MPViewController: UIViewController {
                 guard let data = uiImage.jpegData(compressionQuality: 0.6) else { return }
                 let url = NSTemporaryDirectory() + "cameraCaptureImage.jpg"
                 try? data.write(to: URL(fileURLWithPath: url))
-                self?.wasCreateSnapshot = true
+                self.wasCreateSnapshot = true
             } else {
-                self?.wasCreateSnapshot = false
+                self.wasCreateSnapshot = false
             }
         }
     }
@@ -834,26 +833,25 @@ extension MPViewController: PHPhotoLibraryChangeObserver {
             return
         }
         
-        MPMainAsync { [weak self] in
-            guard let strongSelf = self else { return }
+        MPMainAsync {
             // Re-displaying the album list after a change requires an update
-            strongSelf.hasTakeANewAsset = true
-            strongSelf.albumModel.result = changes.fetchResultAfterChanges
-            for sm in strongSelf.selectedModels {
+            self.hasTakeANewAsset = true
+            self.albumModel.result = changes.fetchResultAfterChanges
+            for sm in self.selectedModels {
                 let isDelete = changeInstance.changeDetails(for: sm.asset)?.objectWasDeleted ?? false
                 if isDelete {
-                    strongSelf.selectedModels.remove(sm)
+                    self.selectedModels.remove(sm)
                 }
             }
             if changes.hasIncrementalChanges {
                 if !changes.removedObjects.isEmpty || !changes.insertedObjects.isEmpty {
-                    strongSelf.albumModel.models.removeAll()
+                    self.albumModel.models.removeAll()
                 }
                 
-                strongSelf.loadPhotos()
+                self.loadPhotos()
             } else {
-                strongSelf.albumModel.models.removeAll()
-                strongSelf.loadPhotos()
+                self.albumModel.models.removeAll()
+                self.loadPhotos()
             }
         }
     }
@@ -923,13 +921,20 @@ extension MPViewController: MediaPreviewControllerDelegate {
 // MARK: - UISheetPresentationControllerDelegate
 extension MPViewController: UISheetPresentationControllerDelegate {
     func presentationControllerShouldDismiss(_ presentationController: UIPresentationController) -> Bool {
+        debugPrint("MPVC presentationControllerShouldDismiss")
         if selectedModels.isEmpty {
             return true
         } else {
             // I don't use the presentationControllerDidAttemptToDismiss for call dismissAlert()
             // Because it is not called when user tap from the outside sheet
-            dismissAlert()
+            MPMainAsync(after: 0.3) {
+                self.dismissAlert()
+            }
             return false
         }
+    }
+    
+    func presentationControllerDidAttemptToDismiss(_ presentationController: UIPresentationController) {
+        debugPrint("MPVC presentationControllerDidAttemptToDismiss")
     }
 }

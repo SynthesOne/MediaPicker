@@ -182,10 +182,10 @@ final class MPCameraCell: CollectionViewCell {
         }
         
         if status == .notDetermined {
-            AVCaptureDevice.requestAccess(for: .video) { [weak self] (granted) in
+            AVCaptureDevice.requestAccess(for: .video) { (granted) in
                 if granted {
                     MPMainAsync {
-                        self?.setupSession()
+                        self.setupSession()
                     }
                 }
             }

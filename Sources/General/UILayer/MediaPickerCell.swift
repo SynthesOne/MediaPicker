@@ -175,12 +175,12 @@ final class MediaPickerCell: CollectionViewCell {
         
         imageIdentifier = model.id
         imageView.image = nil
-        smallImageRequestID = MPManager.fetchImage(for: model.asset, size: size, completion: { [weak self] image, isDegraded in
-            if self?.imageIdentifier == self?.model.id {
-                self?.imageView.image = image
+        smallImageRequestID = MPManager.fetchImage(for: model.asset, size: size, completion: { image, isDegraded in
+            if self.imageIdentifier == self.model.id {
+                self.imageView.image = image
             }
             if !isDegraded {
-                self?.smallImageRequestID = PHInvalidImageRequestID
+                self.smallImageRequestID = PHInvalidImageRequestID
             }
         })
     }

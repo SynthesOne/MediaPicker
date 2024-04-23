@@ -87,7 +87,7 @@ public final class MPAnimator: NSObject, MPViewerBaseAnimator {
 
             let animation = {
                 photoViewerController.presentingAnimation()
-                photoViewerController.imageView.layer.cornerRadius = 0
+                photoViewerController.imageView.mp.setRadius(0)
                 photoViewerController.imageView.backgroundColor = .clear
             }
 

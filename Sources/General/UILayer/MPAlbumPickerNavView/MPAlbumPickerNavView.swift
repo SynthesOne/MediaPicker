@@ -149,8 +149,8 @@ final class MPAlbumPickerNavView: UIView {
         super.touchesCancelled(touches, with: event)
         guard isEnabled else { return }
         menuView.toggleHighlightState(true)
-        UIView.animate(withDuration: 0.25, delay: 0.0, options: .curveLinear, animations: { [weak self] in
-            self?.menuView.toggleHighlightState(false)
+        UIView.animate(withDuration: 0.25, delay: 0.0, options: .curveLinear, animations: {
+            self.menuView.toggleHighlightState(false)
         })
     }
     

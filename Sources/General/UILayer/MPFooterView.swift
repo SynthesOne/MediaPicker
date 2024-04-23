@@ -58,7 +58,6 @@ final class MPFooterView: UIView {
     
     private lazy var toolTipButton: FillButton = {
         let view = FillButton(type: .custom)
-        view.layer.masksToBounds = true
         view.setTitle(Lang.toolTipControl, for: .normal)
         view.setTitleColor(.white, for: .normal)
         view.titleLabel?.font = .systemFont(ofSize: 14, weight: .medium)
@@ -73,8 +72,6 @@ final class MPFooterView: UIView {
     
     private let counter: Counter = {
        let view = Counter()
-        view.layer.masksToBounds = true
-        view.layer.cornerRadius = 9
         view.backgroundColor = .white
         view.isHidden = true
         return view
@@ -82,8 +79,7 @@ final class MPFooterView: UIView {
     
     private let actionButton: FillButton = {
         let view = FillButton(type: .custom)
-        view.layer.masksToBounds = true
-        view.layer.cornerRadius = 8
+        view.mp.setRadius(8)
         view.setTitleColor(.white, for: .normal)
         view.setTitle(Lang.cancelButton, for: .normal)
         view.titleLabel?.font = .systemFont(ofSize: 18, weight: .medium)
@@ -130,7 +126,7 @@ final class MPFooterView: UIView {
         let sideInset = safeAreaInsets.left > 0 ? safeAreaInsets.left : 16
         if showAddToolTip {
             let (buttonWidth, buttonHeight, textWidth, textHeight) = simulateToolTipSizes(sideInset: sideInset)
-            toolTipButton.layer.cornerRadius = buttonHeight / 2
+            toolTipButton.mp.setRadius(buttonHeight / 2)
             toolTipButton.frame = .init(x: bounds.maxX - buttonWidth - sideInset, y: 12, width: buttonWidth, height: buttonHeight)
             toolTipDescription.frame = .init(x: sideInset, y: 12, width: textWidth, height: textHeight)
             let finalHeight = buttonHeight > textHeight ? buttonHeight : textHeight
@@ -177,7 +173,10 @@ final class MPFooterView: UIView {
     }
     
     private func updateCounterPosition() {
-        counter.frame = .init(x: (actionButton.titleLabel?.frame.maxX ?? 0) + 8, y: 13, width: counter.textWidth + 12, height: 18)
+        let sizeW = counter.textWidth() + 12
+        let sizH = sizeW > 21 ? 21 : sizeW
+        counter.mp.setRadius(sizH / 2)
+        counter.frame = .init(x: (actionButton.titleLabel?.frame.maxX ?? 0) + 8, y: (44 / 2) - (sizH / 2), width: sizeW, height: sizH)
     }
     
     private func showCounterAnimation(completion: (() -> ())? = nil) {
@@ -186,11 +185,10 @@ final class MPFooterView: UIView {
         counter.isHidden = false
         counter.transform = .init(scaleX: 0.01, y: 0.01)
         
-        UIView.animate(withDuration: 0.18, animations: { [weak self] in
-            self?.counter.alpha = 1.0
-            self?.counter.transform = .identity
-            self?.layoutIfNeeded()
-            self?.updateCounterPosition()
+        UIView.animate(withDuration: 0.18, animations: {
+            self.counter.alpha = 1.0
+            self.counter.transform = .identity
+            self.updateCounterPosition()
         }) { (_) in
             completion?()
         }
@@ -200,32 +198,27 @@ final class MPFooterView: UIView {
         updateButtonActionButtond(hasCount: false)
         // It is necessary to remove animations to avoid glitch with bounce animation
         counter.layer.removeAllAnimations()
-        UIView.animate(withDuration: 0.18, animations: { [weak self] in
-            self?.counter.alpha = 0.0
-            self?.counter.transform = .init(scaleX: 0.01, y: 0.01)
-            self?.layoutIfNeeded()
-        }, completion: { [weak self] (_) in
-            self?.counter.isHidden = true
-            self?.counter.alpha = 1.0
-            self?.counter.transform = .identity
+        UIView.animate(withDuration: 0.18, animations: {
+            self.counter.alpha = 0.0
+            self.counter.transform = .init(scaleX: 0.01, y: 0.01)
+        }, completion: { (_) in
+            self.counter.isHidden = true
+            self.counter.alpha = 1.0
+            self.counter.transform = .identity
         })
     }
-    
-    //func validLayout(in view: UIView) {
-    //    let bottomInset = view.safeAreaInsets.bottom == 0 ? 8 : view.safeAreaInsets.bottom
-    //    let height = intrinsicContentSize.height
-    //    frame = .init(x: .zero, y: view.frame.maxY - bottomInset - height, width: view.frame.width, height: height + bottomInset)
-    //}
     
     func setCounter(_ counter: Int) {
         actionButton.setTitle(counter <= 0 ? Lang.cancelButton : Lang.attach, for: .normal)
         if counter == 1 && self.counter.isHidden {
             showCounterAnimation()
             self.counter.setCounter(counter)
+            layoutSubviews()
         } else if counter <= 0 && !self.counter.isHidden {
             hideCounterAnimation()
         } else {
             self.counter.setCounter(counter)
+            layoutSubviews()
         }
     }
 }

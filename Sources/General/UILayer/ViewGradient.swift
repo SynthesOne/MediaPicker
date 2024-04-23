@@ -25,32 +25,61 @@
 import UIKit
 
 final class ViewGradient: UIView {
-    var startColor:   UIColor = .black { didSet { updateColors() }}
-    var endColor:     UIColor = .white { didSet { updateColors() }}
-    var startLocation: Double =   0.05 { didSet { updateLocations() }}
-    var endLocation:   Double =   0.95 { didSet { updateLocations() }}
-    var horizontalMode:  Bool =  false { didSet { updatePoints() }}
-    var diagonalMode:    Bool =  false { didSet { updatePoints() }}
-
-    override class var layerClass: AnyClass { CAGradientLayer.self }
-
-    var gradientLayer: CAGradientLayer { layer as! CAGradientLayer }
-
-    func updatePoints() {
-        if horizontalMode {
-            gradientLayer.startPoint = diagonalMode ? .init(x: 1, y: 0) : .init(x: 0, y: 0.5)
-            gradientLayer.endPoint   = diagonalMode ? .init(x: 0, y: 1) : .init(x: 1, y: 0.5)
-        } else {
-            gradientLayer.startPoint = diagonalMode ? .init(x: 0, y: 0) : .init(x: 0.5, y: 0)
-            gradientLayer.endPoint   = diagonalMode ? .init(x: 1, y: 1) : .init(x: 0.5, y: 1)
+    var startColor: UIColor = .black {
+        didSet {
+            updateColors()
         }
     }
     
-    func updateLocations() {
+    var endColor: UIColor = .white {
+        didSet {
+            updateColors()
+        }
+    }
+    
+    var startLocation: Double = 0.05 {
+        didSet {
+            updateLocations()
+        }
+    }
+    
+    var endLocation: Double = 0.95 {
+        didSet {
+            updateLocations()
+        }
+    }
+    
+    var horizontalMode: Bool = false {
+        didSet {
+            updatePoints()
+        }
+    }
+    
+    var diagonalMode: Bool = false {
+        didSet {
+            updatePoints()
+        }
+    }
+
+    override class var layerClass: AnyClass { CAGradientLayer.self }
+
+    private var gradientLayer: CAGradientLayer { layer as! CAGradientLayer }
+
+    private func updatePoints() {
+        if horizontalMode {
+            gradientLayer.startPoint = diagonalMode ? .init(x: 1, y: 0) : .init(x: 0, y: 0.5)
+            gradientLayer.endPoint = diagonalMode ? .init(x: 0, y: 1) : .init(x: 1, y: 0.5)
+        } else {
+            gradientLayer.startPoint = diagonalMode ? .init(x: 0, y: 0) : .init(x: 0.5, y: 0)
+            gradientLayer.endPoint = diagonalMode ? .init(x: 1, y: 1) : .init(x: 0.5, y: 1)
+        }
+    }
+    
+    private func updateLocations() {
         gradientLayer.locations = [startLocation as NSNumber, endLocation as NSNumber]
     }
     
-    func updateColors() {
+    private func updateColors() {
         gradientLayer.colors = [startColor.resolvedColor(with: traitCollection).cgColor, endColor.resolvedColor(with: traitCollection).cgColor]
     }
     
@@ -60,5 +89,4 @@ final class ViewGradient: UIView {
         updateLocations()
         updateColors()
     }
-
 }
