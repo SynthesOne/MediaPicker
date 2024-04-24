@@ -79,7 +79,7 @@ public final class MPAlbumListViewController: UIViewController, UIPopoverPresent
         super.viewWillAppear(animated)
         guard shouldReloadAlbumList else { return }
         
-        DispatchQueue.global().async {
+        DispatchQueue.global(qos: .userInitiated).async {
             MPManager.getPhotoAlbumList(
                 ascending: false,
                 allowSelectImage: MPGeneralConfiguration.default().allowImage,

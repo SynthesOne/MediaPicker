@@ -151,7 +151,7 @@ public enum MPManager {
     
     /// Fetch camera roll album.
     public static func getCameraRollAlbum(allowSelectImage: Bool, allowSelectVideo: Bool, limitCount: Int = 0, completionInMain: Bool = true, completion: @escaping (MPAlbumModel) -> Void) {
-        DispatchQueue.global(qos: .userInteractive).async {
+        DispatchQueue.global(qos: .userInitiated).async {
             let option = PHFetchOptions()
             if !allowSelectImage {
                 option.predicate = NSPredicate(format: "mediaType == %ld", PHAssetMediaType.video.rawValue)
@@ -198,20 +198,20 @@ public enum MPManager {
     public static func fetchVideo(for asset: PHAsset, progress: ((CGFloat, Error?, UnsafeMutablePointer<ObjCBool>, [AnyHashable: Any]?) -> Void)? = nil, completion: @escaping (AVPlayerItem?, [AnyHashable: Any]?, Bool) -> Void) -> PHImageRequestID {
         let option = PHVideoRequestOptions()
         option.isNetworkAccessAllowed = true
+        option.deliveryMode = .highQualityFormat
         option.progressHandler = { pro, error, stop, info in
             MPMainAsync {
                 progress?(CGFloat(pro), error, stop, info)
             }
         }
+        
         if asset.mp.isInCloud {
             return PHImageManager.default().requestExportSession(forVideo: asset, options: option, exportPreset: AVAssetExportPresetHighestQuality, resultHandler: { session, info in
                 let isDegraded = (info?[PHImageResultIsDegradedKey] as? Bool ?? false)
                 if let avAsset = session?.asset {
                     let item = AVPlayerItem(asset: avAsset)
                     completion(item, info, isDegraded)
-                } else {
-                    completion(nil, nil, true)
-                }
+                } 
             })
         } else {
             return PHImageManager.default().requestPlayerItem(forVideo: asset, options: option) { item, info in

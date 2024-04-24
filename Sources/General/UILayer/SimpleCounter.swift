@@ -29,7 +29,7 @@ final class Counter: UIView {
         let view = UILabel()
         view.textColor = MPUIConfiguration.default().navigationAppearance.tintColor
         view.textAlignment = .center
-        view.font = UIFont.systemFont(ofSize: 13, weight: .regular)
+        view.font = Font.regular(13)
         view.text = "1"
         return view
     }()

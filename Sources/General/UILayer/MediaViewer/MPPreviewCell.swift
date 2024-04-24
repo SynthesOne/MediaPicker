@@ -361,8 +361,11 @@ class MPVideoPreviewCell: MPPreviewCell {
         imageView.image
     }
     
-    private let progressView: MPPreloaderView = {
-        let view = MPPreloaderView(color: .white, lineWidth: 4)
+    private let progressView: MPProgressRing = {
+        let view = MPProgressRing()
+        view.lineWidth = 4
+        view.startColor = .white
+        view.endColor = .white
         view.isHidden = true
         return view
     }()
@@ -391,10 +394,10 @@ class MPVideoPreviewCell: MPPreviewCell {
         attach.bounds = CGRect(x: 0, y: -10, width: 30, height: 30)
         attStr.append(NSAttributedString(attachment: attach))
         let errorText = NSAttributedString(
-            string: "Error load cloud video",
+            string: Lang.сloudError,
             attributes: [
                 NSAttributedString.Key.foregroundColor: UIColor.white,
-                NSAttributedString.Key.font: UIFont.systemFont(ofSize: 12, weight: .regular)
+                NSAttributedString.Key.font: Font.regular(12)
             ]
         )
         attStr.append(errorText)
@@ -440,8 +443,8 @@ class MPVideoPreviewCell: MPPreviewCell {
         contentView.addSubview(playerView)
         contentView.addSubview(imageView)
         contentView.addSubview(syncErrorLabel)
-        contentView.addSubview(progressView)
         contentView.addSubview(playBtn)
+        contentView.addSubview(progressView)
         contentView.addGestureRecognizer(singleTapGes)
         playBtn.mp.action({ [weak self] in
             self?.playBtnClick()
@@ -513,9 +516,11 @@ class MPVideoPreviewCell: MPPreviewCell {
     
     private func fetchVideo() {
         videoRequestID = MPManager.fetchVideo(for: model.asset, progress: { progress, _, _, _ in
+            debugPrint("fetchVideo progress \(progress)")
             self.progressView.isHidden = progress >= 1
-            self.progressView.isAnimating = progress < 1
+            self.progressView.setProgress(Float(progress))
         }, completion: { item, info, isDegraded in
+            debugPrint("fetchVideo current thread \(Thread.current)")
             let error = info?[PHImageErrorKey] as? Error
             let isFetchError = MPManager.isFetchImageError(error)
             if isFetchError {
@@ -554,8 +559,10 @@ class MPVideoPreviewCell: MPPreviewCell {
                 player?.currentItem?.seek(to: CMTimeMake(value: 0, timescale: 1), completionHandler: nil)
             }
             imageView.isHidden = true
-            try? AVAudioSession.sharedInstance().setCategory(.playback)
-            try? AVAudioSession.sharedInstance().setActive(true, options: .notifyOthersOnDeactivation)
+            do {
+                try AVAudioSession.sharedInstance().setCategory(.playback)
+                try AVAudioSession.sharedInstance().setActive(true, options: .notifyOthersOnDeactivation)
+            } catch { }
             player?.play()
             playBtn.mp.setIsHidden(true)
         } else {
@@ -574,10 +581,13 @@ class MPVideoPreviewCell: MPPreviewCell {
     }
     
     private func pausePlayer(seekToZero: Bool) {
+        do {
+            try AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+        } catch { }
         player?.pause()
-        try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
         if seekToZero {
             player?.seek(to: .zero)
+            imageView.isHidden = false
         }
         playBtn.mp.setIsHidden(false)
     }
@@ -590,9 +600,13 @@ class MPVideoPreviewCell: MPPreviewCell {
 
 // MARK: Class MPPreviewView
 final class MPPreviewView: UIView {
-    private let progressView: MPPreloaderView = {
-        let view = MPPreloaderView(color: .white, lineWidth: 4)
+    private let progressView: MPProgressRing = {
+        let view = MPProgressRing()
+        view.lineWidth = 4
+        view.startColor = .white
+        view.endColor = .white
         view.isHidden = true
+        view.backgroundColor = .black.withAlphaComponent(0.3)
         return view
     }()
     
@@ -696,8 +710,8 @@ final class MPPreviewView: UIView {
     
     private func loadPhoto() {
         imageRequestID = MPManager.fetchImage(for: model.asset, size: requestPhotoSize(gif: false), progress: { progress, _, _, _ in
-            self.progressView.isAnimating = progress < 1
             self.progressView.isHidden = progress >= 1
+            self.progressView.setProgress(Float(progress))
         }, completion: { image, isDegraded in
             guard self.imageIdentifier == self.model.id else { return }
             self.imageView.image = image
@@ -735,8 +749,8 @@ final class MPPreviewView: UIView {
         imageView.layer.timeOffset = 0
         imageView.layer.beginTime = 0
         gifImageRequestID = MPManager.fetchOriginalImageData(for: model.asset, progress: { progress, _, _, _ in
-            self.progressView.isAnimating = progress < 1
             self.progressView.isHidden = progress >= 1
+            self.progressView.setProgress(Float(progress))
         }, completion: { data, info, isDegraded in
             guard self.imageIdentifier == self.model.id else {
                 return

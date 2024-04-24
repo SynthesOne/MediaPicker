@@ -49,7 +49,7 @@ final class MPFooterView: UIView {
        let view = UILabel()
         view.textAlignment = .left
         view.textColor = .secondaryLabel
-        view.font = .systemFont(ofSize: 14, weight: .regular)
+        view.font = Font.regular(14)
         view.text = Lang.limitedAccessTip
         view.lineBreakMode = .byWordWrapping
         view.numberOfLines = 0
@@ -60,7 +60,7 @@ final class MPFooterView: UIView {
         let view = FillButton(type: .custom)
         view.setTitle(Lang.toolTipControl, for: .normal)
         view.setTitleColor(.white, for: .normal)
-        view.titleLabel?.font = .systemFont(ofSize: 14, weight: .medium)
+        view.titleLabel?.font = Font.medium(14)
         let uiConfig = MPUIConfiguration.default()
         view.backgroundColor = uiConfig.navigationAppearance.tintColor
         view.fillColor = uiConfig.navigationAppearance.tintColor
@@ -82,7 +82,7 @@ final class MPFooterView: UIView {
         view.mp.setRadius(8)
         view.setTitleColor(.white, for: .normal)
         view.setTitle(Lang.cancelButton, for: .normal)
-        view.titleLabel?.font = .systemFont(ofSize: 18, weight: .medium)
+        view.titleLabel?.font = Font.medium(18)
         view.backgroundColor = .systemGray
         view.fillColor = .systemGray
         view.highlightColor = .systemGray.mp.darker()

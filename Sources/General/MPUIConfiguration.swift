@@ -58,4 +58,15 @@ public final class MPUIConfiguration: NSObject {
     
     /// Allow show camera cell
     public var showCameraCell = true
+    
+    /// Custom font name for use inside library
+    public var customFontName: [UIFont.Weight: String]? {
+        didSet {
+            MPFontDeploy.nameSpace = customFontName
+        }
+    }
+}
+
+enum MPFontDeploy {
+    static var nameSpace: [UIFont.Weight: String]?
 }

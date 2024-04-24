@@ -61,11 +61,11 @@ public class MPNavigationViewController: UINavigationController {
         let uiConfig = MPUIConfiguration.default()
         view.backgroundColor = .none
         let attributes: [NSAttributedString.Key: Any] = [
-            .font: UIFont.systemFont(ofSize: 17, weight: .medium),
+            .font: Font.medium(17),
             .foregroundColor: UIColor.label
         ]
         let largeAttributes: [NSAttributedString.Key: Any] = [
-            .font: UIFont.systemFont(ofSize: 34, weight: .medium),
+            .font: Font.medium(34),
             .foregroundColor: UIColor.label
         ]
         

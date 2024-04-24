@@ -56,8 +56,8 @@ func makeAlertController(title: String? = nil,
         preferredStyle: style
     )
     
-    let titleAttributes = [NSAttributedString.Key.font: UIFont.systemFont(ofSize: 16, weight: .regular), NSAttributedString.Key.foregroundColor: UIColor.label]
-    let messageAttributes = [NSAttributedString.Key.font: UIFont.systemFont(ofSize: 14, weight: .regular), NSAttributedString.Key.foregroundColor: UIColor.label]
+    let titleAttributes = [NSAttributedString.Key.font: Font.regular(16), NSAttributedString.Key.foregroundColor: UIColor.label]
+    let messageAttributes = [NSAttributedString.Key.font: Font.regular(14), NSAttributedString.Key.foregroundColor: UIColor.label]
     
     if let title {
         let titleString = NSAttributedString(string: title, attributes: titleAttributes)

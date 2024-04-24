@@ -57,7 +57,7 @@ final class MPCheckboxButton: MPControl {
                     addSubview(counterLabel)
                     counterLabel.textColor = _checkBoxColor.checkMarkColor
                     counterLabel.isHidden = true
-                    counterLabel.font = .systemFont(ofSize: selfSize - 9, weight: .semibold)
+                    counterLabel.font = Font.semibold(selfSize - 9)
                 }
             } else {
                 counterLabel.removeFromSuperview()
@@ -94,7 +94,7 @@ final class MPCheckboxButton: MPControl {
     /// Update buttons size
     var selfSize: CGFloat = 24 {
         didSet {
-            counterLabel.font = .systemFont(ofSize: selfSize - 9, weight: .semibold)
+            counterLabel.font = Font.semibold(selfSize - 9)
             setupLayer()
         }
     }

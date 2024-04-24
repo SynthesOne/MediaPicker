@@ -19,8 +19,11 @@ MediaPicker is a lightweight and flexible library for selecting media files from
 ## Todo
 
 - [x] ~~iPad support~~
+- [x] ~~Custom font deploy~~
 - [ ] More functionality and UI configuration
 - [ ] Full screen presentation
 - [ ] Minimise the presence of static properties and methods as much as possible
 - [ ] Ability to replace used icons with custom icons
+- [ ] Add the ability to view only selected photos
+- [ ] Add Custom camera
 - [ ] Write a detailed documentation

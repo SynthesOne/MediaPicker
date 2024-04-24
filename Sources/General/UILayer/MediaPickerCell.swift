@@ -52,7 +52,7 @@ final class MediaPickerCell: CollectionViewCell {
     
     private let descLabel: UILabel = {
         let label = UILabel()
-        label.font = .systemFont(ofSize: 13, weight: .regular)
+        label.font = Font.regular(13)
         label.textAlignment = .right
         label.textColor = .white
         return label

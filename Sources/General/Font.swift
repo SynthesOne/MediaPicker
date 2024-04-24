@@ -1,7 +1,7 @@
 //
-//  MPPreloaderShapeLayer.swift
+//  Font.swift
 //
-//  Created by Валентин Панчишен on 16.04.2024.
+//  Created by Валентин Панчишен on 24.04.2024.
 //  Copyright © 2024 Валентин Панчишен. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -21,25 +21,29 @@
 //  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
-    
+
 import UIKit
 
-public final class PreloaderShapeLayer: CAShapeLayer {
-    public init(strokeColor: UIColor, lineWidth: CGFloat) {
-        super.init()
+extension MPExtensionWrapper where Base: UIFont {
+    static func font(_ size: CGFloat, weight: UIFont.Weight) -> UIFont {
+        if let customFontName = MPFontDeploy.nameSpace?[weight] {
+            return UIFont(name: customFontName, size: size) ?? .systemFont(ofSize: size, weight: weight)
+        }
+        
+        return UIFont.systemFont(ofSize: size, weight: weight)
+    }
+}
 
-        self.strokeColor = strokeColor.cgColor
-        self.lineWidth = lineWidth
-        fillColor = nil
-        lineCap = .round
-        strokeStart = 0
+enum Font {
+    static func regular(_ size: CGFloat) -> UIFont {
+        UIFont.mp.font(size, weight: .regular)
     }
     
-    override init(layer: Any) {
-        super.init(layer: layer)
+    static func medium(_ size: CGFloat) -> UIFont {
+        UIFont.mp.font(size, weight: .medium)
     }
-
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+    
+    static func semibold(_ size: CGFloat) -> UIFont {
+        UIFont.mp.font(size, weight: .semibold)
     }
 }

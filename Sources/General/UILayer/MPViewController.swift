@@ -207,7 +207,7 @@ final class MPViewController: UIViewController {
     }
     
     private func loadPhotos() {
-        DispatchQueue.global(qos: .userInteractive).async {
+        DispatchQueue.global(qos: .userInitiated).async {
             if self.albumModel.models.isEmpty {
                 self.albumModel.refetchPhotos()
                 self.dataModel = .init(models: self.albumModel.models, showCameraCell: self.showCameraCell)
@@ -728,7 +728,7 @@ final class MPViewController: UIViewController {
     private func handleProcessBuffer(sampleBuffer: CMSampleBuffer, imageBuffer: CVImageBuffer, connection: AVCaptureConnection) {
         guard !wasCreateSnapshot else { return }
         wasCreateSnapshot = true
-        DispatchQueue.global().async {
+        debugPrint("handleProcessBuffer current thread \(Thread.current)")
             var ciImage = CIImage(cvPixelBuffer: imageBuffer)
             let size = ciImage.extent.size
             ciImage = ciImage.clampedToExtent().applyingGaussianBlur(sigma: 100).cropped(to: CGRect(origin: .zero, size: size))
@@ -744,7 +744,6 @@ final class MPViewController: UIViewController {
             } else {
                 self.wasCreateSnapshot = false
             }
-        }
     }
     
     private func showDismissAlertIfNeed() {

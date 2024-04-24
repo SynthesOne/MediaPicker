@@ -45,7 +45,7 @@ final class MPTitleView: UIView {
     
     let titleLabel: UILabel = {
        let view = UILabel()
-        view.font = .systemFont(ofSize: 17, weight: .medium)
+        view.font = Font.medium(17)
         view.textColor = .label
         view.setContentHuggingPriority(.defaultHigh, for: .horizontal)
         return view

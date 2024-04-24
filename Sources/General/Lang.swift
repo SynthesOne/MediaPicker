@@ -92,6 +92,10 @@ enum Lang {
     static var no: String {
         Lang.tr("MPNo")
     }
+    
+    static var сloudError: String {
+        Lang.tr("MPCloudError")
+    }
 }
 
 extension Lang {

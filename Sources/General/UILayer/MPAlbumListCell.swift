@@ -50,14 +50,14 @@ final class MPAlbumListCell: CollectionViewCell {
     
     private let albumName: UILabel = {
         let view = UILabel()
-        view.font = .systemFont(ofSize: 14, weight: .medium)
+        view.font = Font.medium(14)
         view.textColor = .label
         return view
     }()
     
     private let countLabel: UILabel = {
         let view = UILabel()
-        view.font = .systemFont(ofSize: 13, weight: .regular)
+        view.font = Font.regular(13)
         view.textColor = .secondaryLabel
         return view
     }()
