@@ -28,7 +28,7 @@ import Photos
 public final class MPPresenter: NSObject {
     private weak var sender: UIViewController?
     private var preSelectedResults: [MPPhotoModel]
-    public var selectedResult: (([MPResultModel]) -> ())? = nil
+    private var selectedResult: (([MPResultModel]) -> ())? = nil
     private var preSelectedResult: (([MPPhotoModel]) -> ())? = nil
     
     private let fetchImageQueue: OperationQueue = {
@@ -48,7 +48,11 @@ public final class MPPresenter: NSObject {
         Logger.log("deinit MPPresenter")
     }
     
-    public func showMediaPicker() {
+    public func showMediaPicker(
+        selectedResult: @escaping ([MPResultModel]) -> (),
+        customPresentationStyle: ((MPNavigationViewController) -> ())? = nil
+    ) {
+        self.selectedResult = selectedResult
         let status = PHPhotoLibrary.authorizationStatus()
         if status == .restricted || status == .denied {
             showNoAuthAlert()
@@ -58,12 +62,12 @@ public final class MPPresenter: NSObject {
                     if status == .denied {
                         self.showNoAuthAlert()
                     } else if status == .authorized {
-                        self.showLibraryMP()
+                        self.showLibraryMP(customPresentationStyle: customPresentationStyle)
                     }
                 }
             })
         } else {
-            showLibraryMP()
+            showLibraryMP(customPresentationStyle: customPresentationStyle)
         }
         
     }
@@ -80,15 +84,19 @@ public final class MPPresenter: NSObject {
         sender?.present(alert, animated: true)
     }
     
-    private func showLibraryMP() {
+    private func showLibraryMP(customPresentationStyle: ((MPNavigationViewController) -> ())? = nil) {
         MPManager.getCameraRollAlbum(allowSelectImage: MPGeneralConfiguration.default().allowImage, allowSelectVideo: MPGeneralConfiguration.default().allowVideo, limitCount: 20, completion: { (album) in
             let gallery = MPViewController(albumModel: album)
             gallery.preSelectedResult = self.preSelectedResult
             let navWrapper = MPNavigationViewController(rootViewController: gallery)
             
-            let sheet = navWrapper.sheetPresentationController
-            sheet?.detents = [.medium(), .large()]
-            sheet?.selectedDetentIdentifier = .medium
+            if let customPresentationStyle {
+                customPresentationStyle(navWrapper)
+            } else {
+                let sheet = navWrapper.sheetPresentationController
+                sheet?.detents = [.medium(), .large()]
+                sheet?.selectedDetentIdentifier = .medium
+            }
             
             self.sender?.present(navWrapper, animated: true)
         })

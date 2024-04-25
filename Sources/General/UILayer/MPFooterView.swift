@@ -91,9 +91,9 @@ final class MPFooterView: UIView {
         view.setTitleColor(uiConfig.navigationAppearance.tintColor, for: .normal)
         view.setTitle(Lang.cancelButton, for: .normal)
         view.titleLabel?.font = Font.regular(17)
-        view.backgroundColor = uiConfig.navigationAppearance.tintColor.withAlphaComponent(0.2)
-        view.fillColor = uiConfig.navigationAppearance.tintColor.withAlphaComponent(0.2)
-        view.highlightColor = uiConfig.navigationAppearance.tintColor.withAlphaComponent(0.2).mp.darker()
+        view.backgroundColor = uiConfig.navigationAppearance.tintColor.withAlphaComponent(0.15)
+        view.fillColor = uiConfig.navigationAppearance.tintColor.withAlphaComponent(0.15)
+        view.highlightColor = uiConfig.navigationAppearance.tintColor.withAlphaComponent(0.15).mp.darker()
         return view
     }()
     
@@ -160,10 +160,15 @@ final class MPFooterView: UIView {
             toolTipButton.frame = .init(x: (bounds.maxX - sideInset * 2) - buttonWidth - 16, y: finalTipHeight / 2 - buttonHeight / 2, width: buttonWidth, height: buttonHeight)
             toolTipDescription.frame = .init(x: 16, y: finalTipHeight / 2 - textHeight / 2, width: textWidth, height: textHeight)
             if counter.isHidden {
-                cancelButton.frame = .init(x: 16, y: 28 + finalTipHeight, width: bounds.width - sideInset * 2, height: 44)
-                attachButton.frame = .init(x: 16, y: 28 + finalTipHeight + 44, width: bounds.width - sideInset * 2, height: 44)
+                cancelButton.frame = .init(x: sideInset, y: 28 + finalTipHeight, width: bounds.width - sideInset * 2, height: 44)
+                attachButton.frame = .init(x: sideInset, y: 28 + finalTipHeight + 44, width: bounds.width - sideInset * 2, height: 44)
             } else {
-                attachButton.frame = .init(x: 16, y: 28 + finalTipHeight, width: bounds.width - sideInset * 2, height: 44)
+                attachButton.frame = .init(x: sideInset, y: 28 + finalTipHeight, width: bounds.width - sideInset * 2, height: 44)
+                let oldTransform = cancelButton.transform
+                cancelButton.transform = .identity
+                cancelButton.frame.origin.x = sideInset
+                cancelButton.frame.size.width = bounds.width - sideInset * 2
+                cancelButton.transform = oldTransform
             }
         } else {
             if counter.isHidden {
@@ -171,6 +176,11 @@ final class MPFooterView: UIView {
                 attachButton.frame = .init(x: sideInset, y: 52, width: bounds.width - sideInset * 2, height: 44)
             } else {
                 attachButton.frame = .init(x: sideInset, y: 8, width: bounds.width - sideInset * 2, height: 44)
+                let oldTransform = cancelButton.transform
+                cancelButton.transform = .identity
+                cancelButton.frame.origin.x = sideInset
+                cancelButton.frame.size.width = bounds.width - sideInset * 2
+                cancelButton.transform = oldTransform
             }
         }
         updateCounterPosition()

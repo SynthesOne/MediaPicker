@@ -11,12 +11,22 @@ import MediaPicker
 
 class ViewController: UIViewController {
     
-//    var mp: MPPresenter?
+    var mp: MPPresenter?
     
-    let button: UIButton = {
-        let view = UIButton(frame: CGRect(origin: .zero, size: .init(width: 120, height: 44)))
+    let gallery: UIButton = {
+        let view = UIButton(type: .system)
         view.setTitle("Gallery", for: .normal)
-        view.setTitleColor(.label, for: .normal)
+        view.setTitleColor(.white, for: .normal)
+        view.backgroundColor = .systemRed
+        view.layer.cornerRadius = 8
+        view.layer.masksToBounds = true
+        return view
+    }()
+    
+    let configuration: UIButton = {
+        let view = UIButton(type: .system)
+        view.setTitle("Configuration", for: .normal)
+        view.setTitleColor(.white, for: .normal)
         view.backgroundColor = .systemRed
         view.layer.cornerRadius = 8
         view.layer.masksToBounds = true
@@ -27,55 +37,67 @@ class ViewController: UIViewController {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
         view.backgroundColor = .systemBackground
-        view.addSubview(button)
-        button.addTarget(self, action: #selector(openG), for: .touchUpInside)
+        view.addSubview(gallery)
+        view.addSubview(configuration)
+        gallery.addTarget(self, action: #selector(openG), for: .touchUpInside)
+        configuration.addTarget(self, action: #selector(openC), for: .touchUpInside)
     }
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        button.center = view.center
+        let bottomInset = view.safeAreaInsets.bottom == 0 ? 8 : view.safeAreaInsets.bottom
+        gallery.frame = .init(x: view.center.x - 128, y: view.frame.maxY - bottomInset - 44, width: 120, height: 44)
+        configuration.frame = .init(x: view.center.x + 8, y: view.frame.maxY - bottomInset - 44, width: 120, height: 44)
     }
 
     @objc func openG() {
-//        MPGeneralConfiguration.default()
-//            //.setBundleLangsDeploy(.main)
-//            //.setKeysLangsDeploy([
-//            //    "MPAttach": "MPAttach",
-//            //    "MPCancelButton": "MPCancelButton"
-//            //])
-//            //.maxMediaSelectCount(1)
-//        
-//        MPUIConfiguration.default()
-////            .showCameraCell(false)
-//        
-//        mp = MPPresenter(sender: self)
-//        
-//        let formatter = ByteCountFormatter()
-//        mp?.selectedResult = { [weak self] (result) in
-//            guard let strongSelf = self else { return }
-//            debugPrint("Example selectedResult count \(result.count)")
-//            result.forEach({
-//                debugPrint("--------------------------------------------------")
-//                debugPrint("Example selectedResult size \(String(describing: $0.size))")
-//                debugPrint("Example selectedResult readableUnit \(formatter.string(fromByteCount: Int64($0.size ?? 0)))")
-//                debugPrint("Example selectedResult fullFileName \(String(describing: $0.fullFileName))")
-//                debugPrint("Example selectedResult fileName \(String(describing: $0.fileName))")
-//                debugPrint("Example selectedResult mediaExtension \(String(describing: $0.fileExtension))")
-//                debugPrint("Example selectedResult mimeType \(String(describing: $0.mimeType))")
-//                debugPrint("Example selectedResult type \($0.type)")
-//            })
-//        }
-//        
-//        mp?.showMediaPicker()
+        MPGeneralConfiguration.default()
+            //.setBundleLangsDeploy(.main)
+            //.setKeysLangsDeploy([
+            //    "MPAttach": "MPAttach",
+            //    "MPCancelButton": "MPCancelButton"
+            //])
+            //.maxMediaSelectCount(1)
         
-        let testVc = TestVC()
-        testVc.modalPresentationStyle = .fullScreen
-        present(testVc, animated: true)
+        MPUIConfiguration.default()
+//            .showCameraCell(false)
+        
+        mp = MPPresenter(sender: self)
+        
+        let formatter = ByteCountFormatter()
+        mp?.showMediaPicker(selectedResult: { [weak self] (result) in
+            guard let strongSelf = self else { return }
+            debugPrint("Example selectedResult count \(result.count)")
+            result.forEach({
+                debugPrint("--------------------------------------------------")
+                debugPrint("Example selectedResult size \(String(describing: $0.size))")
+                debugPrint("Example selectedResult readableUnit \(formatter.string(fromByteCount: Int64($0.size ?? 0)))")
+                debugPrint("Example selectedResult fullFileName \(String(describing: $0.fullFileName))")
+                debugPrint("Example selectedResult fileName \(String(describing: $0.fileName))")
+                debugPrint("Example selectedResult mediaExtension \(String(describing: $0.fileExtension))")
+                debugPrint("Example selectedResult mimeType \(String(describing: $0.mimeType))")
+                debugPrint("Example selectedResult type \($0.type)")
+            })
+            
+            //Clean from memory
+            strongSelf.mp = nil
+        }) /*{ (controller) in
+        controller.modalPresentationStyle = .fullScreen
+        controller.modalTransitionStyle = .crossDissolve
+        }*/
+        
+//        let testVc = TestVC()
+//        testVc.modalPresentationStyle = .fullScreen
+//        present(testVc, animated: true)
+    }
+    
+    @objc func openC() {
+        
     }
 }
 
 // ViewController for testing MPPresenter deletion from memory
-class TestVC: UIViewController {
+class TestVC: UIViewController, UIPopoverPresentationControllerDelegate {
     var mp: MPPresenter?
     
     let button: UIButton = {
@@ -129,7 +151,7 @@ class TestVC: UIViewController {
         mp = MPPresenter(sender: self)
         
         let formatter = ByteCountFormatter()
-        mp?.selectedResult = { [weak self] (result) in
+        mp?.showMediaPicker(selectedResult: { [weak self] (result) in
             guard let strongSelf = self else { return }
             debugPrint("Example selectedResult count \(result.count)")
             result.forEach({
@@ -142,13 +164,22 @@ class TestVC: UIViewController {
                 debugPrint("Example selectedResult mimeType \(String(describing: $0.mimeType))")
                 debugPrint("Example selectedResult type \($0.type)")
             })
-        }
-        
-        mp?.showMediaPicker()
+        }) /*{ (controller) in
+            controller.modalPresentationStyle = .fullScreen
+            controller.modalTransitionStyle = .crossDissolve
+        }*/
     }
     
     @objc func closeG() {
         dismiss(animated: true)
+    }
+    
+    func adaptivePresentationStyle(for controller: UIPresentationController) -> UIModalPresentationStyle {
+        .none
+    }
+    
+    func adaptivePresentationStyle(for controller: UIPresentationController, traitCollection: UITraitCollection) -> UIModalPresentationStyle {
+        .none
     }
 }
 

@@ -27,11 +27,11 @@ import UIKit
 /// Define check box color
 public struct MPCheckboxColor {
     
-    let activeColor: UIColor
-    let activeBorderColor: UIColor?
-    let inactiveColor: UIColor
-    let inactiveBorderColor: UIColor
-    let checkMarkColor: UIColor
+    var activeColor: UIColor
+    var activeBorderColor: UIColor?
+    var inactiveColor: UIColor
+    var inactiveBorderColor: UIColor
+    var checkMarkColor: UIColor
     
     public init(activeColor: UIColor, activeBorderColor: UIColor? = nil, inactiveColor: UIColor, inactiveBorderColor: UIColor, checkMarkColor: UIColor) {
         self.activeColor = activeColor

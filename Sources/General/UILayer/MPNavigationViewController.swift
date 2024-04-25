@@ -25,10 +25,10 @@
 import UIKit
 
 public struct MPNavigationAppearance {
-    let tintColor: UIColor
-    let shadowColor: UIColor
-    let backgroundColor: UIColor
-    let backgroundEffectStyle: UIBlurEffect.Style
+    var tintColor: UIColor
+    var shadowColor: UIColor
+    var backgroundColor: UIColor
+    var backgroundEffectStyle: UIBlurEffect.Style
     
     static var `default`: Self = .init(
         tintColor: .systemPink,

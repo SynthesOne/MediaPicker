@@ -29,7 +29,7 @@ import PhotosUI
 final class MPViewController: UIViewController {
     private lazy var collectionView: UICollectionView = {
         let view = UICollectionView(frame: view.bounds, collectionViewLayout: createLayout())
-        view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        //view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         view.mp.register(MediaPickerCell.self)
         view.mp.register(MPCameraCell.self)
         view.delegate = self
@@ -136,6 +136,7 @@ final class MPViewController: UIViewController {
         super.viewDidLayoutSubviews()
         let bottomInset = view.safeAreaInsets.bottom == 0 ? 8 : view.safeAreaInsets.bottom
         let height = footer.intrinsicContentSize.height
+        collectionView.frame = .init(x: 0, y: 0, width: view.bounds.width, height: view.bounds.height)
         collectionView.verticalScrollIndicatorInsets.bottom = height
         collectionView.contentInset.bottom = height
         footer.frame = .init(x: .zero, y: view.frame.maxY - bottomInset - height, width: view.frame.width, height: height + bottomInset)
@@ -145,9 +146,9 @@ final class MPViewController: UIViewController {
     override func viewWillTransition(to size: CGSize, with coordinator: any UIViewControllerTransitionCoordinator) {
         super.viewWillTransition(to: size, with: coordinator)
         reloadData() { [weak self] in
-            guard let strongSelf = self, strongSelf.showCameraCell else { return }
-            strongSelf.dataModel.setOrinetation(isLandscape: UIApplication.shared.mp.isLandscape == true)
+            self?.reconfigItems(isAnimate: false)
         }
+        dataModel.setOrinetation(isLandscape: UIApplication.shared.mp.isLandscape == true)
     }
     
     private func setupSubviews() {
@@ -797,7 +798,7 @@ extension MPViewController {
                 showedSections = [.cameraRoll]
             } else {
                 snapshot.appendSections([.cameraRoll, .main])
-                snapshot.appendItems(Array(dataModel.items[0...itemsOffset]), toSection: .cameraRoll)
+                snapshot.appendItems(Array(dataModel.items[0..<itemsOffset]), toSection: .cameraRoll)
                 snapshot.appendItems(Array(dataModel.items[itemsOffset...]), toSection: .main)
                 showedSections = [.cameraRoll, .main]
             }
@@ -809,13 +810,27 @@ extension MPViewController {
         return snapshot
     }
     
-    private func reloadData(withItems items: [MPModel.Item] = [], isAnimate: Bool = true, completion: (() -> Void)? = nil) {
-        guard !items.isEmpty else {
-            let snapshot = makeSnapshot()
-            dataSource.applySnapshot(snapshot, animated: isAnimate, completion: completion)
-            return
+    private func reloadData(isAnimate: Bool = true, completion: (() -> Void)? = nil) {
+        let snapshot = makeSnapshot()
+        dataSource.applySnapshot(snapshot, animated: isAnimate, completion: completion)
+    }
+    
+    private func reconfigItems(isAnimate: Bool = true, completion: (() -> Void)? = nil) {
+        var itemsOffset = 5
+        if UIApplication.shared.mp.isLandscape == true {
+            itemsOffset += 4
         }
-        dataSource.reconfig(withSections: [.main], withItems: items, animated: isAnimate, completion: completion)
+        
+        if showCameraCell {
+            if dataModel.items.count <= itemsOffset {
+                dataSource.reconfig(withSections: [.cameraRoll], withItems: dataModel.items, animated: isAnimate, completion: completion)
+            } else {
+                dataSource.reconfig(withSections: [.cameraRoll], withItems: Array(dataModel.items[0..<itemsOffset]), animated: isAnimate, completion: completion)
+                dataSource.reconfig(withSections: [.cameraRoll], withItems: Array(dataModel.items[itemsOffset...]), animated: isAnimate, completion: completion)
+            }
+        } else {
+            dataSource.reconfig(withSections: [.main], withItems: dataModel.items, animated: isAnimate, completion: completion)
+        }
     }
 }
 
@@ -837,6 +852,21 @@ extension MPViewController: UICollectionViewDelegate {
         default:
             break
         }
+    }
+    
+    public func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
+        var index: Int? = nil
+        DispatchQueue.mp.background(background: {
+            if self.showCameraCell && indexPath.section == 0 && indexPath.item == 0 { return }
+            let model = self.dataModel.item(indexPath, showCameraCell: self.showCameraCell)
+            if MPUIConfiguration.default().showCounterOnSelectionButton, let _index = self.selectedModels.firstIndex(where: { $0 == model }) {
+                index = _index + 1
+            }
+        }, completion: {
+            if let index {
+                cell.mp.as(MediaPickerCell.self)?.index = index
+            }
+        })
     }
 }
 

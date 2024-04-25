@@ -85,15 +85,15 @@ extension MPExtensionWrapper where Base: UIColor {
         })
     }
     
-    func lighter(by percentage: CGFloat = 25.0) -> UIColor? {
+    func lighter(by percentage: CGFloat = 10.0) -> UIColor? {
         adjust(by: abs(percentage) )
     }
     
-    func darker(by percentage: CGFloat = 25.0) -> UIColor? {
+    func darker(by percentage: CGFloat = 10.0) -> UIColor? {
         adjust(by: -1 * abs(percentage) )
     }
     
-    private func adjust(by percentage: CGFloat = 30.0) -> UIColor? {
+    private func adjust(by percentage: CGFloat = 10.0) -> UIColor? {
         var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
         if base.getRed(&red, green: &green, blue: &blue, alpha: &alpha) {
             return UIColor(red: min(red + percentage/100, 1.0),
