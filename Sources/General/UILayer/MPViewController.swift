@@ -29,10 +29,12 @@ import PhotosUI
 final class MPViewController: UIViewController {
     private lazy var collectionView: UICollectionView = {
         let view = UICollectionView(frame: view.bounds, collectionViewLayout: createLayout())
-        //view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        view.verticalScrollIndicatorInsets.top = .leastNonzeroMagnitude
+        view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         view.mp.register(MediaPickerCell.self)
         view.mp.register(MPCameraCell.self)
         view.delegate = self
+        view.backgroundColor = .none
         return view
     }()
     
@@ -136,7 +138,6 @@ final class MPViewController: UIViewController {
         super.viewDidLayoutSubviews()
         let bottomInset = view.safeAreaInsets.bottom == 0 ? 8 : view.safeAreaInsets.bottom
         let height = footer.intrinsicContentSize.height
-        collectionView.frame = .init(x: 0, y: 0, width: view.bounds.width, height: view.bounds.height)
         collectionView.verticalScrollIndicatorInsets.bottom = height
         collectionView.contentInset.bottom = height
         footer.frame = .init(x: .zero, y: view.frame.maxY - bottomInset - height, width: view.frame.width, height: height + bottomInset)

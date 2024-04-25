@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5022A0C82BDA77C100CFEDDA /* ConfigViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5022A0C72BDA77C100CFEDDA /* ConfigViewController.swift */; };
+		5022A0CB2BDA7D0C00CFEDDA /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = 5022A0CA2BDA7D0C00CFEDDA /* SnapKit */; };
 		502AD2C32BC688D400C5CD3C /* MediaPicker in Frameworks */ = {isa = PBXBuildFile; productRef = 502AD2C22BC688D400C5CD3C /* MediaPicker */; };
 		50895DE72BC9522200128719 /* PhotosUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50895DE62BC9522200128719 /* PhotosUI.framework */; };
 		50CCA7872BD6644D00D5308F /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 50CCA7862BD6644D00D5308F /* Localizable.xcstrings */; };
@@ -17,6 +19,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		5022A0C72BDA77C100CFEDDA /* ConfigViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigViewController.swift; sourceTree = "<group>"; };
 		502AD2BF2BC680E300C5CD3C /* MediaPickerExpample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MediaPickerExpample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		503BA8E02BD68A0500A927B4 /* fr */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = fr; path = fr.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		503BA8E12BD68A0B00A927B4 /* de */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = de; path = de.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
@@ -39,6 +42,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				502AD2C32BC688D400C5CD3C /* MediaPicker in Frameworks */,
+				5022A0CB2BDA7D0C00CFEDDA /* SnapKit in Frameworks */,
 				50895DE72BC9522200128719 /* PhotosUI.framework in Frameworks */,
 				50D44F242BD68B7300697261 /* MediaPicker in Frameworks */,
 			);
@@ -69,6 +73,7 @@
 			children = (
 				50E466DA2BBFD9B0004DD4C1 /* AppDelegate.swift */,
 				50E466DE2BBFD9B0004DD4C1 /* ViewController.swift */,
+				5022A0C72BDA77C100CFEDDA /* ConfigViewController.swift */,
 				50E466E32BBFD9B1004DD4C1 /* Assets.xcassets */,
 				50E466E52BBFD9B1004DD4C1 /* LaunchScreen.storyboard */,
 				50E466E82BBFD9B1004DD4C1 /* Info.plist */,
@@ -96,6 +101,7 @@
 			packageProductDependencies = (
 				502AD2C22BC688D400C5CD3C /* MediaPicker */,
 				50D44F232BD68B7300697261 /* MediaPicker */,
+				5022A0CA2BDA7D0C00CFEDDA /* SnapKit */,
 			);
 			productName = MediaPickerExpample;
 			productReference = 502AD2BF2BC680E300C5CD3C /* MediaPickerExpample.app */;
@@ -132,6 +138,7 @@
 			mainGroup = 50E466CE2BBFD9B0004DD4C1;
 			packageReferences = (
 				50D44F222BD68B7300697261 /* XCRemoteSwiftPackageReference "MediaPicker" */,
+				5022A0C92BDA7D0C00CFEDDA /* XCRemoteSwiftPackageReference "SnapKit" */,
 			);
 			productRefGroup = 50E466CE2BBFD9B0004DD4C1;
 			projectDirPath = "";
@@ -161,6 +168,7 @@
 			files = (
 				50E466DF2BBFD9B0004DD4C1 /* ViewController.swift in Sources */,
 				50E466DB2BBFD9B0004DD4C1 /* AppDelegate.swift in Sources */,
+				5022A0C82BDA77C100CFEDDA /* ConfigViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -397,6 +405,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		5022A0C92BDA7D0C00CFEDDA /* XCRemoteSwiftPackageReference "SnapKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SnapKit/SnapKit.git";
+			requirement = {
+				branch = develop;
+				kind = branch;
+			};
+		};
 		50D44F222BD68B7300697261 /* XCRemoteSwiftPackageReference "MediaPicker" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/SynthesOne/MediaPicker.git";
@@ -408,6 +424,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		5022A0CA2BDA7D0C00CFEDDA /* SnapKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 5022A0C92BDA7D0C00CFEDDA /* XCRemoteSwiftPackageReference "SnapKit" */;
+			productName = SnapKit;
+		};
 		502AD2C22BC688D400C5CD3C /* MediaPicker */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = MediaPicker;

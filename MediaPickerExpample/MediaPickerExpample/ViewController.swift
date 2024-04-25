@@ -9,25 +9,25 @@ import Foundation
 import UIKit
 import MediaPicker
 
-class ViewController: UIViewController {
+final class ViewController: UIViewController {
     
-    var mp: MPPresenter?
+    private var mp: MPPresenter?
     
-    let gallery: UIButton = {
+    private let gallery: UIButton = {
         let view = UIButton(type: .system)
         view.setTitle("Gallery", for: .normal)
         view.setTitleColor(.white, for: .normal)
-        view.backgroundColor = .systemRed
+        view.backgroundColor = MPUIConfiguration.default().navigationAppearance.tintColor
         view.layer.cornerRadius = 8
         view.layer.masksToBounds = true
         return view
     }()
     
-    let configuration: UIButton = {
+    private let configuration: UIButton = {
         let view = UIButton(type: .system)
         view.setTitle("Configuration", for: .normal)
         view.setTitleColor(.white, for: .normal)
-        view.backgroundColor = .systemRed
+        view.backgroundColor = MPUIConfiguration.default().navigationAppearance.tintColor
         view.layer.cornerRadius = 8
         view.layer.masksToBounds = true
         return view
@@ -35,8 +35,7 @@ class ViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view.
-        view.backgroundColor = .systemBackground
+        view.backgroundColor = MPUIConfiguration.default().primaryBackgroundColor
         view.addSubview(gallery)
         view.addSubview(configuration)
         gallery.addTarget(self, action: #selector(openG), for: .touchUpInside)
@@ -50,7 +49,7 @@ class ViewController: UIViewController {
         configuration.frame = .init(x: view.center.x + 8, y: view.frame.maxY - bottomInset - 44, width: 120, height: 44)
     }
 
-    @objc func openG() {
+    @objc private func openG() {
         MPGeneralConfiguration.default()
             //.setBundleLangsDeploy(.main)
             //.setKeysLangsDeploy([
@@ -91,8 +90,17 @@ class ViewController: UIViewController {
 //        present(testVc, animated: true)
     }
     
-    @objc func openC() {
+    @objc private func openC() {
+        let config = ConfigViewController()
+        config.handleChangeBG = { [weak self] (color) in
+            self?.view.backgroundColor = color
+        }
         
+        config.handleChangePrimaryTint = { [weak self] (color) in
+            self?.gallery.backgroundColor = color
+            self?.configuration.backgroundColor = color
+        }
+        present(config, animated: true)
     }
 }
 
@@ -123,7 +131,7 @@ class TestVC: UIViewController, UIPopoverPresentationControllerDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
-        view.backgroundColor = .systemBackground
+        view.backgroundColor = MPUIConfiguration.default().primaryBackgroundColor
         view.addSubview(button)
         view.addSubview(button2)
         button.addTarget(self, action: #selector(openG), for: .touchUpInside)

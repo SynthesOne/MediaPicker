@@ -25,15 +25,13 @@
 import UIKit
 
 public struct MPNavigationAppearance {
-    var tintColor: UIColor
-    var shadowColor: UIColor
-    var backgroundColor: UIColor
-    var backgroundEffectStyle: UIBlurEffect.Style
+    public var tintColor: UIColor
+    public var shadowColor: UIColor
+    public var backgroundEffectStyle: UIBlurEffect.Style
     
     static var `default`: Self = .init(
         tintColor: .systemPink,
         shadowColor: UIColor.mp.borderColor,
-        backgroundColor: .systemBackground,
         backgroundEffectStyle: .regular
     )
 }
@@ -73,7 +71,7 @@ public class MPNavigationViewController: UINavigationController {
         scrollAppearance.configureWithOpaqueBackground()
         scrollAppearance.backgroundEffect = nil
         scrollAppearance.shadowColor = nil
-        scrollAppearance.backgroundColor = uiConfig.navigationAppearance.backgroundColor
+        scrollAppearance.backgroundColor = uiConfig.primaryBackgroundColor
         scrollAppearance.titleTextAttributes = attributes
         scrollAppearance.largeTitleTextAttributes = largeAttributes
         

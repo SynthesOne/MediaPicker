@@ -67,6 +67,7 @@ extension UIColor {
 extension MPExtensionWrapper where Base: UIColor {
     static var borderColor: UIColor {
         .init(dynamicProvider: { (traitCollection) -> UIColor in
+            debugPrint("borderColor \(traitCollection.userInterfaceStyle)")
             if traitCollection.userInterfaceStyle == .dark {
                 return UIColor(hexString: "#E6E9F2")!.withAlphaComponent(0.15)
             } else {

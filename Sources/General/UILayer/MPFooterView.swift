@@ -91,9 +91,9 @@ final class MPFooterView: UIView {
         view.setTitleColor(uiConfig.navigationAppearance.tintColor, for: .normal)
         view.setTitle(Lang.cancelButton, for: .normal)
         view.titleLabel?.font = Font.regular(17)
-        view.backgroundColor = uiConfig.navigationAppearance.tintColor.withAlphaComponent(0.15)
-        view.fillColor = uiConfig.navigationAppearance.tintColor.withAlphaComponent(0.15)
-        view.highlightColor = uiConfig.navigationAppearance.tintColor.withAlphaComponent(0.15).mp.darker()
+        view.backgroundColor = uiConfig.navigationAppearance.tintColor.withAlphaComponent(0.25)
+        view.fillColor = uiConfig.navigationAppearance.tintColor.withAlphaComponent(0.25)
+        view.highlightColor = uiConfig.navigationAppearance.tintColor.withAlphaComponent(0.25).mp.darker()
         return view
     }()
     
