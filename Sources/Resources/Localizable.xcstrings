@@ -517,7 +517,7 @@
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "D’ACCORD"
+            "value" : "D'accord"
           }
         },
         "ja" : {
@@ -622,13 +622,13 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "KONTROLLE"
+            "value" : "Kontrolle"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "CONTROL"
+            "value" : "Control"
           }
         },
         "es" : {
@@ -652,7 +652,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "УПРАВЛЕНИЕ"
+            "value" : "Управление"
           }
         }
       }

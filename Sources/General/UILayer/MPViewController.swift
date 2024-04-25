@@ -728,22 +728,21 @@ final class MPViewController: UIViewController {
     private func handleProcessBuffer(sampleBuffer: CMSampleBuffer, imageBuffer: CVImageBuffer, connection: AVCaptureConnection) {
         guard !wasCreateSnapshot else { return }
         wasCreateSnapshot = true
-        debugPrint("handleProcessBuffer current thread \(Thread.current)")
-            var ciImage = CIImage(cvPixelBuffer: imageBuffer)
-            let size = ciImage.extent.size
-            ciImage = ciImage.clampedToExtent().applyingGaussianBlur(sigma: 100).cropped(to: CGRect(origin: .zero, size: size))
-            let colorSpace = CGColorSpaceCreateDeviceRGB()
-            let ciContext = CIContext(options: [.workingColorSpace: colorSpace])
-            
-            if let cgImage = ciContext.createCGImage(ciImage, from: ciImage.extent) {
-                let uiImage = UIImage(cgImage: cgImage, scale: 1.0, orientation: .right)
-                guard let data = uiImage.jpegData(compressionQuality: 0.6) else { return }
-                let url = NSTemporaryDirectory() + "cameraCaptureImage.jpg"
-                try? data.write(to: URL(fileURLWithPath: url))
-                self.wasCreateSnapshot = true
-            } else {
-                self.wasCreateSnapshot = false
-            }
+        var ciImage = CIImage(cvPixelBuffer: imageBuffer)
+        let size = ciImage.extent.size
+        ciImage = ciImage.clampedToExtent().applyingGaussianBlur(sigma: 100).cropped(to: CGRect(origin: .zero, size: size))
+        let colorSpace = CGColorSpaceCreateDeviceRGB()
+        let ciContext = CIContext(options: [.workingColorSpace: colorSpace])
+        
+        if let cgImage = ciContext.createCGImage(ciImage, from: ciImage.extent) {
+            let uiImage = UIImage(cgImage: cgImage, scale: 1.0, orientation: .right)
+            guard let data = uiImage.jpegData(compressionQuality: 0.6) else { return }
+            let url = NSTemporaryDirectory() + "cameraCaptureImage.jpg"
+            try? data.write(to: URL(fileURLWithPath: url))
+            self.wasCreateSnapshot = true
+        } else {
+            self.wasCreateSnapshot = false
+        }
     }
     
     private func showDismissAlertIfNeed() {

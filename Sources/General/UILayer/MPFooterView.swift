@@ -49,7 +49,7 @@ final class MPFooterView: UIView {
        let view = UILabel()
         view.textAlignment = .left
         view.textColor = .secondaryLabel
-        view.font = Font.regular(14)
+        view.font = Font.regular(15)
         view.text = Lang.limitedAccessTip
         view.lineBreakMode = .byWordWrapping
         view.numberOfLines = 0
@@ -60,13 +60,20 @@ final class MPFooterView: UIView {
         let view = FillButton(type: .custom)
         view.setTitle(Lang.toolTipControl, for: .normal)
         view.setTitleColor(.white, for: .normal)
-        view.titleLabel?.font = Font.medium(14)
+        view.titleLabel?.font = Font.regular(15)
         let uiConfig = MPUIConfiguration.default()
         view.backgroundColor = uiConfig.navigationAppearance.tintColor
         view.fillColor = uiConfig.navigationAppearance.tintColor
         view.highlightColor = uiConfig.navigationAppearance.tintColor.mp.darker()
         view.contentVerticalAlignment = .center
         view.contentHorizontalAlignment = .center
+        return view
+    }()
+    
+    private lazy var toolTipSubstrate: UIView = {
+        let view = UIView()
+        view.backgroundColor = .systemGroupedBackground
+        view.mp.setRadius(14)
         return view
     }()
     
@@ -79,13 +86,14 @@ final class MPFooterView: UIView {
     
     private let actionButton: FillButton = {
         let view = FillButton(type: .custom)
-        view.mp.setRadius(8)
-        view.setTitleColor(.white, for: .normal)
+        let uiConfig = MPUIConfiguration.default()
+        view.mp.setRadius(12)
+        view.setTitleColor(uiConfig.navigationAppearance.tintColor, for: .normal)
         view.setTitle(Lang.cancelButton, for: .normal)
-        view.titleLabel?.font = Font.medium(18)
-        view.backgroundColor = .systemGray
-        view.fillColor = .systemGray
-        view.highlightColor = .systemGray.mp.darker()
+        view.titleLabel?.font = Font.regular(17)
+        view.backgroundColor = uiConfig.navigationAppearance.tintColor.withAlphaComponent(0.2)
+        view.fillColor = uiConfig.navigationAppearance.tintColor.withAlphaComponent(0.2)
+        view.highlightColor = uiConfig.navigationAppearance.tintColor.withAlphaComponent(0.2).mp.darker()
         return view
     }()
     
@@ -113,7 +121,8 @@ final class MPFooterView: UIView {
     private func setupSubviews() {
         self.mp.addSubviews(blurContainer, actionButton)
         if showAddToolTip {
-            self.mp.addSubviews(toolTipDescription, toolTipButton)
+            addSubview(toolTipSubstrate)
+            toolTipSubstrate.mp.addSubviews(toolTipDescription, toolTipButton)
             toolTipButton.mp.action({ [weak self] in self?.toolTipButtonTap?() }, forEvent: .touchUpInside)
         }
         actionButton.addSubview(counter)
@@ -126,11 +135,13 @@ final class MPFooterView: UIView {
         let sideInset = safeAreaInsets.left > 0 ? safeAreaInsets.left : 16
         if showAddToolTip {
             let (buttonWidth, buttonHeight, textWidth, textHeight) = simulateToolTipSizes(sideInset: sideInset)
+            let finalTipContentHeight = buttonHeight > textHeight ? buttonHeight : textHeight
+            let finalTipHeight = finalTipContentHeight + 32
+            toolTipSubstrate.frame = .init(x: sideInset, y: 16, width: bounds.width - sideInset * 2, height: finalTipHeight)
             toolTipButton.mp.setRadius(buttonHeight / 2)
-            toolTipButton.frame = .init(x: bounds.maxX - buttonWidth - sideInset, y: 12, width: buttonWidth, height: buttonHeight)
-            toolTipDescription.frame = .init(x: sideInset, y: 12, width: textWidth, height: textHeight)
-            let finalHeight = buttonHeight > textHeight ? buttonHeight : textHeight
-            actionButton.frame = .init(x: sideInset, y: 24 + finalHeight, width: bounds.width - sideInset * 2, height: 44)
+            toolTipButton.frame = .init(x: (bounds.maxX - sideInset * 2) - buttonWidth - 16, y: finalTipHeight / 2 - buttonHeight / 2, width: buttonWidth, height: buttonHeight)
+            toolTipDescription.frame = .init(x: 16, y: finalTipHeight / 2 - textHeight / 2, width: textWidth, height: textHeight)
+            actionButton.frame = .init(x: 16, y: 28 + finalTipHeight, width: bounds.width - sideInset * 2, height: 44)
         } else {
             actionButton.frame = .init(x: sideInset, y: 8, width: bounds.width - sideInset * 2, height: 44)
         }
@@ -142,17 +153,18 @@ final class MPFooterView: UIView {
             let sideInset = safeAreaInsets.left > 0 ? safeAreaInsets.left : 16
             let (_, buttonHeight, _, textHeight) = simulateToolTipSizes(sideInset: sideInset)
             // We round to get an integer height, otherwise the view won't go all the way to the bottom
-            let finalHeight = (buttonHeight > textHeight ? buttonHeight : textHeight).rounded(.up)
-            return .init(width: super.intrinsicContentSize.width, height: finalHeight + 24 + 44)
+            let finalTipContentHeight = buttonHeight > textHeight ? buttonHeight : textHeight
+            let finalTipHeight = (finalTipContentHeight + 32).rounded(.up)
+            return .init(width: super.intrinsicContentSize.width, height: finalTipHeight + 28 + 44)
         } else {
             return .init(width: super.intrinsicContentSize.width, height: 52)
         }
     }
     
     private func simulateToolTipSizes(sideInset: CGFloat) -> (CGFloat, CGFloat, CGFloat, CGFloat) {
-        let buttonWidth = (toolTipButton.titleLabel?.mp.textWidth() ?? 0.0) + 16
-        let buttonHeight = (toolTipButton.titleLabel?.mp.textHeight(width: buttonWidth) ?? 0.0) + 8
-        let textWidth = bounds.width - (buttonWidth + sideInset * 2 + 8)
+        let buttonWidth = (toolTipButton.titleLabel?.mp.textWidth() ?? 0.0) + 28
+        let buttonHeight = (toolTipButton.titleLabel?.mp.textHeight(width: buttonWidth) ?? 0.0) + 14
+        let textWidth = (bounds.width - sideInset * 2) - (buttonWidth + 32 + 8)
         let textHeight = toolTipDescription.mp.textHeight(width: textWidth)
         
         return (buttonWidth, buttonHeight, textWidth, textHeight)
@@ -161,14 +173,8 @@ final class MPFooterView: UIView {
     private func updateButtonActionButtond(hasCount: Bool) {
         if hasCount {
             actionButton.setTitle(Lang.attach, for: .normal)
-            actionButton.backgroundColor = MPUIConfiguration.default().navigationAppearance.tintColor
-            actionButton.fillColor = MPUIConfiguration.default().navigationAppearance.tintColor
-            actionButton.highlightColor = MPUIConfiguration.default().navigationAppearance.tintColor.mp.darker()
         } else {
             actionButton.setTitle(Lang.cancelButton, for: .normal)
-            actionButton.backgroundColor = .systemGray
-            actionButton.fillColor = .systemGray
-            actionButton.highlightColor = .systemGray.mp.darker()
         }
     }
     

@@ -516,11 +516,9 @@ class MPVideoPreviewCell: MPPreviewCell {
     
     private func fetchVideo() {
         videoRequestID = MPManager.fetchVideo(for: model.asset, progress: { progress, _, _, _ in
-            debugPrint("fetchVideo progress \(progress)")
             self.progressView.isHidden = progress >= 1
             self.progressView.setProgress(Float(progress))
         }, completion: { item, info, isDegraded in
-            debugPrint("fetchVideo current thread \(Thread.current)")
             let error = info?[PHImageErrorKey] as? Error
             let isFetchError = MPManager.isFetchImageError(error)
             if isFetchError {
