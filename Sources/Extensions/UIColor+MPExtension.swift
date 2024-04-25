@@ -85,11 +85,11 @@ extension MPExtensionWrapper where Base: UIColor {
         })
     }
     
-    func lighter(by percentage: CGFloat = 30.0) -> UIColor? {
+    func lighter(by percentage: CGFloat = 25.0) -> UIColor? {
         adjust(by: abs(percentage) )
     }
     
-    func darker(by percentage: CGFloat = 30.0) -> UIColor? {
+    func darker(by percentage: CGFloat = 25.0) -> UIColor? {
         adjust(by: -1 * abs(percentage) )
     }
     

@@ -41,7 +41,14 @@ final class MPViewController: UIViewController {
         return view
     }()
     
-    private let closeButton = UIBarButtonItem()
+    private lazy var cancelBarItem: UIBarButtonItem = {
+        let view = UIBarButtonItem(title: Lang.cancelButton, primaryAction: .init(handler: { [weak self] (_) in
+            self?.dismissAlert()
+        }))
+        return view
+    }()
+    
+    //private let closeButton = UIBarButtonItem()
     private lazy var footer: MPFooterView = MPFooterView(showAddToolTip: showAddToolTip)
     private lazy var dataSource = UICollectionViewDiffableDataSource<MPModel.Section, MPModel.Item>(collectionView: collectionView, cellProvider: { [weak self] (collectionView, indexPath, item) -> UICollectionViewCell? in
         self?.cellProvider(collectionView: collectionView, indexPath: indexPath, item: item)
@@ -53,9 +60,14 @@ final class MPViewController: UIViewController {
             MPMainAsync {
                 if self.selectedModels.count != oldValue.count {
                     self.footer.setCounter(self.selectedModels.count)
+                    self.toggleCancelBarItem(isHide: self.selectedModels.count == 0)
                 }
             }
         }
+    }
+    
+    private func toggleCancelBarItem(isHide: Bool) {
+        navigationItem.setLeftBarButton(isHide ? nil : cancelBarItem, animated: true)
     }
     
     
@@ -150,7 +162,7 @@ final class MPViewController: UIViewController {
             if strongSelf.selectedModels.count > 0 {
                 strongSelf.preSelectedResult?(strongSelf.selectedModels)
             } else {
-                strongSelf.dismissAlert(needDismiss: true)
+                strongSelf.dismissAlert()
             }
         }
         
@@ -225,8 +237,8 @@ final class MPViewController: UIViewController {
     }
     
     // The first request was at a limit of 30, so you need to re-request the entire album
-    /// completionInMain == false, so that the `loadPhotos()` does not switch the context
     private func firstLoadPhotos() {
+        /// completionInMain == false, so that the `loadPhotos()` does not switch the context
         MPManager.getCameraRollAlbum(allowSelectImage: MPGeneralConfiguration.default().allowImage, allowSelectVideo: MPGeneralConfiguration.default().allowVideo, completionInMain: false, completion: { (album) in
             self.albumModel = album
             self.loadPhotos()
@@ -760,7 +772,7 @@ final class MPViewController: UIViewController {
         present(alert, animated: true)
     }
     
-    private func dismissAlert(needDismiss: Bool = false) {
+    @objc private func dismissAlert(needDismiss: Bool = true) {
         if !selectedModels.isEmpty {
             showDismissAlertIfNeed()
         } else {
@@ -935,7 +947,7 @@ extension MPViewController: UISheetPresentationControllerDelegate {
             didAttemptToDismissWasCall = false
             Timer.scheduledTimer(withTimeInterval: 0.3, repeats: false, block: { [weak self] (_) in
                 guard let strongSelf = self, !strongSelf.didAttemptToDismissWasCall else { return }
-                strongSelf.dismissAlert()
+                strongSelf.dismissAlert(needDismiss: false)
             })
             return false
         }
@@ -943,6 +955,6 @@ extension MPViewController: UISheetPresentationControllerDelegate {
     
     func presentationControllerDidAttemptToDismiss(_ presentationController: UIPresentationController) {
         didAttemptToDismissWasCall = true
-        dismissAlert()
+        dismissAlert(needDismiss: false)
     }
 }
