@@ -26,6 +26,10 @@ import UIKit
 import Photos
 import PhotosUI
 
+protocol MediaPickerCellDelegate: AnyObject {
+    func onCheckboxTap(inCell cell: MediaPickerCell)
+}
+
 final class MPViewController: UIViewController {
     private lazy var collectionView: UICollectionView = {
         let view = UICollectionView(frame: view.bounds, collectionViewLayout: createLayout())
@@ -34,17 +38,20 @@ final class MPViewController: UIViewController {
         view.mp.register(MediaPickerCell.self)
         view.mp.register(MPCameraCell.self)
         view.delegate = self
+        view.dragDelegate = self
+        view.dropDelegate = self
         view.backgroundColor = .none
+        view.reorderingCadence = .immediate
         return view
     }()
     
     private let albumListNavView: MPAlbumPickerNavView = {
-        let view = MPAlbumPickerNavView(title: Lang.recents, isCenterAlignment: true)
+        let view = MPAlbumPickerNavView(title: Lang.recents)
         return view
     }()
     
     private lazy var cancelBarItem: UIBarButtonItem = {
-        let view = UIBarButtonItem(title: Lang.cancelButton, primaryAction: .init(handler: { [weak self] (_) in
+        let view = UIBarButtonItem(title: Lang.cancel, primaryAction: .init(handler: { [weak self] (_) in
             self?.dismissAlert()
         }))
         return view
@@ -62,16 +69,11 @@ final class MPViewController: UIViewController {
             MPMainAsync {
                 if self.selectedModels.count != oldValue.count {
                     self.footer.setCounter(self.selectedModels.count)
-                    self.toggleCancelBarItem(isHide: self.selectedModels.count == 0)
+                    self.toggleViewState(with: oldValue.count)
                 }
             }
         }
     }
-    
-    private func toggleCancelBarItem(isHide: Bool) {
-        navigationItem.setLeftBarButton(isHide ? nil : cancelBarItem, animated: true)
-    }
-    
     
     private var albumModel: MPAlbumModel
     private var hasTakeANewAsset = false
@@ -104,6 +106,18 @@ final class MPViewController: UIViewController {
     
     private var didAttemptToDismissWasCall = false
     
+    private var allowDragAndDrop = false
+    
+    private var viewState: MPAlbumPickerNavView.SegmentedState = .all {
+        didSet {
+            allowDragAndDrop = viewState == .selected
+            reloadData() { [weak self] in
+                self?.refreshCellIndex()
+                //self?.reconfigItems(isAnimate: false)
+            }
+        }
+    }
+    
     var preSelectedResult: (([MPPhotoModel]) -> ())? = nil
     
     
@@ -133,7 +147,7 @@ final class MPViewController: UIViewController {
         firstLoadPhotos()
         registerChangeObserver()
     }
-
+    
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         let bottomInset = view.safeAreaInsets.bottom == 0 ? 8 : view.safeAreaInsets.bottom
@@ -181,7 +195,7 @@ final class MPViewController: UIViewController {
                         }
                     }
                 })
-                Action.cancel(Lang.cancelButton)
+                Action.cancel(Lang.cancel)
             })
             actionSheet.view.tintColor = MPUIConfiguration.default().navigationAppearance.tintColor
             strongSelf.present(actionSheet, animated: true)
@@ -217,6 +231,14 @@ final class MPViewController: UIViewController {
             albumList.selectAlbumBlock = selectAlbumBlock
             albumList.closeBlock = closeAlbumBlock
             strongSelf.present(albumList, animated: true)
+        }
+        
+        albumListNavView.segmentAction = { [weak self] (state) in
+            guard let strongSelf = self else { return }
+            strongSelf.viewState = state
+            if strongSelf.selectedModels.count > 1 {
+                strongSelf.toggleFooterDDTip(to: state)
+            }
         }
     }
     
@@ -359,14 +381,15 @@ final class MPViewController: UIViewController {
         switch item {
         case let .media(model):
             let cell = collectionView.mp.cell(MediaPickerCell.self, for: indexPath)
+            cell.delegate = self
             
-            cell.selectedBlock = { [weak self] block in
-                guard let strongSelf = self else { return }
-                strongSelf.selectionBlock(indexPath: indexPath, escapeBlock: block)
-            }
-            
-            if MPUIConfiguration.default().showCounterOnSelectionButton, let index = selectedModels.firstIndex(where: { $0 == model }) {
-                cell.index = index + 1
+            switch viewState {
+            case .all:
+                if MPUIConfiguration.default().showCounterOnSelectionButton, let index = selectedModels.firstIndex(where: { $0 == model }) {
+                    cell.index = index + 1
+                }
+            case .selected:
+                cell.index = indexPath.item + 1
             }
             
             cell.model = model
@@ -385,48 +408,51 @@ final class MPViewController: UIViewController {
     
     
     // MARK: - Action && Helpers
-    private func selectionBlock(indexPath: IndexPath, escapeBlock: ((Bool) -> ())? = nil) {
+    private func selectionBlock(at indexPath: IndexPath) {
         let currentSelectCount = selectedModels.count
-        let item = dataModel.item(indexPath, showCameraCell: showCameraCell)
-        if !item.isSelected {
-            if MPGeneralConfiguration.default().maxMediaSelectCount == 1, currentSelectCount > 0  {
-                if let selectedIndex = dataModel.firstSelectedIndex(showCameraCell: showCameraCell) {
-                    dataModel.toggleSelected(indexPath: selectedIndex, showCameraCell: showCameraCell, false)
-                    if let selected = dataModel.toggleSelected(indexPath: indexPath, showCameraCell: showCameraCell, true) {
-                        selectedModels = [selected]
-                    }
-                    toggleCellSelection(at: selectedIndex)
-                    if let escapeBlock {
-                        escapeBlock(true)
-                    } else {
+        switch viewState {
+        case .all:
+            let item = dataModel.item(indexPath, showCameraCell: showCameraCell)
+            if !item.isSelected {
+                if MPGeneralConfiguration.default().maxMediaSelectCount == 1, currentSelectCount > 0  {
+                    if let selectedIndex = dataModel.firstSelectedIndex(showCameraCell: showCameraCell) {
+                        dataModel.toggleSelected(indexPath: selectedIndex, showCameraCell: showCameraCell, false)
+                        if let selected = dataModel.toggleSelected(indexPath: indexPath, showCameraCell: showCameraCell, true) {
+                            selectedModels = [selected]
+                        }
+                        toggleCellSelection(at: selectedIndex)
                         toggleCellSelection(at: indexPath)
                     }
-                    refreshCellIndex()
-                }
-            } else {
-                guard canSelectMedia(item, currentSelectCount: currentSelectCount) else { return }
-                if let selected = dataModel.toggleSelected(indexPath: indexPath, showCameraCell: showCameraCell, true) {
-                    selectedModels.append(selected)
-                }
-                if let escapeBlock {
-                    escapeBlock(true)
                 } else {
+                    guard canSelectMedia(item, currentSelectCount: currentSelectCount) else { return }
+                    if let selected = dataModel.toggleSelected(indexPath: indexPath, showCameraCell: showCameraCell, true) {
+                        selectedModels.append(selected)
+                    }
                     toggleCellSelection(at: indexPath)
                 }
-                refreshCellIndex()
-            }
-        } else {
-            if let unselected = dataModel.toggleSelected(indexPath: indexPath, showCameraCell: showCameraCell, false) {
-                selectedModels.remove(unselected)
-            }
-            if let escapeBlock {
-                escapeBlock(false)
             } else {
+                if let unselected = dataModel.toggleSelected(indexPath: indexPath, showCameraCell: showCameraCell, false) {
+                    selectedModels.remove(unselected)
+                }
                 toggleCellSelection(at: indexPath)
             }
             refreshCellIndex()
+            reloadData()
+        case .selected:
+            toggleCellSelection(at: indexPath)
+            let item = selectedModels[indexPath.item]
+            selectedModels.remove(at: indexPath.item)
+            dataModel.unselectBy(item)
+            if viewState == .selected && selectedModels.isEmpty == true {
+                viewState = .all
+            } else {
+                if selectedModels.count == 1 {
+                    toggleFooterDDTip(to: .all)
+                }
+                reloadData()
+                refreshCellIndex()
+            }
         }
-        reloadData()
     }
     
     private func adopteDetents() {
@@ -459,7 +485,7 @@ final class MPViewController: UIViewController {
         // Necessary to check that the selection does not start below the footer
         let pointInFooter = pan.location(in: footer)
         
-        guard let indexPath = collectionView.indexPathForItem(at: point) else { return }
+        guard viewState == .all, let indexPath = collectionView.indexPathForItem(at: point) else { return }
         let cell = collectionView.mp.cellItem(MediaPickerCell.self, for: indexPath)
         
         if pan.state == .began {
@@ -587,7 +613,7 @@ final class MPViewController: UIViewController {
         let distance = autoScrollInfo.speed * duration
         let offset = collectionView.contentOffset
         let inset = collectionView.contentInset
-        if autoScrollInfo.direction == .top, offset.y + inset.top > distance {
+        if autoScrollInfo.direction == .top, offset.y + (inset.top + 44) > distance {
             collectionView.contentOffset = CGPoint(x: 0, y: offset.y - distance)
         } else if autoScrollInfo.direction == .bottom, offset.y + collectionView.bounds.height + distance - inset.bottom < collectionView.contentSize.height {
             // *****
@@ -618,7 +644,13 @@ final class MPViewController: UIViewController {
         
         visibleIndexPaths.forEach { indexPath in
             guard let cell = collectionView.mp.cellItem(MediaPickerCell.self, for: indexPath) else { return }
-            let m = dataModel.item(indexPath, showCameraCell: showCameraCell)
+            let m: MPPhotoModel
+            switch viewState {
+            case .all:
+                m = dataModel.item(indexPath, showCameraCell: showCameraCell)
+            case .selected:
+                m = selectedModels[indexPath.item]
+            }
             
             var show = false
             var idx = 0
@@ -646,6 +678,7 @@ final class MPViewController: UIViewController {
             return
         }
         cell?.index = index
+        cell?.isOn = showIndexLabel
     }
     
     private func markSelected() {
@@ -658,7 +691,12 @@ final class MPViewController: UIViewController {
         if let model {
             cell?.isOn = model.isSelected
         } else {
-            cell?.isOn = dataModel.item(indexPath, showCameraCell: showCameraCell).isSelected
+            switch viewState {
+            case .all:
+                cell?.isOn = dataModel.item(indexPath, showCameraCell: showCameraCell).isSelected
+            case .selected:
+                cell?.isOn = false
+            }
         }
     }
     
@@ -781,31 +819,74 @@ final class MPViewController: UIViewController {
             if needDismiss { dismiss(animated: true) }
         }
     }
+    
+    private func toggleCancelBarItem(isHide: Bool) {
+        navigationItem.setLeftBarButton(isHide ? nil : cancelBarItem, animated: true)
+    }
+    
+    private func toggleViewState(with oldValue: Int) {
+        albumListNavView.selectedCounter = selectedModels.count
+        if selectedModels.count == 0 && oldValue > 0 {
+            toggleCancelBarItem(isHide: true)
+            albumListNavView.setState(.album)
+        } else if oldValue == 0 && selectedModels.count > 0 {
+            toggleCancelBarItem(isHide: false)
+            albumListNavView.setState(.segemented)
+        }
+    }
+    
+    private func toggleFooterDDTip(to state: MPAlbumPickerNavView.SegmentedState) {
+        footer.showDDToolTip = state == .selected
+        let bottomInset = view.safeAreaInsets.bottom == 0 ? 8 : view.safeAreaInsets.bottom
+        let height = footer.intrinsicContentSize.height
+        footer.toggleDDToolTip(state == .selected, animationBlock: { [weak self] in
+            self?.collectionView.verticalScrollIndicatorInsets.bottom = height
+            self?.collectionView.contentInset.bottom = height
+            self?.footer.frame.size.height = height + bottomInset
+            self?.view.layoutIfNeeded()
+        })
+    }
+}
+
+// MARK: - MediaPickerCellDelegate
+extension MPViewController: MediaPickerCellDelegate {
+    func onCheckboxTap(inCell cell: MediaPickerCell) {
+        guard let indexPath = collectionView.indexPath(for: cell) else { return }
+        selectionBlock(at: indexPath)
+    }
 }
 
 // MARK: - ReloadData
 extension MPViewController {
     private func makeSnapshot() -> NSDiffableDataSourceSnapshot<MPModel.Section, MPModel.Item> {
         var snapshot = NSDiffableDataSourceSnapshot<MPModel.Section, MPModel.Item>()
-        var itemsOffset = 5
-        if UIApplication.shared.mp.isLandscape == true {
-            itemsOffset += 4
-        }
-        
-        if showCameraCell {
-            if dataModel.items.count <= itemsOffset {
-                snapshot.appendSections([.cameraRoll])
-                snapshot.appendItems(dataModel.items, toSection: .cameraRoll)
-                showedSections = [.cameraRoll]
-            } else {
-                snapshot.appendSections([.cameraRoll, .main])
-                snapshot.appendItems(Array(dataModel.items[0..<itemsOffset]), toSection: .cameraRoll)
-                snapshot.appendItems(Array(dataModel.items[itemsOffset...]), toSection: .main)
-                showedSections = [.cameraRoll, .main]
+        switch viewState {
+        case .all:
+            var itemsOffset = 5
+            if UIApplication.shared.mp.isLandscape == true {
+                itemsOffset += 4
             }
-        } else {
+            
+            if showCameraCell {
+                if dataModel.items.count <= itemsOffset {
+                    snapshot.appendSections([.cameraRoll])
+                    snapshot.appendItems(dataModel.items, toSection: .cameraRoll)
+                    showedSections = [.cameraRoll]
+                } else {
+                    snapshot.appendSections([.cameraRoll, .main])
+                    snapshot.appendItems(Array(dataModel.items[0..<itemsOffset]), toSection: .cameraRoll)
+                    snapshot.appendItems(Array(dataModel.items[itemsOffset...]), toSection: .main)
+                    showedSections = [.cameraRoll, .main]
+                }
+            } else {
+                snapshot.appendSections([.main])
+                snapshot.appendItems(dataModel.items, toSection: .main)
+                showedSections = [.main]
+            }
+        case .selected:
+            let items = selectedModels.map { MPModel.Item.media($0) }
             snapshot.appendSections([.main])
-            snapshot.appendItems(dataModel.items, toSection: .main)
+            snapshot.appendItems(items, toSection: .main)
             showedSections = [.main]
         }
         return snapshot
@@ -817,20 +898,26 @@ extension MPViewController {
     }
     
     private func reconfigItems(isAnimate: Bool = true, completion: (() -> Void)? = nil) {
-        var itemsOffset = 5
-        if UIApplication.shared.mp.isLandscape == true {
-            itemsOffset += 4
-        }
-        
-        if showCameraCell {
-            if dataModel.items.count <= itemsOffset {
-                dataSource.reconfig(withSections: [.cameraRoll], withItems: dataModel.items, animated: isAnimate, completion: completion)
-            } else {
-                dataSource.reconfig(withSections: [.cameraRoll], withItems: Array(dataModel.items[0..<itemsOffset]), animated: isAnimate, completion: completion)
-                dataSource.reconfig(withSections: [.cameraRoll], withItems: Array(dataModel.items[itemsOffset...]), animated: isAnimate, completion: completion)
+        switch viewState {
+        case .all:
+            var itemsOffset = 5
+            if UIApplication.shared.mp.isLandscape == true {
+                itemsOffset += 4
             }
-        } else {
-            dataSource.reconfig(withSections: [.main], withItems: dataModel.items, animated: isAnimate, completion: completion)
+            
+            if showCameraCell {
+                if dataModel.items.count <= itemsOffset {
+                    dataSource.reconfig(withSections: [.cameraRoll], withItems: dataModel.items, animated: isAnimate, completion: completion)
+                } else {
+                    dataSource.reconfig(withSections: [.cameraRoll], withItems: Array(dataModel.items[0..<itemsOffset]), animated: isAnimate, completion: completion)
+                    dataSource.reconfig(withSections: [.main], withItems: Array(dataModel.items[itemsOffset...]), animated: isAnimate, completion: completion)
+                }
+            } else {
+                dataSource.reconfig(withSections: [.main], withItems: dataModel.items, animated: isAnimate, completion: completion)
+            }
+        case .selected:
+            let items = selectedModels.map { MPModel.Item.media($0) }
+            dataSource.reconfig(withSections: [.main], withItems: items, animated: isAnimate, completion: completion)
         }
     }
 }
@@ -845,11 +932,19 @@ extension MPViewController: UICollectionViewDelegate {
                 showCamera()
             }
         case let mediaCell as MediaPickerCell:
-            let (allPhoto, index) = dataModel.extractedMedia(forSelectedIndexPath: indexPath, showCameraCell: showCameraCell)
-            let preview = MediaViewerViewController(referencedView: mediaCell.referencedView, image: mediaCell.referencedImage, model: allPhoto, selectedModels: selectedModels, index: index)
-            preview.dataSource = self
-            preview.delegate = self
-            present(preview, animated: true)
+            switch viewState {
+            case .all:
+                let (allPhoto, index) = dataModel.extractedMedia(forSelectedIndexPath: indexPath, showCameraCell: showCameraCell)
+                let preview = MediaViewerViewController(referencedView: mediaCell.referencedView, image: mediaCell.referencedImage, model: allPhoto, selectedModels: selectedModels, index: index)
+                preview.dataSource = self
+                preview.delegate = self
+                present(preview, animated: true)
+            case .selected:
+                let preview = MediaViewerViewController(referencedView: mediaCell.referencedView, image: mediaCell.referencedImage, model: selectedModels, selectedModels: selectedModels, index: indexPath.item)
+                preview.dataSource = self
+                preview.delegate = self
+                present(preview, animated: true)
+            }
         default:
             break
         }
@@ -868,6 +963,82 @@ extension MPViewController: UICollectionViewDelegate {
                 cell.mp.as(MediaPickerCell.self)?.index = index
             }
         })
+    }
+}
+
+extension MPViewController: UICollectionViewDragDelegate {
+    func collectionView(_ collectionView: UICollectionView, dragSessionAllowsMoveOperation session: any UIDragSession) -> Bool {
+        allowDragAndDrop
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, itemsForBeginning session: UIDragSession, at indexPath: IndexPath) -> [UIDragItem] {
+        guard allowDragAndDrop else { return [] }
+        let item = selectedModels[indexPath.item]
+        let itemProvider = NSItemProvider(object: item.id as NSString)
+        let dragItem = UIDragItem(itemProvider: itemProvider)
+        dragItem.localObject = item
+        Vibration.medium.vibrate()
+        return [dragItem]
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, dragPreviewParametersForItemAt indexPath: IndexPath) -> UIDragPreviewParameters? {
+        guard let cell = collectionView.mp.cellItem(MediaPickerCell.self, for: indexPath) else { return nil }
+        let previewParameters = UIDragPreviewParameters()
+        let path = UIBezierPath(rect: cell.contentView.frame)
+        previewParameters.visiblePath = path
+        previewParameters.backgroundColor = .clear
+        return previewParameters
+    }
+}
+
+extension MPViewController: UICollectionViewDropDelegate {
+    func collectionView(_ collectionView: UICollectionView, dropSessionDidUpdate session: UIDropSession, withDestinationIndexPath destinationIndexPath: IndexPath?) -> UICollectionViewDropProposal {
+        UICollectionViewDropProposal(operation: .move, intent: .insertIntoDestinationIndexPath)
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, performDropWith coordinator: UICollectionViewDropCoordinator) {
+        let destinationIndexPath: IndexPath
+        if let indexPath = coordinator.destinationIndexPath {
+            destinationIndexPath = indexPath
+        } else {
+            destinationIndexPath = IndexPath(item: selectedModels.count - 1, section: 0)
+        }
+        
+        switch coordinator.proposal.operation {
+        case .move:
+            guard let item = coordinator.items.first,
+                  let sourceIndexPath = item.sourceIndexPath else { return }
+            selectedModels.move(from: sourceIndexPath.item, to: destinationIndexPath.item)
+            reloadData()
+            refreshCellIndex()
+            //coordinator.drop(item.dragItem, intoItemAt: destinationIndexPath, rect: .zero)
+            coordinator.drop(item.dragItem, toItemAt: destinationIndexPath)
+            Vibration.selection.vibrate()
+            break
+        default:
+            return
+        }
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, dropPreviewParametersForItemAt indexPath: IndexPath) -> UIDragPreviewParameters? {
+        guard let cell = collectionView.mp.cellItem(MediaPickerCell.self, for: indexPath) else { return nil }
+        let previewParameters = UIDragPreviewParameters()
+        let path = UIBezierPath(rect: cell.contentView.frame)
+        previewParameters.visiblePath = path
+        previewParameters.backgroundColor = .clear
+        return previewParameters
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, dropSessionDidEnd session: any UIDropSession) {
+        debugPrint("collectionView dropSessionDidEnd")
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, dropSessionDidExit session: any UIDropSession) {
+        debugPrint("collectionView dropSessionDidExit")
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, dropSessionDidEnter session: any UIDropSession) {
+        debugPrint("collectionView dropSessionDidEnter")
     }
 }
 
@@ -952,8 +1123,15 @@ extension MPViewController {
 // MARK: - MediaPreviewControllerDataSource
 extension MPViewController: MediaPreviewControllerDataSource {
     func photoViewerController(_ photoViewerController: MediaViewerViewController, referencedViewForPhotoModel model: MPPhotoModel) -> UIView? {
-        if let indexPath = dataModel.getIndexPath(forMedia: model) {
-            return collectionView.mp.cellItem(MediaPickerCell.self, for: indexPath)?.referencedView
+        switch viewState {
+        case .all:
+            if let indexPath = dataModel.getIndexPath(forMedia: model) {
+                return collectionView.mp.cellItem(MediaPickerCell.self, for: indexPath)?.referencedView
+            }
+        case .selected:
+            if let index = selectedModels.firstIndex(where: { $0 == model }) {
+                return collectionView.mp.cellItem(MediaPickerCell.self, for: IndexPath(item: index, section: 0))?.referencedView
+            }
         }
         return nil
     }
@@ -963,7 +1141,7 @@ extension MPViewController: MediaPreviewControllerDataSource {
 extension MPViewController: MediaPreviewControllerDelegate {
     func toggleSelected(forModel model: MPPhotoModel) {
         if let indexPath = dataModel.getIndexPath(forMedia: model) {
-            selectionBlock(indexPath: indexPath)
+            selectionBlock(at: indexPath)
         }
     }
 }
@@ -971,21 +1149,22 @@ extension MPViewController: MediaPreviewControllerDelegate {
 // MARK: - UISheetPresentationControllerDelegate
 extension MPViewController: UISheetPresentationControllerDelegate {
     func presentationControllerShouldDismiss(_ presentationController: UIPresentationController) -> Bool {
-        if selectedModels.isEmpty {
-            return true
-        } else {
-            // scheduledTimer is required to handle cases of attempting to close the sheet with tap outside
-            didAttemptToDismissWasCall = false
-            Timer.scheduledTimer(withTimeInterval: 0.3, repeats: false, block: { [weak self] (_) in
-                guard let strongSelf = self, !strongSelf.didAttemptToDismissWasCall else { return }
-                strongSelf.dismissAlert(needDismiss: false)
-            })
-            return false
-        }
+        selectedModels.isEmpty
+        //if selectedModels.isEmpty {
+        //    return true
+        //} else {
+        //    // scheduledTimer is required to handle cases of attempting to close the sheet with tap outside
+        //    didAttemptToDismissWasCall = false
+        //    Timer.scheduledTimer(withTimeInterval: 0.3, repeats: false, block: { [weak self] (_) in
+        //        guard let strongSelf = self, !strongSelf.didAttemptToDismissWasCall else { return }
+        //        strongSelf.dismissAlert(needDismiss: false)
+        //    })
+        //    return false
+        //}
     }
     
     func presentationControllerDidAttemptToDismiss(_ presentationController: UIPresentationController) {
-        didAttemptToDismissWasCall = true
+        //didAttemptToDismissWasCall = true
         dismissAlert(needDismiss: false)
     }
 }

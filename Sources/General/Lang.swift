@@ -29,8 +29,8 @@ enum Lang {
         Lang.tr("MPToolTipControl")
     }
     
-    static var cancelButton: String {
-        Lang.tr("MPCancelButton")
+    static var cancel: String {
+        Lang.tr("MPCancel")
     }
     
     static var ok: String {
@@ -95,6 +95,18 @@ enum Lang {
     
     static var сloudError: String {
         Lang.tr("MPCloudError")
+    }
+    
+    static var all: String {
+        Lang.tr("MPAll")
+    }
+    
+    static var chosen: String {
+        Lang.tr("MPChosen")
+    }
+    
+    static var ddDescription: String {
+        Lang.tr("MPddDescription")
     }
 }
 

@@ -81,12 +81,6 @@ final class MPTitleView: UIView {
         }
     }
     
-    var isCenterAlignment: Bool = false {
-        didSet {
-            VStack.alignment = isCenterAlignment ? .center : .leading
-        }
-    }
-    
     init() {
         super.init(frame: .zero)
         setup()

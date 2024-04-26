@@ -29,18 +29,23 @@ extension MPExtensionWrapper where Base: UILabel {
         UILabel.mp.textWidth(label: base, text: text)
     }
     
-    func textHeight(width: CGFloat? = nil) -> CGFloat {
-        UILabel.mp.textHeight(label: base, width: width)
+    func textHeight(width: CGFloat? = nil, withText text: String? = nil) -> CGFloat {
+        UILabel.mp.textHeight(label: base, width: width, text: text)
     }
     
-    static func textHeight(label: UILabel, width: CGFloat?) -> CGFloat {
-        guard let text = label.text else {
+    static func textHeight(label: UILabel, width: CGFloat?, text: String?) -> CGFloat {
+        var _text: String = ""
+        if let text {
+            _text = text
+        } else if let labelText = label.text {
+            _text = labelText
+        } else {
             return 0.0
         }
         if let width {
-            return textHeight(withWidth: width, font: label.font, text: text)
+            return textHeight(withWidth: width, font: label.font, text: _text)
         } else {
-            return textHeight(withWidth: textWidth(label: label, text: text), font: label.font, text: text)
+            return textHeight(withWidth: textWidth(label: label, text: _text), font: label.font, text: _text)
         }
     }
     

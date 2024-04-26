@@ -162,6 +162,12 @@ public struct MPModel {
     mutating func setOrinetation(isLandscape: Bool) {
         currentOrientationIsLandscape = isLandscape
     }
+    
+    mutating func unselectBy(_ item: MPPhotoModel) {
+        if let index = items.firstIndex(where: { $0.unwrapped == item }) {
+            items[index].unwrapped?.isSelected = false
+        }
+    }
 }
 
 extension MPModel {

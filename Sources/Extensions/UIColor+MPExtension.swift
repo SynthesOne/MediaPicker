@@ -67,7 +67,6 @@ extension UIColor {
 extension MPExtensionWrapper where Base: UIColor {
     static var borderColor: UIColor {
         .init(dynamicProvider: { (traitCollection) -> UIColor in
-            debugPrint("borderColor \(traitCollection.userInterfaceStyle)")
             if traitCollection.userInterfaceStyle == .dark {
                 return UIColor(hexString: "#E6E9F2")!.withAlphaComponent(0.15)
             } else {
@@ -82,6 +81,16 @@ extension MPExtensionWrapper where Base: UIColor {
                 return UIColor(hexString: "#919BB6")!.withAlphaComponent(0.15)
             } else {
                 return UIColor(hexString: "#F3F4F9")!
+            }
+        })
+    }
+    
+    static var toolTipBackgroundColor: UIColor {
+        .init(dynamicProvider: { (traitCollection) -> UIColor in
+            if traitCollection.userInterfaceStyle == .dark {
+                return UIColor(hexString: "#303030")!//.withAlphaComponent(0.82)
+            } else {
+                return UIColor(hexString: "#D9D9D8")!//.withAlphaComponent(0.82)
             }
         })
     }

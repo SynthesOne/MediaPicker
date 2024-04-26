@@ -79,6 +79,8 @@ final class MediaPickerCell: CollectionViewCell {
         return view
     }()
     
+    weak var delegate: MediaPickerCellDelegate?
+    
     var referencedView: UIView {
         imageView
     }
@@ -104,8 +106,6 @@ final class MediaPickerCell: CollectionViewCell {
             selectionButton.setIsOn(isOn)
         }
     }
-    
-    var selectedBlock: ((@escaping (Bool) -> ()) -> ())?
     
     deinit {
         Logger.log("deinit MediaPickerCell")
@@ -153,9 +153,7 @@ final class MediaPickerCell: CollectionViewCell {
     }
     
     private func selectionBlock() {
-        selectedBlock?({ [weak self] isSelected in
-            self?.selectionButton.setIsOn(isSelected)
-        })
+        delegate?.onCheckboxTap(inCell: self)
     }
     
     private func fetchSmallImage() {
@@ -187,6 +185,25 @@ final class MediaPickerCell: CollectionViewCell {
     
     private func handleTransitionForPreview(_ isHidden: Bool) {
         selectionButton.mp.setIsHidden(isHidden, duration: 0.3)
+    }
+    
+    override func dragStateDidChange(_ dragState: UICollectionViewCell.DragState) {
+        switch dragState {
+        case .none:
+            contentView.alpha = 1
+            selectionButton.alpha = 1
+        case .lifting:
+            selectionButton.alpha = 0
+        case .dragging:
+            if contentView.alpha == 1 {
+                contentView.alpha = 0
+            } else {
+                contentView.alpha = 1
+                selectionButton.alpha = 1
+            }
+        @unknown default:
+            break
+        }
     }
 }
 
