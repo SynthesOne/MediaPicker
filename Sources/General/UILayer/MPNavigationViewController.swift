@@ -29,6 +29,12 @@ public struct MPNavigationAppearance {
     public var shadowColor: UIColor
     public var backgroundEffectStyle: UIBlurEffect.Style
     
+    public init(tintColor: UIColor, shadowColor: UIColor, backgroundEffectStyle: UIBlurEffect.Style) {
+        self.tintColor = tintColor
+        self.shadowColor = shadowColor
+        self.backgroundEffectStyle = backgroundEffectStyle
+    }
+    
     static var `default`: Self = .init(
         tintColor: .systemPink,
         shadowColor: UIColor.mp.borderColor,
