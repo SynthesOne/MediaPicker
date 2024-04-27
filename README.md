@@ -9,7 +9,6 @@ Comon state:          |Selected view:
 :-------------------------:|:-------------------------:
 ![](Docs/assets/common_state.gif) | ![](Docs/assets/selected_view.gif)
 Limited access state:    |Change orientation:
-:-------------------------:|:-------------------------:
 ![](Docs/assets/limited_access_state.gif) | ![](Docs/assets/different_orientations.gif)
 
 ## Features
