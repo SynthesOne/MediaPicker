@@ -60,11 +60,33 @@ public struct MPResultModel {
     /// Save asset original data to file url. Support save image and video.
     /// - Note: Asynchronously write to a local file. Calls completionHandler block on the main queue. If the asset object is in iCloud, it will be downloaded first and then written in the method.
     public func saveAsset(toFile fileUrl: URL, completion: @escaping ((Error?) -> Void)) {
-        dump(PHAssetResource.assetResources(for: asset), name: "assetResources")
-        guard let resource = asset.mp.resource else {
-            completion(NSError.assetSaveError)
-            return
-        }
+//        dump(PHAssetResource.assetResources(for: asset), name: "assetResources")
+//        guard let resource = asset.mp.resource else {
+//            completion(NSError.assetSaveError)
+//            return
+//        }
+        
+        var options = PHVideoRequestOptions()
+        options.isNetworkAccessAllowed = true
+        options.deliveryMode = .highQualityFormat
+        
+        PHImageManager.default().requestExportSession(
+            forVideo: asset,
+            options: options,
+            exportPreset: AVAssetExportPresetPassthrough,
+            resultHandler: { (session, info) in
+                let error = info?[PHImageErrorKey] as? Error
+                if let session {
+                    session.outputURL = fileUrl
+                    session.outputFileType = .mp4
+                    session.exportAsynchronously {
+                        completion(error)
+                    }
+                } else {
+                    completion(error)
+                }
+            }
+        )
         
 //        let pointer = UnsafeMutablePointer<PHImageRequestID>.allocate(capacity: MemoryLayout<Int32>.stride)
 //        pointer.pointee = PHInvalidImageRequestID
@@ -73,14 +95,12 @@ public struct MPResultModel {
 //            if error != nil {
 //                completion(error)
 //            } else if !isDegraded {
-                let resourceRequestOptions = PHAssetResourceRequestOptions()
-        resourceRequestOptions.isNetworkAccessAllowed = true
-                PHAssetResourceManager.default().writeData(for: resource, toFile: fileUrl, options: resourceRequestOptions) { error in
-                    Logger.log("MPResultModel saveAsset writeData error \(error?.localizedDescription)")
-                    MPMainAsync {
-                        completion(error)
-                    }
-                }
+//                PHAssetResourceManager.default().writeData(for: resource, toFile: fileUrl, options: nil) { error in
+//                    Logger.log("MPResultModel saveAsset writeData error \(error?.localizedDescription)")
+//                    MPMainAsync {
+//                        completion(error)
+//                    }
+//                }
 //            }
 //        }
         
