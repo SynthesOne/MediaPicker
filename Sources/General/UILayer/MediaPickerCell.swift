@@ -138,11 +138,9 @@ final class MediaPickerCell: CollectionViewCell {
             bottomShadowView.isHidden = false
             descLabel.text = model.duration
         } else if model.type == .gif {
-            bottomShadowView.isHidden = false
-            descLabel.text = "GIF"
+            bottomShadowView.isHidden = true
         } else if model.type == .livePhoto {
-            bottomShadowView.isHidden = false
-            descLabel.text = "Live"
+            bottomShadowView.isHidden = true
         } else {
             bottomShadowView.isHidden = true
         }
