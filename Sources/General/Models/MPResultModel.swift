@@ -72,7 +72,8 @@ public struct MPResultModel {
             if error != nil {
                 completion(error)
             } else if !isDegraded {
-                PHAssetResourceManager.default().writeData(for: resource, toFile: fileUrl, options: nil) { error in
+                let resourceRequestOptions = PHAssetResourceRequestOptions()
+                PHAssetResourceManager.default().writeData(for: resource, toFile: fileUrl, options: resourceRequestOptions) { error in
                     Logger.log("MPResultModel saveAsset writeData error \(error?.localizedDescription)")
                     MPMainAsync {
                         completion(error)
