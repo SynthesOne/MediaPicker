@@ -38,6 +38,12 @@ public extension MPUIConfiguration {
     }
     
     @discardableResult
+    func setSelectionButtonColorStyle(_ value: MPCheckboxColor) -> MPUIConfiguration {
+        selectionButtonColorStyle = value
+        return self
+    }
+    
+    @discardableResult
     func setNavigationAppearance(_ value: MPNavigationAppearance) -> MPUIConfiguration {
         navigationAppearance = value
         return self
