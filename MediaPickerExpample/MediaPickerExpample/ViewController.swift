@@ -76,6 +76,19 @@ final class ViewController: UIViewController {
                 debugPrint("Example selectedResult mediaExtension \(String(describing: $0.fileExtension))")
                 debugPrint("Example selectedResult mimeType \(String(describing: $0.mimeType))")
                 debugPrint("Example selectedResult type \($0.type)")
+                let fileManager = FileManager.default
+                var finalUrl: URL? = nil
+                if var tDocumentDirectory = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first {
+                    tDocumentDirectory.appendPathComponent($0.fullFileName ?? "unknownVideo.mov")
+                    finalUrl = tDocumentDirectory
+                }
+                debugPrint("Example selectedResult finalUrl \(finalUrl)")
+                guard let finalUrl else {
+                    return 
+                }
+                $0.saveAsset(toFile: finalUrl, completion: { (error) in
+                    debugPrint("Example completion error \(error)")
+                })
             })
             
             //Clean from memory

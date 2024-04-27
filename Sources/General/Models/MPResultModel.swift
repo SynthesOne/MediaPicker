@@ -73,6 +73,7 @@ public struct MPResultModel {
                 completion(error)
             } else if !isDegraded {
                 PHAssetResourceManager.default().writeData(for: resource, toFile: fileUrl, options: nil) { error in
+                    Logger.log("MPResultModel saveAsset writeData error \(error?.localizedDescription)")
                     MPMainAsync {
                         completion(error)
                     }
@@ -82,9 +83,11 @@ public struct MPResultModel {
         
         if asset.mediaType == .video {
             pointer.pointee = MPManager.fetchVideo(for: asset) { _, error, _, _ in
+                Logger.log("MPResultModel saveAsset fetchVideo progress error \(error?.localizedDescription)")
                 write(true, error)
             } completion: { _, info, isDegraded in
                 let error = info?[PHImageErrorKey] as? Error
+                Logger.log("MPResultModel saveAsset fetchVideo completion error \(error?.localizedDescription)")
                 write(isDegraded, error)
             }
         } else if asset.mp.isInCloud {

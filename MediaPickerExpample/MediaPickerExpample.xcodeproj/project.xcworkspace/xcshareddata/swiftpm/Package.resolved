@@ -1,5 +1,5 @@
 {
-  "originHash" : "e1b3a1f5735a412eb13ea7ad25fca82f0305c62812a433ef3abfd183356c3ab2",
+  "originHash" : "cc3888e89152fa2dd3d3b581a46e07ffd0482804b34d547b5f52d27db165497a",
   "pins" : [
     {
       "identity" : "mediapicker",
@@ -8,6 +8,15 @@
       "state" : {
         "branch" : "dev",
         "revision" : "c5b201859976b909083e50ce20db9bbc4c25afaf"
+      }
+    },
+    {
+      "identity" : "snapkit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/SnapKit/SnapKit.git",
+      "state" : {
+        "branch" : "develop",
+        "revision" : "2842e6e84e82eb9a8dac0100ca90d9444b0307f4"
       }
     }
   ],
