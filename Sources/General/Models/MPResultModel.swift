@@ -74,6 +74,7 @@ public struct MPResultModel {
 //                completion(error)
 //            } else if !isDegraded {
                 let resourceRequestOptions = PHAssetResourceRequestOptions()
+        resourceRequestOptions.isNetworkAccessAllowed = true
                 PHAssetResourceManager.default().writeData(for: resource, toFile: fileUrl, options: resourceRequestOptions) { error in
                     Logger.log("MPResultModel saveAsset writeData error \(error?.localizedDescription)")
                     MPMainAsync {
