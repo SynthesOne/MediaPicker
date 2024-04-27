@@ -1,10 +1,9 @@
 # MediaPicker
 
-**This library is under development and not intended for use**
-
 MediaPicker is a lightweight and flexible library for selecting media files from your gallery. It supports normal photos, videos, gifs and livePhoto. The library is written in pure Swift without any third-party solutions. The project was inspired by Telegram with its simplicity and elegance.
 
 ## Demo
+Please wait while the `.gif` files are loading...
 
 |  |  |
 :-------------------------:|:-------------------------:
@@ -34,3 +33,33 @@ MediaPicker is a lightweight and flexible library for selecting media files from
 - [ ] Ability to replace used icons with custom icons
 - [ ] Add Custom camera
 - [ ] Write a detailed documentation
+
+## Requirements
+
+MediaPicker requires iOS 15 or above and is compatibile with Swift 5.
+
+## Installation
+
+### Swift Package Manager
+MediaPicker is compatible with [Swift Package Manager](https://swift.org/package-manager) and can be integrated via Xcode.
+
+## Usage
+
+```swift
+import MediaPicker
+
+let mp = MPPresenter(sender: self)
+let formatter = ByteCountFormatter()
+mp.showMediaPicker(selectedResult: { (assets) in
+    assets.forEach {
+        print("Example selectedResult size \(String(describing: $0.size))")
+        print("Example selectedResult readableUnit \(formatter.string(fromByteCount: Int64($0.size ?? 0)))")
+        print("Example selectedResult fullFileName \(String(describing: $0.fullFileName))")
+        print("Example selectedResult fileName \(String(describing: $0.fileName))")
+        print("Example selectedResult mediaExtension \(String(describing: $0.fileExtension))")
+        print("Example selectedResult mimeType \(String(describing: $0.mimeType))")
+        print("Example selectedResult mediType \($0.type)")
+    }
+})
+```
+Advanced use cases can be seen in the Example App
