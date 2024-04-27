@@ -43,6 +43,7 @@ MediaPicker requires iOS 15 or above and is compatibile with Swift 5.
 
 ### Swift Package Manager
 MediaPicker is compatible with [Swift Package Manager](https://swift.org/package-manager) and can be integrated via Xcode.
+Select the `main` branch or the current release version
 
 ## Usage
 
