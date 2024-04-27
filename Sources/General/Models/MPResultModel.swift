@@ -60,18 +60,19 @@ public struct MPResultModel {
     /// Save asset original data to file url. Support save image and video.
     /// - Note: Asynchronously write to a local file. Calls completionHandler block on the main queue. If the asset object is in iCloud, it will be downloaded first and then written in the method.
     public func saveAsset(toFile fileUrl: URL, completion: @escaping ((Error?) -> Void)) {
+        dump(PHAssetResource.assetResources(for: asset), name: "assetResources")
         guard let resource = asset.mp.resource else {
             completion(NSError.assetSaveError)
             return
         }
         
-        let pointer = UnsafeMutablePointer<PHImageRequestID>.allocate(capacity: MemoryLayout<Int32>.stride)
-        pointer.pointee = PHInvalidImageRequestID
+//        let pointer = UnsafeMutablePointer<PHImageRequestID>.allocate(capacity: MemoryLayout<Int32>.stride)
+//        pointer.pointee = PHInvalidImageRequestID
         
-        func write(_ isDegraded: Bool, _ error: Error?) {
-            if error != nil {
-                completion(error)
-            } else if !isDegraded {
+//        func write(_ isDegraded: Bool, _ error: Error?) {
+//            if error != nil {
+//                completion(error)
+//            } else if !isDegraded {
                 let resourceRequestOptions = PHAssetResourceRequestOptions()
                 PHAssetResourceManager.default().writeData(for: resource, toFile: fileUrl, options: resourceRequestOptions) { error in
                     Logger.log("MPResultModel saveAsset writeData error \(error?.localizedDescription)")
@@ -79,28 +80,28 @@ public struct MPResultModel {
                         completion(error)
                     }
                 }
-            }
-        }
+//            }
+//        }
         
-        if asset.mediaType == .video {
-            pointer.pointee = MPManager.fetchVideo(for: asset) { _, error, _, _ in
-                Logger.log("MPResultModel saveAsset fetchVideo progress error \(error?.localizedDescription)")
-                write(true, error)
-            } completion: { _, info, isDegraded in
-                let error = info?[PHImageErrorKey] as? Error
-                Logger.log("MPResultModel saveAsset fetchVideo completion error \(error?.localizedDescription)")
-                write(isDegraded, error)
-            }
-        } else if asset.mp.isInCloud {
-            pointer.pointee = MPManager.fetchOriginalImageData(for: asset) { _, error, _, _ in
-                write(true, error)
-            } completion: { _, info, isDegraded in
-                let error = info?[PHImageErrorKey] as? Error
-                write(isDegraded, error)
-            }
-        } else {
-            write(false, nil)
-        }
+//        if asset.mediaType == .video {
+//            pointer.pointee = MPManager.fetchVideo(for: asset) { _, error, _, _ in
+//                Logger.log("MPResultModel saveAsset fetchVideo progress error \(error?.localizedDescription)")
+//                write(true, error)
+//            } completion: { _, info, isDegraded in
+//                let error = info?[PHImageErrorKey] as? Error
+//                Logger.log("MPResultModel saveAsset fetchVideo completion error \(error?.localizedDescription)")
+//                write(isDegraded, error)
+//            }
+//        } else if asset.mp.isInCloud {
+//            pointer.pointee = MPManager.fetchOriginalImageData(for: asset) { _, error, _, _ in
+//                write(true, error)
+//            } completion: { _, info, isDegraded in
+//                let error = info?[PHImageErrorKey] as? Error
+//                write(isDegraded, error)
+//            }
+//        } else {
+//            write(false, nil)
+//        }
     }
     
     private func getMimeType(for mediaExtension: String?) -> String {
