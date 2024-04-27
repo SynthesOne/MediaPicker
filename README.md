@@ -4,6 +4,13 @@
 
 MediaPicker is a lightweight and flexible library for selecting media files from your gallery. It supports normal photos, videos, gifs and livePhoto. The library is written in pure Swift without any third-party solutions. The project was inspired by Telegram with its simplicity and elegance.
 
+## Demo
+
+|  |  |
+:-------------------------:|:-------------------------:
+![](Docs/assets/common_state.gif) | ![](Docs/assets/selected_view.gif)
+![](Docs/assets/limited_access_state.gif) | ![](Docs/assets/different_orientations.gif)
+
 ## Features
 
 - [x] All media type support
@@ -15,14 +22,13 @@ MediaPicker is a lightweight and flexible library for selecting media files from
 - [x] High performance, most animations are written in CALayer
 - [x] Multilanguage support, ability to add your own language completely
 - [x] Slide to select with auto scroll
+- [x] iPad support
+- [x] Selected assets view with drag and drop reodering
 
 ## Todo
 
-- [x] ~~iPad support~~
 - [x] ~~Custom font deploy~~
 - [x] ~~Add the ability to customise the presentation style~~
-- [x] ~~Add the ability to view only selected photos~~
-- [x] ~~Add drag and drop for reorder selected photos~~
 - [ ] More functionality and UI configuration
 - [ ] Minimise the presence of static properties and methods as much as possible
 - [ ] Ability to replace used icons with custom icons

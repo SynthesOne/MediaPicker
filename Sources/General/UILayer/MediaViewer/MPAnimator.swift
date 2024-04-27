@@ -24,39 +24,28 @@
     
 import UIKit
 
-private let kInitialSpringVelocity: CGFloat = 2.0
-private let kDampingRatio: CGFloat = 0.75
+fileprivate let dampingRatio: CGFloat = 0.75
 
-public protocol MPViewerBaseAnimator: UIViewControllerAnimatedTransitioning {
+protocol MPViewerBaseAnimator: UIViewControllerAnimatedTransitioning {
     var presentingDuration: TimeInterval { get set }
     var dismissingDuration: TimeInterval { get set }
-    var usesSpringAnimation: Bool { get set }
 }
 
-public final class MPAnimator: NSObject, MPViewerBaseAnimator {
+final class MPAnimator: NSObject, MPViewerBaseAnimator {
 
     /// Preseting transition duration
-    /// Default value is 0.15
-    ///
-    public var presentingDuration: TimeInterval = 0.4
+    var presentingDuration: TimeInterval = 0.4
 
     /// Dismissing transition duration
-    /// Default value is 0.2
-    ///
-    public var dismissingDuration: TimeInterval = 0.2
+    var dismissingDuration: TimeInterval = 0.2
 
-    /// Indicates if using spring animation
-    /// Default value is true
-    ///
-    public var usesSpringAnimation = false
-
-    public func transitionDuration(using transitionContext: UIViewControllerContextTransitioning?) -> TimeInterval {
+    func transitionDuration(using transitionContext: UIViewControllerContextTransitioning?) -> TimeInterval {
         //return correct duration
         let isPresenting = transitionContext?.isPresenting == true
         return isPresenting ? presentingDuration : dismissingDuration
     }
 
-    public func animateTransition(using transitionContext: UIViewControllerContextTransitioning) {
+    func animateTransition(using transitionContext: UIViewControllerContextTransitioning) {
         let containerView = transitionContext.containerView
         let duration = transitionDuration(using: transitionContext)
 
@@ -91,12 +80,7 @@ public final class MPAnimator: NSObject, MPViewerBaseAnimator {
                 photoViewerController.imageView.backgroundColor = .clear
             }
 
-//            if usesSpringAnimation {
-//            UIViewP
-                animator = UIViewPropertyAnimator(duration: duration, dampingRatio: kDampingRatio, animations: animation)
-//            } else {
-//                animator = UIViewPropertyAnimator(duration: duration, curve: .linear, animations: animation)
-//            }
+            animator = UIViewPropertyAnimator(duration: duration, dampingRatio: dampingRatio, animations: animation)
 
             animator.addCompletion { _ in
                 let isCancelled = transitionContext.transitionWasCancelled
@@ -149,11 +133,7 @@ public final class MPAnimator: NSObject, MPViewerBaseAnimator {
                 }
             }
 
-            if usesSpringAnimation {
-                animator = UIViewPropertyAnimator(duration: duration, dampingRatio: kDampingRatio, animations: animation)
-            } else {
-                animator = UIViewPropertyAnimator(duration: duration, curve: .linear, animations: animation)
-            }
+            animator = UIViewPropertyAnimator(duration: duration, curve: .linear, animations: animation)
 
             animator.addCompletion { _ in
                 let isCancelled = transitionContext.transitionWasCancelled
@@ -195,9 +175,7 @@ public final class MPAnimator: NSObject, MPViewerBaseAnimator {
         animator.startAnimation()
     }
 
-    public func animationEnded(_ transitionCompleted: Bool) {
-
-    }
+    public func animationEnded(_ transitionCompleted: Bool) { }
 }
 
 extension UIViewControllerContextTransitioning {

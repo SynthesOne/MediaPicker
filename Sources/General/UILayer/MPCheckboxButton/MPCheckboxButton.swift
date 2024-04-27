@@ -26,7 +26,7 @@ import UIKit
 
 // MARK:- CheckboxButton
 final class MPCheckboxButton: MPControl {
-    let animationId = "path"
+    fileprivate let animationId = "path"
     
     private lazy var counterLabel: UILabel = {
        let view = UILabel()
@@ -151,7 +151,7 @@ final class MPCheckboxButton: MPControl {
     }
     
     /// Set default color of chebox
-    func setup() {
+    private func setup() {
         if let checkBoxColor {
             _checkBoxColor = checkBoxColor
         } else {
@@ -172,7 +172,7 @@ final class MPCheckboxButton: MPControl {
     }
 
     /// Setup layer of check box
-    func setupLayer() {
+    private func setupLayer() {
         let origin = CGPoint(x: 0, y: 0)
         let rect = CGRect(origin: origin, size: .init(width: selfSize, height: selfSize))
         switch _style {
@@ -226,7 +226,7 @@ final class MPCheckboxButton: MPControl {
     }
     
     /// Update active layer and apply animation
-    func updateActiveLayer(isAnimate: Bool) {
+    private func updateActiveLayer(isAnimate: Bool) {
         if let activeBorderColor = _checkBoxColor.activeBorderColor {
             outerLayer.strokeColor = activeBorderColor.resolvedColor(with: traitCollection).cgColor
         } else {
@@ -258,7 +258,7 @@ final class MPCheckboxButton: MPControl {
     }
     
     /// Update inactive layer apply animation
-    func updateInactiveLayer(isAnimate: Bool) {
+    private func updateInactiveLayer(isAnimate: Bool) {
         outerLayer.strokeColor = _checkBoxColor.inactiveBorderColor.resolvedColor(with: traitCollection).cgColor
         if !isAnimate {
             CATransaction.begin()
@@ -275,7 +275,7 @@ final class MPCheckboxButton: MPControl {
         }
     }
     
-    func animationBlock() {
+    private func animationBlock() {
         if isOn {
             if !_showCounterInCheckbox {
                 checkMarkLayer.mp.animateStrokeEnd(from: 0, to: 1)

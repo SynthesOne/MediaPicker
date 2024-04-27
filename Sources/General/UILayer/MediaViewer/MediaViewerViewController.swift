@@ -44,21 +44,21 @@ extension MediaPreviewControllerDelegate {
     func toggleSelected(forModel model: MPPhotoModel) {}
 }
 
-public class MediaViewerViewController: UIViewController {
+final class MediaViewerViewController: UIViewController {
     /// Indicates status bar animation style when changing hidden status
     /// Default value if UIStatusBarStyle.fade
-    public var statusBarAnimationStyle: UIStatusBarAnimation = .fade
+    var statusBarAnimationStyle: UIStatusBarAnimation = .fade
 
     /// Background color of the viewer.
     /// Default value is black.
-    public var backgroundColor: UIColor = UIColor.black {
+    var backgroundColor: UIColor = UIColor.black {
         didSet {
             backgroundView.backgroundColor = backgroundColor
         }
     }
 
     /// This variable sets original frame of image view to animate from
-    public fileprivate(set) var referenceSize: CGSize = CGSize.zero
+    fileprivate(set) var referenceSize: CGSize = CGSize.zero
 
 
     /// This is the image view that is mainly used for the presentation and dismissal effect.
@@ -70,7 +70,7 @@ public class MediaViewerViewController: UIViewController {
 
     /// The view where photo viewer originally animates from.
     /// Provide this correctly so that you can have a nice effect.
-    public weak internal(set) var referencedView: UIView? {
+    weak private(set) var referencedView: UIView? {
         didSet {
             // Unhide old referenced view and hide the new one
             if oldValue !== referencedView {
@@ -111,7 +111,7 @@ public class MediaViewerViewController: UIViewController {
         return view
     }()
     
-    public var scrollView: UIScrollView {
+    var scrollView: UIScrollView {
         collectionView
     }
 
@@ -132,7 +132,7 @@ public class MediaViewerViewController: UIViewController {
 
     /// Transition animator
     /// Customizable if you wish to provide your own transitions.
-    public lazy var animator: MPViewerBaseAnimator = MPAnimator()
+    private lazy var animator: MPViewerBaseAnimator = MPAnimator()
     
     private var model: [MPPhotoModel]
     private var selectedModels: [MPPhotoModel]
@@ -142,7 +142,7 @@ public class MediaViewerViewController: UIViewController {
     weak var dataSource: MediaPreviewControllerDataSource?
     weak var delegate: MediaPreviewControllerDelegate?
     
-    public init(referencedView: UIView?, image: UIImage?, model: [MPPhotoModel], selectedModels: [MPPhotoModel], index: Int) {
+    init(referencedView: UIView?, image: UIImage?, model: [MPPhotoModel], selectedModels: [MPPhotoModel], index: Int) {
         self.model = model
         self.initialIndex = index
         self.selectedModels = selectedModels
@@ -172,7 +172,7 @@ public class MediaViewerViewController: UIViewController {
         Logger.log("deinit MediaViewerViewController")
     }
 
-    public override func viewDidLoad() {
+    override func viewDidLoad() {
         if let referencedView {
             // Content mode should be identical between image view and reference view
             imageView.contentMode = referencedView.contentMode
@@ -244,7 +244,7 @@ public class MediaViewerViewController: UIViewController {
         }, forEvent: .touchUpInside)
     }
 
-    public override func viewWillLayoutSubviews() {
+    override func viewWillLayoutSubviews() {
         super.viewWillLayoutSubviews()
         backgroundView.frame = .init(origin: .zero, size: .init(width: view.bounds.width, height: view.bounds.height))
         backgroundView.center = view.center
@@ -262,14 +262,14 @@ public class MediaViewerViewController: UIViewController {
         imageView.imageChangeBlock?(imageView.image)
     }
 
-    public override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+    override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
         super.viewWillTransition(to: size, with: coordinator)
 
         // Update layout
         collectionView.collectionViewLayout.mp.as(MPCollectionViewFlowLayout.self)?.currentIndex = currentPhotoIndex
     }
 
-    public override func viewWillAppear(_ animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         if !animated {
             presentingAnimation()
@@ -279,7 +279,7 @@ public class MediaViewerViewController: UIViewController {
         }
     }
     
-    public override func viewWillDisappear(_ animated: Bool) {
+    override func viewWillDisappear(_ animated: Bool) {
         // Update image view before animation
         updateImageView(scrollView: scrollView)
 
@@ -293,11 +293,11 @@ public class MediaViewerViewController: UIViewController {
         }
     }
 
-    public override var prefersStatusBarHidden: Bool {
+    override var prefersStatusBarHidden: Bool {
         true
     }
 
-    public override var preferredStatusBarUpdateAnimation: UIStatusBarAnimation {
+    override var preferredStatusBarUpdateAnimation: UIStatusBarAnimation {
         statusBarAnimationStyle
     }
 
@@ -560,22 +560,22 @@ public class MediaViewerViewController: UIViewController {
 
 //MARK: - UIViewControllerTransitioningDelegate
 extension MediaViewerViewController: UIViewControllerTransitioningDelegate {
-    public func animationController(forPresented presented: UIViewController, presenting: UIViewController, source: UIViewController) -> UIViewControllerAnimatedTransitioning? {
+    func animationController(forPresented presented: UIViewController, presenting: UIViewController, source: UIViewController) -> UIViewControllerAnimatedTransitioning? {
         animator
     }
 
-    public func animationController(forDismissed dismissed: UIViewController) -> UIViewControllerAnimatedTransitioning? {
+    func animationController(forDismissed dismissed: UIViewController) -> UIViewControllerAnimatedTransitioning? {
         animator
     }
 }
 
 //MARK: UICollectionViewDataSource
 extension MediaViewerViewController: UICollectionViewDataSource {
-    public var currentPhotoIndex: Int {
+    var currentPhotoIndex: Int {
         currentPhotoIndex(for: scrollView)
     }
 
-    public func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         model.count
     }
 
@@ -601,7 +601,7 @@ extension MediaViewerViewController: UICollectionViewDataSource {
 
 //MARK: Open methods
 extension MediaViewerViewController {
-    public func scrollToPhoto(at index: Int, animated: Bool) {
+    func scrollToPhoto(at index: Int, animated: Bool) {
         collectionView.performBatchUpdates({
             self.collectionView.scrollToItem(at: IndexPath(row: index, section: 0), at: .centeredHorizontally, animated: false)
         }) { _ in
@@ -616,7 +616,7 @@ extension MediaViewerViewController {
 
 //MARK: - UIGestureRecognizerDelegate
 extension MediaViewerViewController: UIGestureRecognizerDelegate {
-    public func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
         if let view = touch.view {
             return !(view is UIControl)
         }
@@ -626,17 +626,17 @@ extension MediaViewerViewController: UIGestureRecognizerDelegate {
 
 //MARK: - UICollectionViewDelegateFlowLayout
 extension MediaViewerViewController: UICollectionViewDelegateFlowLayout {
-    public func scrollViewDidScroll(_ scrollView: UIScrollView) {
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
         if let cell = collectionView.mp.cellItem(MPPreviewCell.self, for: .init(item: currentPhotoIndex, section: 0)) {
             cell.previewVCScroll()
         }
     }
     
-    public func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
+    func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
         cell.mp.as(MPPreviewCell.self)?.willDisplay()
     }
     
-    public func collectionView(_ collectionView: UICollectionView, didEndDisplaying cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
+    func collectionView(_ collectionView: UICollectionView, didEndDisplaying cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
         cell.mp.as(MPPreviewCell.self)?.didEndDisplaying()
         if let index = selectedModels.firstIndex(where: { $0 == model[currentPhotoIndex] }) {
             selectionButton.counter = index + 1
@@ -646,20 +646,20 @@ extension MediaViewerViewController: UICollectionViewDelegateFlowLayout {
         }
     }
     
-    public func scrollViewDidEndScrollingAnimation(_ scrollView: UIScrollView) {
+    func scrollViewDidEndScrollingAnimation(_ scrollView: UIScrollView) {
         let index = currentPhotoIndex
         didScrollToPhoto(at: index)
     }
 
-    public func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         collectionView.frame.size
     }
 
-    public func viewForZooming(in scrollView: UIScrollView) -> UIView? {
+    func viewForZooming(in scrollView: UIScrollView) -> UIView? {
         imageView
     }
 
-    public func scrollViewDidZoom(_ scrollView: UIScrollView) {
+    func scrollViewDidZoom(_ scrollView: UIScrollView) {
         updateFrameFor(view.frame.size)
 
         //Disable pan gesture if zoom scale is not 1
@@ -670,14 +670,14 @@ extension MediaViewerViewController: UICollectionViewDelegateFlowLayout {
         }
     }
 
-    public func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
+    func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
         if !decelerate {
             let index = currentPhotoIndex
             didScrollToPhoto(at: index)
         }
     }
 
-    public func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
+    func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
         let index = currentPhotoIndex
         didScrollToPhoto(at: index)
         reloadCurrentCell()

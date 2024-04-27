@@ -26,7 +26,6 @@ import UIKit
 
 /// Define check box color
 public struct MPCheckboxColor {
-    
     public var activeColor: UIColor
     public var activeBorderColor: UIColor?
     public var inactiveColor: UIColor
