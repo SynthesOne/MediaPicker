@@ -23,6 +23,7 @@
 //  THE SOFTWARE.
     
 import UIKit
+import Combine
 
 final class FillButton: UIButton {
     var highlightColor: UIColor? = nil {
@@ -61,7 +62,6 @@ final class MPFooterView: UIView {
         view.setTitle(Lang.toolTipControl, for: .normal)
         view.setTitleColor(.white, for: .normal)
         view.titleLabel?.font = Font.regular(15)
-        let uiConfig = MPUIConfiguration.default()
         view.backgroundColor = uiConfig.navigationAppearance.tintColor
         view.fillColor = uiConfig.navigationAppearance.tintColor
         view.highlightColor = uiConfig.navigationAppearance.tintColor.mp.darker()
@@ -77,8 +77,8 @@ final class MPFooterView: UIView {
         return view
     }()
     
-    private let counter: Counter = {
-        let view = Counter()
+    private lazy var counter: Counter = {
+        let view = Counter(uiConfig: uiConfig)
         view.backgroundColor = .white
         view.isHidden = true
         return view
@@ -86,33 +86,27 @@ final class MPFooterView: UIView {
     
     private let cancelButton: FillButton = {
         let view = FillButton(type: .custom)
-        let uiConfig = MPUIConfiguration.default()
         view.mp.setRadius(12)
-        view.setTitleColor(uiConfig.navigationAppearance.tintColor, for: .normal)
         view.setTitle(Lang.cancel, for: .normal)
         view.titleLabel?.font = Font.regular(17)
-        view.backgroundColor = uiConfig.navigationAppearance.tintColor.withAlphaComponent(0.25)
-        view.fillColor = uiConfig.navigationAppearance.tintColor.withAlphaComponent(0.25)
-        view.highlightColor = uiConfig.navigationAppearance.tintColor.withAlphaComponent(0.25).mp.darker()
+        view.backgroundColor = .white.withAlphaComponent(0.8)
+        view.fillColor = .white.withAlphaComponent(0.8)
+        view.highlightColor = .white.withAlphaComponent(0.8).mp.darker()
         return view
     }()
     
     private let attachButton: FillButton = {
         let view = FillButton(type: .custom)
-        let uiConfig = MPUIConfiguration.default()
         view.mp.setRadius(12)
         view.setTitleColor(.white, for: .normal)
         view.setTitle(Lang.attach, for: .normal)
         view.titleLabel?.font = Font.regular(17)
-        view.backgroundColor = uiConfig.navigationAppearance.tintColor
-        view.fillColor = uiConfig.navigationAppearance.tintColor
-        view.highlightColor = uiConfig.navigationAppearance.tintColor.mp.darker()
         view.alpha = 0
         return view
     }()
     
-    private let blurContainer: UIVisualEffectView = {
-        let blurEffect = UIBlurEffect(style: MPUIConfiguration.default().navigationAppearance.backgroundEffectStyle)
+    private lazy var blurContainer: UIVisualEffectView = {
+        let blurEffect = UIBlurEffect(style: uiConfig.navigationAppearance.backgroundEffectStyle)
         let view = UIVisualEffectView(effect: blurEffect)
         return view
     }()
@@ -121,14 +115,18 @@ final class MPFooterView: UIView {
     private var isAnimating = false
     private var addToolTipHeight: CGFloat = 0
     private var addToolTipDescriptionSize: CGSize = .zero
+    private var preCount: Int
+    private let uiConfig: MPUIConfiguration
     
     var showDDToolTip = false
     
-    var actionButtonTap: (() -> ())? = nil
-    var toolTipButtonTap: (() -> ())? = nil
+    var actionButtonTapSubject = PassthroughSubject<Void, Never>()
+    var toolTipButtonTapSubject = PassthroughSubject<Void, Never>()
     
-    init(showAddToolTip: Bool) {
+    init(showAddToolTip: Bool, preCount: Int = 0, uiConfig: MPUIConfiguration) {
         self.showAddToolTip = showAddToolTip
+        self.preCount = preCount
+        self.uiConfig = uiConfig
         super.init(frame: .zero)
         setupSubviews()
     }
@@ -138,16 +136,26 @@ final class MPFooterView: UIView {
     }
     
     private func setupSubviews() {
+        cancelButton.setTitleColor(uiConfig.navigationAppearance.tintColor, for: .normal)
+        attachButton.backgroundColor = uiConfig.navigationAppearance.tintColor
+        attachButton.fillColor = uiConfig.navigationAppearance.tintColor
+        attachButton.highlightColor = uiConfig.navigationAppearance.tintColor.mp.darker()
+        
         clipsToBounds = true
         attachButton.addSubview(counter)
         self.mp.addSubviews(blurContainer, cancelButton, attachButton)
         if showAddToolTip {
             addSubview(toolTipSubstrate)
             toolTipSubstrate.mp.addSubviews(toolTipDescription, toolTipButton)
-            toolTipButton.mp.action({ [weak self] in self?.toolTipButtonTap?() }, forEvent: .touchUpInside)
+            toolTipButton.mp.action({ [weak self] in self?.toolTipButtonTapSubject.send() }, forEvent: .touchUpInside)
         }
-        attachButton.mp.action({ [weak self] in self?.actionButtonTap?() }, forEvent: .touchUpInside)
-        cancelButton.mp.action({ [weak self] in self?.actionButtonTap?() }, forEvent: .touchUpInside)
+        attachButton.mp.action({ [weak self] in self?.actionButtonTapSubject.send() }, forEvent: .touchUpInside)
+        cancelButton.mp.action({ [weak self] in self?.actionButtonTapSubject.send() }, forEvent: .touchUpInside)
+        if preCount > 0 {
+            attachButton.alpha = 1
+            counter.setCounter(preCount)
+            counter.isHidden = false
+        }
     }
     
     override func layoutSubviews() {
@@ -224,7 +232,15 @@ final class MPFooterView: UIView {
     
     private func simpleLayout() {
         let sideInset = safeAreaInsets.left > 0 ? safeAreaInsets.left : 16
-        if counter.isHidden {
+        if preCount > 0 && bounds.width > 0 {
+            preCount = 0
+            attachButton.frame = .init(x: sideInset, y: 8, width: bounds.width - sideInset * 2, height: 44)
+            cancelButton.frame = .init(x: sideInset, y: 8, width: bounds.width - sideInset * 2, height: 44)
+            let transform = CGAffineTransform(scaleX: 0.85, y: 0.85)
+            let finalT = transform.concatenating(.init(translationX: 0, y: -44))
+            cancelButton.transform = finalT
+            cancelButton.alpha = 0
+        } else if counter.isHidden {
             cancelButton.frame = .init(x: sideInset, y: 8, width: bounds.width - sideInset * 2, height: 44)
             attachButton.frame = .init(x: sideInset, y: 52, width: bounds.width - sideInset * 2, height: 44)
         } else {
@@ -239,7 +255,15 @@ final class MPFooterView: UIView {
     
     private func buttonsLayout(byTipHeight tipH: CGFloat) {
         let sideInset = safeAreaInsets.left > 0 ? safeAreaInsets.left : 16
-        if counter.isHidden {
+        if preCount > 0 && tipH > 0 {
+            preCount = 0
+            attachButton.frame = .init(x: sideInset, y: 28 + tipH, width: bounds.width - sideInset * 2, height: 44)
+            attachButton.frame = .init(x: sideInset, y: 28 + tipH, width: bounds.width - sideInset * 2, height: 44)
+            let transform = CGAffineTransform(scaleX: 0.85, y: 0.85)
+            let finalT = transform.concatenating(.init(translationX: 0, y: -44))
+            cancelButton.transform = finalT
+            cancelButton.alpha = 0
+        } else if counter.isHidden {
             cancelButton.frame = .init(x: sideInset, y: 28 + tipH, width: bounds.width - sideInset * 2, height: 44)
             attachButton.frame = .init(x: sideInset, y: 28 + tipH + 44, width: bounds.width - sideInset * 2, height: 44)
         } else {

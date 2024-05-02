@@ -24,6 +24,7 @@
     
 import UIKit
 import Photos
+import Combine
 
 public final class MPAlbumListViewController: UIViewController, UIPopoverPresentationControllerDelegate {
     
@@ -45,10 +46,16 @@ public final class MPAlbumListViewController: UIViewController, UIPopoverPresent
     
     private var shouldReloadAlbumList = true
     
-    var selectAlbumBlock: ((MPAlbumModel) -> ())?
-    var closeBlock: (() -> ())?
+    private let generalConfig: MPGeneralConfiguration
     
-    public init() {
+    let selectAlbumSubject = PassthroughSubject<MPAlbumModel, Never>()
+    let closeSubject = PassthroughSubject<Void, Never>()
+    
+    //var selectAlbumBlock: ((MPAlbumModel) -> ())?
+    //var closeBlock: (() -> ())?
+    
+    public init(generalConfig: MPGeneralConfiguration) {
+        self.generalConfig = generalConfig
         super.init(nibName: nil, bundle: nil)
         modalPresentationStyle = .popover
         popoverPresentationController?.delegate = self
@@ -72,7 +79,8 @@ public final class MPAlbumListViewController: UIViewController, UIPopoverPresent
     
     public func presentationControllerWillDismiss(_ presentationController: UIPresentationController) {
         PHPhotoLibrary.shared().unregisterChangeObserver(self)
-        closeBlock?()
+        closeSubject.send()
+        //closeBlock?()
     }
     
     public override func viewWillAppear(_ animated: Bool) {
@@ -81,9 +89,7 @@ public final class MPAlbumListViewController: UIViewController, UIPopoverPresent
         
         DispatchQueue.global(qos: .userInitiated).async {
             MPManager.getPhotoAlbumList(
-                ascending: false,
-                allowSelectImage: MPGeneralConfiguration.default().allowImage,
-                allowSelectVideo: MPGeneralConfiguration.default().allowVideo
+                generalConfig: self.generalConfig
             ) { albumList in
                 self.arrModels = []
                 self.arrModels.append(contentsOf: albumList)
@@ -155,7 +161,8 @@ public final class MPAlbumListViewController: UIViewController, UIPopoverPresent
 extension MPAlbumListViewController: UICollectionViewDelegate {
     public func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         collectionView.deselectItem(at: indexPath, animated: true)
-        selectAlbumBlock?(arrModels[indexPath.item])
+        selectAlbumSubject.send(arrModels[indexPath.item])
+        //selectAlbumBlock?(arrModels[indexPath.item])
     }
 }
 

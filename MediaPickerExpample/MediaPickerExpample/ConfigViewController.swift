@@ -45,7 +45,6 @@ final class ConfigViewController: UIViewController {
     
     private let doneButton = {
         var bConfig = UIButton.Configuration.filled()
-        bConfig.background.backgroundColor = MPUIConfiguration.default().navigationAppearance.tintColor
         bConfig.title = "done"
         bConfig.baseForegroundColor = .white
         bConfig.cornerStyle = .large
@@ -57,13 +56,23 @@ final class ConfigViewController: UIViewController {
     private var switches: [UISwitch] = []
     private var buttons: [UIButton] = []
     private var cancellable: AnyCancellable?
+    private var uiConfig: MPUIConfiguration
     
-    var handleChangeBG: ((UIColor) -> ())? = nil
-    var handleChangePrimaryTint: ((UIColor) -> ())? = nil
+    init(uiConfig: MPUIConfiguration) {
+        self.uiConfig = uiConfig
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    var handleChangeUIConfig: ((MPUIConfiguration?) -> ())? = nil
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = MPUIConfiguration.default().primaryBackgroundColor
+        doneButton.configuration?.background.backgroundColor = uiConfig.navigationAppearance.tintColor
+        view.backgroundColor = uiConfig.primaryBackgroundColor
         view.addSubview(scrollView)
         view.addSubview(doneButton)
         scrollView.addSubview(vStack)
@@ -95,16 +104,16 @@ final class ConfigViewController: UIViewController {
     
     private func createBackgroundColorPicker() {
         let label = getLabel("Primary background color: ")
-        let button = getButton("Picker")
+        let button = getButton("Picker", withBGColor: uiConfig.navigationAppearance.tintColor)
         buttons.append(button)
         button.addAction(.init(handler: { [weak self] (_) in
             guard let strongSelf = self else { return }
             let picker = UIColorPickerViewController()
-            picker.selectedColor = MPUIConfiguration.default().primaryBackgroundColor
+            picker.selectedColor = strongSelf.uiConfig.primaryBackgroundColor
             strongSelf.cancellable = picker.publisher(for: \.selectedColor)
                 .sink { color in
-                    MPUIConfiguration.default().primaryBackgroundColor = color
-                    self?.handleChangeBG?(color)
+                    self?.uiConfig.primaryBackgroundColor = color
+                    self?.handleChangeUIConfig?(self?.uiConfig)
                     self?.view.backgroundColor = color
                 }
             strongSelf.present(picker, animated: true)
@@ -119,14 +128,14 @@ final class ConfigViewController: UIViewController {
     
     private func createTintColorPicker() {
         let label = getLabel("Primary tint color: ")
-        let button = getButton("Picker")
+        let button = getButton("Picker", withBGColor: uiConfig.navigationAppearance.tintColor)
         button.addAction(.init(handler: { [weak self] (_) in
             guard let strongSelf = self else { return }
             let picker = UIColorPickerViewController()
-            picker.selectedColor = MPUIConfiguration.default().navigationAppearance.tintColor
+            picker.selectedColor = strongSelf.uiConfig.navigationAppearance.tintColor
             strongSelf.cancellable = picker.publisher(for: \.selectedColor)
                 .sink { color in
-                    MPUIConfiguration.default().navigationAppearance.tintColor = color
+                    self?.uiConfig.navigationAppearance.tintColor = color
                     self?.switches.forEach {
                         $0.onTintColor = color
                     }
@@ -135,7 +144,7 @@ final class ConfigViewController: UIViewController {
                     }
                     button.configuration?.background.backgroundColor = color
                     self?.doneButton.configuration?.background.backgroundColor = color
-                    self?.handleChangePrimaryTint?(color)
+                    self?.handleChangeUIConfig?(self?.uiConfig)
                 }
             strongSelf.present(picker, animated: true)
         }), for: .touchUpInside)
@@ -149,15 +158,16 @@ final class ConfigViewController: UIViewController {
     
     private func createCheckboxColorPicker() {
         let label = getLabel("Checkbox color: ")
-        let button = getButton("Picker", withBGColor: MPUIConfiguration.default().selectionButtonColorStyle.activeColor)
+        let button = getButton("Picker", withBGColor: uiConfig.selectionButtonColorStyle.activeColor)
         button.addAction(.init(handler: { [weak self] (_) in
             guard let strongSelf = self else { return }
             let picker = UIColorPickerViewController()
-            picker.selectedColor = MPUIConfiguration.default().selectionButtonColorStyle.activeColor
+            picker.selectedColor = strongSelf.uiConfig.selectionButtonColorStyle.activeColor
             strongSelf.cancellable = picker.publisher(for: \.selectedColor)
                 .sink { color in
                     button.configuration?.background.backgroundColor = color
-                    MPUIConfiguration.default().selectionButtonColorStyle.activeColor = color
+                    self?.uiConfig.selectionButtonColorStyle.activeColor = color
+                    self?.handleChangeUIConfig?(self?.uiConfig)
                 }
             strongSelf.present(picker, animated: true)
         }), for: .touchUpInside)
@@ -171,10 +181,11 @@ final class ConfigViewController: UIViewController {
     
     private func createShowIndexInCheckbox() {
         let label = getLabel("Show counter in checkbox: ")
-        let switchV = getSwitch(MPUIConfiguration.default().showCounterOnSelectionButton)
+        let switchV = getSwitch(uiConfig.showCounterOnSelectionButton)
         switches.append(switchV)
-        switchV.addAction(.init(handler: { (_) in
-            MPUIConfiguration.default().showCounterOnSelectionButton = switchV.isOn
+        switchV.addAction(.init(handler: { [weak self] (_) in
+            self?.uiConfig.showCounterOnSelectionButton = switchV.isOn
+            self?.handleChangeUIConfig?(self?.uiConfig)
         }), for: .touchUpInside)
         let hStack = getHStack()
         
@@ -194,7 +205,7 @@ extension ConfigViewController {
         return view
     }
     
-    private func getButton(_ text: String, withBGColor color: UIColor = MPUIConfiguration.default().navigationAppearance.tintColor) -> UIButton {
+    private func getButton(_ text: String, withBGColor color: UIColor) -> UIButton {
         var bConfig = UIButton.Configuration.filled()
         bConfig.background.backgroundColor = color
         bConfig.title = text
@@ -208,7 +219,7 @@ extension ConfigViewController {
     private func getSwitch(_ isOn: Bool) -> UISwitch {
         let view = UISwitch()
         view.isOn = isOn
-        view.onTintColor = MPUIConfiguration.default().navigationAppearance.tintColor
+        view.onTintColor = uiConfig.navigationAppearance.tintColor
         view.thumbTintColor = .white
         return view
     }

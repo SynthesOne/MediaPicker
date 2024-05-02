@@ -25,6 +25,8 @@
 import Foundation
 
 enum Lang {
+    static var generalConfig = MPGeneralConfiguration.default()
+    
     static var toolTipControl: String {
         Lang.tr("MPToolTipControl")
     }
@@ -112,22 +114,21 @@ enum Lang {
 
 extension Lang {
     static func tr(_ key: String) -> String {
-        let config = MPGeneralConfiguration.default()
         let bundle: Bundle
         
         var _key = key
-        if config.keysLangsDeploy.isEmpty {
-            bundle = config.bundleLangsDeploy ?? .module
+        if generalConfig.keysLangsDeploy.isEmpty {
+            bundle = generalConfig.bundleLangsDeploy ?? .module
         } else {
-            if let deployKey = config.keysLangsDeploy[key] {
+            if let deployKey = generalConfig.keysLangsDeploy[key] {
                 _key = deployKey
-                bundle = config.bundleLangsDeploy ?? .module
+                bundle = generalConfig.bundleLangsDeploy ?? .module
             } else {
                 bundle = .module
             }
         }
         
-        switch config.stringCatalogType {
+        switch generalConfig.stringCatalogType {
         case .xcstrings:
             return .locale(_key, bundle: bundle)
         case .lproj:

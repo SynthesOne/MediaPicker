@@ -26,49 +26,49 @@ import UIKit
 
 public extension MPGeneralConfiguration {
     @discardableResult
-    func setAllowImage(_ value: Bool) -> MPGeneralConfiguration {
+    mutating func setAllowImage(_ value: Bool) -> MPGeneralConfiguration {
         allowImage = value
         return self
     }
     
     @discardableResult
-    func setAllowGif(_ value: Bool) -> MPGeneralConfiguration {
+    mutating func setAllowGif(_ value: Bool) -> MPGeneralConfiguration {
         allowGif = value
         return self
     }
     
     @discardableResult
-    func setAllowVideo(_ value: Bool) -> MPGeneralConfiguration {
+    mutating func setAllowVideo(_ value: Bool) -> MPGeneralConfiguration {
         allowVideo = value
         return self
     }
     
     @discardableResult
-    func setAllowLivePhoto(_ value: Bool) -> MPGeneralConfiguration {
+    mutating func setAllowLivePhoto(_ value: Bool) -> MPGeneralConfiguration {
         allowLivePhoto = value
         return self
     }
     
     @discardableResult
-    func setMaxMediaSelectCount(_ value: Int) -> MPGeneralConfiguration {
+    mutating func setMaxMediaSelectCount(_ value: Int) -> MPGeneralConfiguration {
         maxMediaSelectCount = value
         return self
     }
     
     @discardableResult
-    func setBundleLangsDeploy(_ value: Bundle) -> MPGeneralConfiguration {
+    mutating func setBundleLangsDeploy(_ value: Bundle) -> MPGeneralConfiguration {
         bundleLangsDeploy = value
         return self
     }
     
     @discardableResult
-    func setKeysLangsDeploy(_ value: [String: String]) -> MPGeneralConfiguration {
+    mutating func setKeysLangsDeploy(_ value: [String: String]) -> MPGeneralConfiguration {
         keysLangsDeploy = value
         return self
     }
     
     @discardableResult
-    func setStringCatalogType(_ value: MPGeneralConfiguration.StringCatalogType) -> MPGeneralConfiguration {
+    mutating func setStringCatalogType(_ value: MPGeneralConfiguration.StringCatalogType) -> MPGeneralConfiguration {
         stringCatalogType = value
         return self
     }

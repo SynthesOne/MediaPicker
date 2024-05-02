@@ -23,6 +23,7 @@
 //  THE SOFTWARE.
 
 import UIKit
+import Combine
 
 final class MPAlbumPickerNavView: UIView {
     enum State {
@@ -76,14 +77,16 @@ final class MPAlbumPickerNavView: UIView {
     }()
     
     fileprivate var isAnimating = false
+    fileprivate var disposeBag = Set<AnyCancellable>()
     fileprivate var state: State = .album
     
     var sourceView: UIView {
         menuView.titleLabel
     }
     
-    var onTap: ((MPAlbumPickerNavView, Bool) -> ())? = nil
-    var segmentAction: ((SegmentedState) -> ())? = nil
+    let albumMenuActionSubject = PassthroughSubject<(MPAlbumPickerNavView, Bool), Never>()
+    let segmentActionsubject = PassthroughSubject<SegmentedState, Never>()
+    let hideMenuHandler = PassthroughSubject<Void, Never>()
     
     var selectedCounter: Int = 0 {
         didSet {
@@ -119,15 +122,23 @@ final class MPAlbumPickerNavView: UIView {
         menuView.title = title
         
         selectedControl.setAction(.init(handler: { [weak self] (_) in
-            self?.segmentAction?(.all)
+            self?.segmentActionsubject.send(.all)
         }), forSegmentAt: 0)
         
         selectedControl.setTitle(Lang.all, forSegmentAt: 0)
         selectedControl.selectedSegmentIndex = 0
         
         selectedControl.setAction(.init(handler: { [weak self] (_) in
-            self?.segmentAction?(.selected)
+            self?.segmentActionsubject.send(.selected)
         }), forSegmentAt: 1)
+        
+        hideMenuHandler
+            .receive(on: DispatchQueue.main)
+            .sink(receiveValue: { [weak self] in
+                self?.hideMenu()
+            })
+            .store(in: &disposeBag)
+        
     }
     
     override func layoutSubviews() {
@@ -174,21 +185,22 @@ final class MPAlbumPickerNavView: UIView {
     }
     
     func setState(_ state: State) {
+        guard self.state != state else { return }
         self.state = state
         toggleState()
     }
     
-    func show() {
+    private func show() {
         if isShown == false {
             showMenu()
         }
     }
     
-    func hide() {
-        if isShown {
-            hideMenu()
-        }
-    }
+//    private func hide() {
+//        if isShown {
+//            hideMenu()
+//        }
+//    }
     
     private func toggle() {
         if isShown {
@@ -201,7 +213,7 @@ final class MPAlbumPickerNavView: UIView {
     private func showMenu() {
         isShown = true
         menuView.rotateArrow(isShow: true)
-        onTap?(self, true)
+        albumMenuActionSubject.send((self, true))
     }
     
     private func hideMenu() {

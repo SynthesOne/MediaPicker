@@ -27,7 +27,6 @@ import UIKit
 final class Counter: UIView {
     private let unreadCounter: UILabel = {
         let view = UILabel()
-        view.textColor = MPUIConfiguration.default().navigationAppearance.tintColor
         view.textAlignment = .center
         view.font = Font.regular(13)
         view.text = "1"
@@ -42,23 +41,22 @@ final class Counter: UIView {
         unreadCounter.mp.textWidth()
     }
     
+    fileprivate let uiConfig: MPUIConfiguration
+    
     // MARK: Life Cycle
-    init() {
+    init(uiConfig: MPUIConfiguration) {
+        self.uiConfig = uiConfig
         super.init(frame: .zero)
         setup()
     }
 
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-        setup()
-    }
-
+    @available(*, unavailable)
     required init?(coder: NSCoder) {
-        super.init(coder: coder)
-        setup()
+        fatalError("init(coder:) has not been implemented")
     }
     
     private func setup() {
+        unreadCounter.textColor = uiConfig.navigationAppearance.tintColor
         addSubview(unreadCounter)
     }
     

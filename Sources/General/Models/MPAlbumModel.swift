@@ -46,25 +46,29 @@ public struct MPAlbumModel {
     
     public var models: [MPPhotoModel] = []
     
+    private let generalConfig: MPGeneralConfiguration
+    
     public init(
         title: String,
         result: PHFetchResult<PHAsset>,
         collection: PHAssetCollection,
         option: PHFetchOptions,
-        isCameraRoll: Bool
+        isCameraRoll: Bool,
+        generalConfig: MPGeneralConfiguration
     ) {
         self.title = title
         self.result = result
         self.collection = collection
         self.option = option
         self.isCameraRoll = isCameraRoll
+        self.generalConfig = generalConfig
     }
     
     public mutating func refetchPhotos() {
         let models = MPManager.fetchPhoto(
             in: result,
-            allowImage: MPGeneralConfiguration.default().allowImage,
-            allowVideo: MPGeneralConfiguration.default().allowVideo
+            allowImage: generalConfig.allowImage,
+            allowVideo: generalConfig.allowVideo
         )
         self.models = []
         self.models.append(contentsOf: models)

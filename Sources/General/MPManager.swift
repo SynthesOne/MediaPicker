@@ -101,12 +101,12 @@ public enum MPManager {
     }
     
     /// Fetch all album list.
-    public static func getPhotoAlbumList(ascending: Bool, allowSelectImage: Bool, allowSelectVideo: Bool, completion: ([MPAlbumModel]) -> Void) {
+    public static func getPhotoAlbumList(generalConfig: MPGeneralConfiguration, completion: ([MPAlbumModel]) -> Void) {
         let option = PHFetchOptions()
-        if !allowSelectImage {
+        if !generalConfig.allowImage {
             option.predicate = NSPredicate(format: "mediaType == %ld", PHAssetMediaType.video.rawValue)
         }
-        if !allowSelectVideo {
+        if !generalConfig.allowVideo {
             option.predicate = NSPredicate(format: "mediaType == %ld", PHAssetMediaType.image.rawValue)
         }
         
@@ -137,10 +137,10 @@ public enum MPManager {
                 
                 if collection.assetCollectionSubtype == .smartAlbumUserLibrary {
                     // Album of all photos.
-                    let m = MPAlbumModel(title: title, result: result, collection: collection, option: option, isCameraRoll: true)
+                    let m = MPAlbumModel(title: title, result: result, collection: collection, option: option, isCameraRoll: true, generalConfig: generalConfig)
                     albumList.insert(m, at: 0)
                 } else {
-                    let m = MPAlbumModel(title: title, result: result, collection: collection, option: option, isCameraRoll: false)
+                    let m = MPAlbumModel(title: title, result: result, collection: collection, option: option, isCameraRoll: false, generalConfig: generalConfig)
                     albumList.append(m)
                 }
             }
@@ -150,13 +150,13 @@ public enum MPManager {
     }
     
     /// Fetch camera roll album.
-    public static func getCameraRollAlbum(allowSelectImage: Bool, allowSelectVideo: Bool, limitCount: Int = 0, completionInMain: Bool = true, completion: @escaping (MPAlbumModel) -> Void) {
+    public static func getCameraRollAlbum(generalConfig: MPGeneralConfiguration, limitCount: Int = 0, completionInMain: Bool = true, completion: @escaping (MPAlbumModel) -> Void) {
         DispatchQueue.global(qos: .userInitiated).async {
             let option = PHFetchOptions()
-            if !allowSelectImage {
+            if !generalConfig.allowImage {
                 option.predicate = NSPredicate(format: "mediaType == %ld", PHAssetMediaType.video.rawValue)
             }
-            if !allowSelectVideo {
+            if !generalConfig.allowVideo {
                 option.predicate = NSPredicate(format: "mediaType == %ld", PHAssetMediaType.image.rawValue)
             }
             
@@ -169,7 +169,7 @@ public enum MPManager {
                     stop.pointee = true
                     
                     let result = PHAsset.fetchAssets(in: collection, options: option)
-                    let albumModel = MPAlbumModel(title: getCollectionTitle(collection), result: result, collection: collection, option: option, isCameraRoll: true)
+                    let albumModel = MPAlbumModel(title: getCollectionTitle(collection), result: result, collection: collection, option: option, isCameraRoll: true, generalConfig: generalConfig)
                     
                     if completionInMain {
                         MPMainAsync {

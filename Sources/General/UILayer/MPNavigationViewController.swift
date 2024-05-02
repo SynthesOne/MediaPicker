@@ -42,9 +42,11 @@ public struct MPNavigationAppearance {
     )
 }
 
-public class MPNavigationViewController: UINavigationController {
+class MPNavigationViewController: UINavigationController {
+    private let uiConfig: MPUIConfiguration
     
-    public override init(rootViewController: UIViewController) {
+    init(rootViewController: UIViewController, uiConfig: MPUIConfiguration) {
+        self.uiConfig = uiConfig
         super.init(rootViewController: rootViewController)
     }
     
@@ -56,13 +58,12 @@ public class MPNavigationViewController: UINavigationController {
         Logger.log("deinit MPNavigationViewController")
     }
     
-    public override func loadView() {
+    override func loadView() {
         super.loadView()
         configurationStyleNavigationBar()
     }
     
     private func configurationStyleNavigationBar() {
-        let uiConfig = MPUIConfiguration.default()
         view.backgroundColor = .none
         let attributes: [NSAttributedString.Key: Any] = [
             .font: Font.medium(17),

@@ -30,6 +30,8 @@ public final class MPPresenter: NSObject {
     private var preSelectedResults: [MPPhotoModel]
     private var selectedResult: (([MPResultModel]) -> ())? = nil
     private var preSelectedResult: (([MPPhotoModel]) -> ())? = nil
+    private var uiConfig: MPUIConfiguration = .default()
+    private var generalConfig: MPGeneralConfiguration = .default()
     
     private let fetchImageQueue: OperationQueue = {
         let queue = OperationQueue()
@@ -49,10 +51,18 @@ public final class MPPresenter: NSObject {
     }
     
     public func showMediaPicker(
+        uiConfiguration: ((inout MPUIConfiguration) -> ())? = nil,
+        generalConfiguration: ((inout MPGeneralConfiguration) -> ())? = nil,
         selectedResult: @escaping ([MPResultModel]) -> (),
-        customPresentationStyle: ((MPNavigationViewController) -> ())? = nil
+        customPresentationStyle: ((UINavigationController) -> ())? = nil
     ) {
         self.selectedResult = selectedResult
+        
+        uiConfiguration?(&uiConfig)
+        generalConfiguration?(&generalConfig)
+        
+        Lang.generalConfig = generalConfig
+        
         let status = PHPhotoLibrary.authorizationStatus()
         if status == .restricted || status == .denied {
             showNoAuthAlert()
@@ -85,10 +95,10 @@ public final class MPPresenter: NSObject {
     }
     
     private func showLibraryMP(customPresentationStyle: ((MPNavigationViewController) -> ())? = nil) {
-        MPManager.getCameraRollAlbum(allowSelectImage: MPGeneralConfiguration.default().allowImage, allowSelectVideo: MPGeneralConfiguration.default().allowVideo, limitCount: 20, completion: { (album) in
-            let gallery = MPViewController(albumModel: album)
+        MPManager.getCameraRollAlbum(generalConfig: generalConfig, limitCount: 20, completion: { (album) in
+            let gallery = MPViewController(albumModel: album, selectedResults: self.preSelectedResults, uiConfig: self.uiConfig, generalConfig: self.generalConfig)
             gallery.preSelectedResult = self.preSelectedResult
-            let navWrapper = MPNavigationViewController(rootViewController: gallery)
+            let navWrapper = MPNavigationViewController(rootViewController: gallery, uiConfig: self.uiConfig)
             
             if let customPresentationStyle {
                 customPresentationStyle(navWrapper)
@@ -126,7 +136,7 @@ public final class MPPresenter: NSObject {
             let totalCount = selectedModels.count
             
             for (i, m) in selectedModels.enumerated() {
-                let operation = MPFetchImageOperation(model: m) { (image) in
+                let operation = MPFetchImageOperation(model: m, generalConfig: strongSelf.generalConfig) { (image) in
                     sucCount += 1
                     
                     if let image {

@@ -72,7 +72,7 @@ final class MediaPickerCell: CollectionViewCell {
     }()
     
     private let selectionButton: MPCheckboxButton = {
-        let view = MPCheckboxButton(frame: .zero)
+        let view = MPCheckboxButton(frame: .zero, uiConfig: .default())
         view.contentMode = .center
         view.contentVerticalAlignment = .center
         view.increasedInsets = .init(top: 8, left: 8, bottom: 8, right: 8)
@@ -104,6 +104,12 @@ final class MediaPickerCell: CollectionViewCell {
     var isOn = false {
         didSet {
             selectionButton.setIsOn(isOn)
+        }
+    }
+    
+    var uiConfig: MPUIConfiguration = .default() {
+        didSet {
+            selectionButton.uiConfig = uiConfig
         }
     }
     

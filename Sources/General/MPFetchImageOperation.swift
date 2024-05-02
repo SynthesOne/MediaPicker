@@ -68,6 +68,7 @@ final class MPFetchImageOperation: Operation {
     }
     
     private var requestImageID = PHInvalidImageRequestID
+    private let generalConfig: MPGeneralConfiguration
     
     override var isCancelled: Bool {
         return preIsCancelled
@@ -75,12 +76,14 @@ final class MPFetchImageOperation: Operation {
     
     init(
         model: MPPhotoModel,
+        generalConfig: MPGeneralConfiguration,
         progress: ((CGFloat, Error?, UnsafeMutablePointer<ObjCBool>, [AnyHashable: Any]?) -> Void)? = nil,
         completion: @escaping ((UIImage?) -> Void)
     ) {
         self.model = model
         self.progress = progress
         self.completion = completion
+        self.generalConfig = generalConfig
         super.init()
     }
     
@@ -91,7 +94,7 @@ final class MPFetchImageOperation: Operation {
         }
         preIsExecuting = true
         
-        if MPGeneralConfiguration.default().allowGif, model.type == .gif {
+        if generalConfig.allowGif, model.type == .gif {
             requestImageID = MPManager.fetchOriginalImageData(for: model.asset) { data, _, isDegraded in
                 if !isDegraded {
                     let image = UIImage.mp.gif(data: data)

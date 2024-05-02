@@ -101,8 +101,8 @@ final class MediaViewerViewController: UIViewController {
         return view
     }()
     
-    fileprivate let selectionButton: MPCheckboxButton = {
-        let view = MPCheckboxButton(frame: .zero)
+    fileprivate lazy var selectionButton: MPCheckboxButton = {
+        let view = MPCheckboxButton(frame: .zero, uiConfig: uiConfig)
         view.selfSize = 32
         view.contentMode = .center
         view.contentVerticalAlignment = .center
@@ -138,12 +138,16 @@ final class MediaViewerViewController: UIViewController {
     private var selectedModels: [MPPhotoModel]
     private var initialIndex: Int
     private var isFirstAppear = true
+    private let uiConfig: MPUIConfiguration
+    private let generalConfig: MPGeneralConfiguration
 
     weak var dataSource: MediaPreviewControllerDataSource?
     weak var delegate: MediaPreviewControllerDelegate?
     
-    init(referencedView: UIView?, image: UIImage?, model: [MPPhotoModel], selectedModels: [MPPhotoModel], index: Int) {
+    init(referencedView: UIView?, image: UIImage?, model: [MPPhotoModel], selectedModels: [MPPhotoModel], index: Int, uiConfig: MPUIConfiguration, generalConfig: MPGeneralConfiguration) {
         self.model = model
+        self.uiConfig = uiConfig
+        self.generalConfig = generalConfig
         self.initialIndex = index
         self.selectedModels = selectedModels
         super.init(nibName: nil, bundle: nil)
@@ -478,7 +482,7 @@ final class MediaViewerViewController: UIViewController {
         let currentSelectCount = selectedModels.count
         let item = model[index]
         if !item.isSelected {
-            if MPGeneralConfiguration.default().maxMediaSelectCount == 1, currentSelectCount > 0  {
+            if generalConfig.maxMediaSelectCount == 1, currentSelectCount > 0  {
                 if let selectedIndex = model.firstIndex(where: { $0.isSelected }) {
                     model[selectedIndex].isSelected = false
                     model[index].isSelected = true
@@ -486,7 +490,7 @@ final class MediaViewerViewController: UIViewController {
                     selectionButton.setIsOn(true)
                 }
             } else {
-                guard canSelectMedia(item, currentSelectCount: currentSelectCount) else { return }
+                guard canSelectMedia(item, currentSelectCount: currentSelectCount, generalConfig: generalConfig) else { return }
                 model[index].isSelected = true
                 selectedModels.append(model[index])
                 selectionButton.counter = selectedModels.count
@@ -581,15 +585,13 @@ extension MediaViewerViewController: UICollectionViewDataSource {
 
     public func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let model = model[indexPath.item]
-        let config = MPGeneralConfiguration.default()
-        
         let cell: MPPreviewCell
         
-        if config.allowGif, model.type == .gif {
+        if generalConfig.allowGif, model.type == .gif {
             cell = collectionView.mp.cell(MPGifPreviewCell.self, for: indexPath)
-        } else if config.allowLivePhoto, model.type == .livePhoto {
+        } else if generalConfig.allowLivePhoto, model.type == .livePhoto {
             cell = collectionView.mp.cell(MPLivePhotoPreviewCell.self, for: indexPath)
-        } else if config.allowVideo, model.type == .video {
+        } else if generalConfig.allowVideo, model.type == .video {
             cell = collectionView.mp.cell(MPVideoPreviewCell.self, for: indexPath)
         } else {
             cell = collectionView.mp.cell(MPPhotoPreviewCell.self, for: indexPath)

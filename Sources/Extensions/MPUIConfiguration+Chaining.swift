@@ -26,37 +26,37 @@ import UIKit
 
 public extension MPUIConfiguration {
     @discardableResult
-    func setShowCounterOnSelectionButton(_ value: Bool) -> MPUIConfiguration {
+    mutating func setShowCounterOnSelectionButton(_ value: Bool) -> MPUIConfiguration {
         showCounterOnSelectionButton = value
         return self
     }
     
     @discardableResult
-    func setSelectionButtonCornersStyle(_ value: MPCheckboxStyle) -> MPUIConfiguration {
+    mutating func setSelectionButtonCornersStyle(_ value: MPCheckboxStyle) -> MPUIConfiguration {
         selectionButtonCornersStyle = value
         return self
     }
     
     @discardableResult
-    func setSelectionButtonColorStyle(_ value: MPCheckboxColor) -> MPUIConfiguration {
+    mutating func setSelectionButtonColorStyle(_ value: MPCheckboxColor) -> MPUIConfiguration {
         selectionButtonColorStyle = value
         return self
     }
     
     @discardableResult
-    func setNavigationAppearance(_ value: MPNavigationAppearance) -> MPUIConfiguration {
+    mutating func setNavigationAppearance(_ value: MPNavigationAppearance) -> MPUIConfiguration {
         navigationAppearance = value
         return self
     }
     
     @discardableResult
-    func setPrimaryBackgroundColor(_ value: UIColor) -> MPUIConfiguration {
+    mutating func setPrimaryBackgroundColor(_ value: UIColor) -> MPUIConfiguration {
         primaryBackgroundColor = value
         return self
     }
     
     @discardableResult
-    func setShowCameraCell(_ value: Bool) -> MPUIConfiguration {
+    mutating func setShowCameraCell(_ value: Bool) -> MPUIConfiguration {
         showCameraCell = value
         return self
     }

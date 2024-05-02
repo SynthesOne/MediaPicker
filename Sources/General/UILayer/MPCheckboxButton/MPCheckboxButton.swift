@@ -108,6 +108,14 @@ final class MPCheckboxButton: MPControl {
         }
     }
     
+    var uiConfig: MPUIConfiguration {
+        didSet {
+            _checkBoxColor = uiConfig.selectionButtonColorStyle
+            _showCounterInCheckbox = uiConfig.showCounterOnSelectionButton
+            _style = uiConfig.selectionButtonCornersStyle
+        }
+    }
+    
     fileprivate var isOn = false
     
     func setIsOn(_ isOn: Bool, isAnimate: Bool = true) {
@@ -116,14 +124,15 @@ final class MPCheckboxButton: MPControl {
         updateSelectionState(isAnimate: isAnimate)
     }
     
-    override init(frame: CGRect) {
+    init(frame: CGRect, uiConfig: MPUIConfiguration) {
+        self.uiConfig = uiConfig
         super.init(frame: frame)
         setup()
     }
     
+    @available(*, unavailable)
     required init?(coder: NSCoder) {
-        super.init(coder: coder)
-        setup()
+        fatalError("init(coder:) has not been implemented")
     }
     
     override func layoutSubviews() {
@@ -155,19 +164,19 @@ final class MPCheckboxButton: MPControl {
         if let checkBoxColor {
             _checkBoxColor = checkBoxColor
         } else {
-            _checkBoxColor = MPUIConfiguration.default().selectionButtonColorStyle
+            _checkBoxColor = uiConfig.selectionButtonColorStyle
         }
         
         if let showCounterInCheckbox {
             _showCounterInCheckbox = showCounterInCheckbox
         } else {
-            _showCounterInCheckbox = MPUIConfiguration.default().showCounterOnSelectionButton
+            _showCounterInCheckbox = uiConfig.showCounterOnSelectionButton
         }
         
         if let style {
             _style = style
         } else {
-            _style = MPUIConfiguration.default().selectionButtonCornersStyle
+            _style = uiConfig.selectionButtonCornersStyle
         }
     }
 

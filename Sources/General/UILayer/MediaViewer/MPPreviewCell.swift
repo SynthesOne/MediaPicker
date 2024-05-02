@@ -81,6 +81,8 @@ class MPPreviewCell: CollectionViewCell {
         }
     }
     
+    var generalConfig: MPGeneralConfiguration = .default()
+    
     func previewVCScroll() {}
     
     func willDisplay() {}
@@ -173,6 +175,7 @@ class MPPhotoPreviewCell: MPPreviewCell {
     }
     
     override func setupSubviews() {
+        preview.generalConfig = generalConfig
         contentView.addSubview(preview)
     }
     
@@ -202,7 +205,7 @@ class MPGifPreviewCell: MPPreviewCell {
     
     override var scrollView: MPScrollView? { preview.scrollView }
     
-    private lazy var preview: MPPreviewView = {
+    private let preview: MPPreviewView = {
         let view = MPPreviewView()
         return view
     }()
@@ -212,6 +215,7 @@ class MPGifPreviewCell: MPPreviewCell {
     }
     
     override func setupSubviews() {
+        preview.generalConfig = generalConfig
         contentView.addSubview(preview)
     }
     
@@ -618,6 +622,8 @@ final class MPPreviewView: UIView {
     
     private var fetchGifDone = false
     
+    var generalConfig: MPGeneralConfiguration = .default()
+    
     let containerView = UIView()
     
     let scrollView: MPScrollView = {
@@ -690,7 +696,7 @@ final class MPPreviewView: UIView {
         scrollView.zoomScale = 1
         imageIdentifier = model.id
         
-        if MPGeneralConfiguration.default().allowGif, model.type == .gif {
+        if generalConfig.allowGif, model.type == .gif {
             loadGifFirstFrame()
         } else {
             loadPhoto()
@@ -848,7 +854,7 @@ final class MPPreviewView: UIView {
     }
     
     func resumeGif() {
-        guard let m = model, MPGeneralConfiguration.default().allowGif, m.type == .gif, imageView.layer.speed != 1 else { return }
+        guard let m = model, generalConfig.allowGif, m.type == .gif, imageView.layer.speed != 1 else { return }
         
         let pauseTime = imageView.layer.timeOffset
         imageView.layer.speed = 1
@@ -859,7 +865,7 @@ final class MPPreviewView: UIView {
     }
     
     func pauseGif() {
-        guard let m = model, MPGeneralConfiguration.default().allowGif, m.type == .gif, imageView.layer.speed != 0 else { return }
+        guard let m = model, generalConfig.allowGif, m.type == .gif, imageView.layer.speed != 0 else { return }
         
         let pauseTime = imageView.layer.convertTime(CACurrentMediaTime(), from: nil)
         imageView.layer.speed = 0

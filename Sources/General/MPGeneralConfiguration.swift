@@ -24,24 +24,15 @@
     
 import UIKit
 
-// MPGeneralConfiguration+discardable
-public final class MPGeneralConfiguration: NSObject {
+public struct MPGeneralConfiguration {
     public enum StringCatalogType {
         case xcstrings, lproj
     }
     
-    private override init() {
-        super.init()
-    }
+    private init() { }
     
-    private static var single = MPGeneralConfiguration()
-    
-    public class func `default`() -> MPGeneralConfiguration {
-        return MPGeneralConfiguration.single
-    }
-    
-    public class func resetConfiguration() {
-        MPGeneralConfiguration.single = MPGeneralConfiguration()
+    public static func `default`() -> MPGeneralConfiguration {
+        return MPGeneralConfiguration()
     }
     
     /// Allow select image media, if false - gif and live photo will not be select either

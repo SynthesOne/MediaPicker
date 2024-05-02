@@ -60,7 +60,7 @@ public struct MPResultModel {
     /// Save asset original data to file url. Support save image and video.
     /// - Note: Asynchronously write to a local file. Calls completionHandler block on the main queue. If the asset object is in iCloud, it will be downloaded first and then written in the method.
     public func saveAsset(toFile fileUrl: URL, completion: @escaping ((Error?) -> Void)) {
-        var options = PHVideoRequestOptions()
+        let options = PHVideoRequestOptions()
         options.isNetworkAccessAllowed = true
         options.deliveryMode = .highQualityFormat
         

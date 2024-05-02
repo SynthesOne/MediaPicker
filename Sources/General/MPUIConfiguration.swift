@@ -24,19 +24,11 @@
     
 import UIKit
 
-public final class MPUIConfiguration: NSObject {
-    private override init() {
-        super.init()
-    }
+public struct MPUIConfiguration {
+    private init() { }
     
-    private static var single = MPUIConfiguration()
-    
-    public class func `default`() -> MPUIConfiguration {
-        return MPUIConfiguration.single
-    }
-    
-    public class func resetConfiguration() {
-        MPUIConfiguration.single = MPUIConfiguration()
+    public static func `default`() -> MPUIConfiguration {
+        return MPUIConfiguration()
     }
     
     /// Shows on the counter selection button

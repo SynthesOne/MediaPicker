@@ -1,7 +1,7 @@
 //
-//  Global.swift
+//  Combine+Extension.swift
 //
-//  Created by Валентин Панчишен on 08.04.2024.
+//  Created by Валентин Панчишен on 02.05.2024.
 //  Copyright © 2024 Валентин Панчишен. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -21,42 +21,18 @@
 //  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
+    
+import Combine
 
-import UIKit
-import Photos
-
-let MaxImageWidth: CGFloat = 500
-let UIScreenScale = UIScreen.mp.current?.scale ?? 1.0
-let UIScreenPixel = 1.0 / UIScreenScale
-
-func UIScreenWidth() -> CGFloat {
-    UIScreen.mp.current?.bounds.width ?? 1.0
-}
-
-func UIScreenHeight() -> CGFloat {
-    UIScreen.mp.current?.bounds.height ?? 1.0
-}
-
-func MPMainAsync(after: TimeInterval = 0, handler: @escaping (() -> ())) {
-    if after > 0 {
-        DispatchQueue.main.asyncAfter(deadline: .now() + after, execute: handler)
-    } else {
-        if Thread.isMainThread {
-            handler()
-        } else {
-            DispatchQueue.main.async(execute: handler)
+extension Publisher {
+    func bind<S>(to value: S) -> Cancellable where S: Subject, S.Output == Output, S.Failure == Never {
+        sink { completion in
+            if case let .failure(error) = completion {
+                assert(false, "Binding error \(error)")
+            }
+            value.send(completion: .finished)
+        } receiveValue: { output in
+            value.send(output)
         }
     }
-}
-
-func canSelectMedia(_ model: MPPhotoModel, currentSelectCount: Int, generalConfig: MPGeneralConfiguration) -> Bool {
-    if currentSelectCount >= generalConfig.maxMediaSelectCount {
-        return false
-    }
-    
-    return true
-}
-
-var isIpad: Bool {
-    UIDevice.current.userInterfaceIdiom == .pad
 }

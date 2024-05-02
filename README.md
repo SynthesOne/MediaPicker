@@ -29,11 +29,12 @@ Limited access state:    |Change orientation:
 
 - [x] ~~Custom font deploy~~
 - [x] ~~Add the ability to customise the presentation style~~
+- [x] ~~Minimise the presence of static properties and methods as much as possible~~
 - [ ] More functionality and UI configuration
-- [ ] Minimise the presence of static properties and methods as much as possible
 - [ ] Ability to replace used icons with custom icons
 - [ ] Add Custom camera
 - [ ] Write a detailed documentation
+- [ ] Rewrite the main screen to MVVM with Combine
 
 ## Requirements
 

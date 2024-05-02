@@ -25,6 +25,7 @@
 import UIKit
 import Photos
 import PhotosUI
+import Combine
 
 protocol MediaPickerCellDelegate: AnyObject {
     func onCheckboxTap(inCell cell: MediaPickerCell)
@@ -57,25 +58,14 @@ final class MPViewController: UIViewController {
         return view
     }()
     
-    //private let closeButton = UIBarButtonItem()
-    private lazy var footer: MPFooterView = MPFooterView(showAddToolTip: showAddToolTip)
+    private let footer: MPFooterView
     private lazy var dataSource = UICollectionViewDiffableDataSource<MPModel.Section, MPModel.Item>(collectionView: collectionView, cellProvider: { [weak self] (collectionView, indexPath, item) -> UICollectionViewCell? in
         self?.cellProvider(collectionView: collectionView, indexPath: indexPath, item: item)
     })
     
     private var dataModel: MPModel = .empty
-    private var selectedModels: [MPPhotoModel] = [] {
-        didSet {
-            MPMainAsync {
-                if self.selectedModels.count != oldValue.count {
-                    self.footer.setCounter(self.selectedModels.count)
-                    self.toggleViewState(with: oldValue.count)
-                }
-            }
-        }
-    }
-    
-    private var albumModel: MPAlbumModel
+
+    private var disposeBag = Set<AnyCancellable>()
     private var hasTakeANewAsset = false
     
     // ** Pan select gesture
@@ -99,7 +89,7 @@ final class MPViewController: UIViewController {
     }
     
     private var showCameraCell: Bool {
-        MPUIConfiguration.default().showCameraCell && albumModel.isCameraRoll
+        uiConfig.showCameraCell && albumModel.isCameraRoll
     }
     
     private var wasCreateSnapshot: Bool = false
@@ -108,21 +98,22 @@ final class MPViewController: UIViewController {
     
     private var allowDragAndDrop = false
     
-    private var viewState: MPAlbumPickerNavView.SegmentedState = .all {
-        didSet {
-            allowDragAndDrop = viewState == .selected
-            reloadData() { [weak self] in
-                self?.refreshCellIndex()
-                //self?.reconfigItems(isAnimate: false)
-            }
-        }
-    }
+    private let uiConfig: MPUIConfiguration
+    private let generalConfig: MPGeneralConfiguration
+    
+    // MARK: - Combine props
+    @Published private var selectedModels: [MPPhotoModel] = []
+    @Published private var viewState: MPAlbumPickerNavView.SegmentedState = .all
+    @Published private var albumModel: MPAlbumModel
     
     var preSelectedResult: (([MPPhotoModel]) -> ())? = nil
     
-    
-    init(albumModel: MPAlbumModel) {
+    init(albumModel: MPAlbumModel, selectedResults: [MPPhotoModel], uiConfig: MPUIConfiguration, generalConfig: MPGeneralConfiguration) {
         self.albumModel = albumModel
+        self.uiConfig = uiConfig
+        self.generalConfig = generalConfig
+        selectedModels = selectedResults
+        footer = MPFooterView(showAddToolTip: albumModel.isCameraRoll && PHPhotoLibrary.authorizationStatus(for: .readWrite) == .limited, preCount: selectedResults.count, uiConfig: uiConfig)
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -142,8 +133,7 @@ final class MPViewController: UIViewController {
         navigationController?.sheetPresentationController?.delegate = self
         setupSubviews()
         setupNavigationView()
-        setupFooterView()
-        loadPhotos()
+        bind()
         firstLoadPhotos()
         registerChangeObserver()
     }
@@ -167,79 +157,101 @@ final class MPViewController: UIViewController {
     }
     
     private func setupSubviews() {
-        view.backgroundColor = MPUIConfiguration.default().primaryBackgroundColor
+        view.backgroundColor = uiConfig.primaryBackgroundColor
         view.mp.addSubviews(collectionView, footer)
         view.addGestureRecognizer(slideSelectGesture)
-    }
-    
-    private func setupFooterView() {
-        footer.actionButtonTap = { [weak self] in
-            guard let strongSelf = self else { return }
-            if strongSelf.selectedModels.count > 0 {
-                strongSelf.preSelectedResult?(strongSelf.selectedModels)
-            } else {
-                strongSelf.dismissAlert()
-            }
-        }
-        
-        footer.toolTipButtonTap = { [weak self] in
-            guard let strongSelf = self else { return }
-            let actionSheet = ActionSheet({
-                Action.default(Lang.selectMorePhotos, action: {
-                    self?.presentLimitedLibraryPicker()
-                })
-                Action.default(Lang.changeSettings, action: {
-                    if let url = URL(string: UIApplication.openSettingsURLString) {
-                        if UIApplication.shared.canOpenURL(url) {
-                            UIApplication.shared.open(url, options: [:], completionHandler: nil)
-                        }
-                    }
-                })
-                Action.cancel(Lang.cancel)
-            })
-            actionSheet.view.tintColor = MPUIConfiguration.default().navigationAppearance.tintColor
-            strongSelf.present(actionSheet, animated: true)
-        }
     }
     
     private func setupNavigationView() {
         navigationItem.titleView = albumListNavView
         albumListNavView.setMenuTitle(albumModel.title)
+    }
+    
+    private func bind() {
+        $albumModel
+            .removeDuplicates()
+            .receive(on: DispatchQueue.global(qos: .userInitiated))
+            .handleEvents(receiveOutput: { [weak self] _ in
+                guard let strongSelf = self else { return }
+                strongSelf.loadPhotos()
+            })
+            .receive(on: DispatchQueue.main)
+            .sink(receiveValue: { [weak self] (newAlbum) in
+                guard let strongSelf = self else { return }
+                strongSelf.albumListNavView.hideMenuHandler.send()
+                strongSelf.albumListNavView.setMenuTitle(newAlbum.title)
+                if strongSelf.presentedViewController is MPAlbumListViewController {
+                    strongSelf.presentedViewController?.dismiss(animated: true)
+                }
+            })
+            .store(in: &disposeBag)
         
-        let selectAlbumBlock: ((MPAlbumModel) -> ())? = { [weak self] (album) in
-            guard let strongSelf = self, strongSelf.albumModel != album  else { return }
-            strongSelf.albumModel = album
-            strongSelf.albumListNavView.setMenuTitle(album.title)
-            strongSelf.albumListNavView.hide()
-            strongSelf.loadPhotos()
-            if strongSelf.presentedViewController is MPAlbumListViewController {
-                strongSelf.presentedViewController?.dismiss(animated: true)
-            }
-        }
+        albumListNavView.albumMenuActionSubject
+            .sink(receiveValue: { [weak self] (tuple) in
+                let (view, _) = tuple
+                self?.showAlbumList(sourceView: view)
+            })
+            .store(in: &disposeBag)
         
-        let closeAlbumBlock: (() -> ())? = { [weak self] in
-            guard let strongSelf = self else { return }
-            strongSelf.albumListNavView.hide()
-        }
+        albumListNavView.segmentActionsubject
+            .sink(receiveValue: { [unowned self] (newState) in
+                self.viewState = newState
+                if self.selectedModels.count > 1 {
+                    self.toggleFooterDDTip(to: newState)
+                }
+            })
+            .store(in: &disposeBag)
         
-        albumListNavView.onTap = { [weak self] (view, isShow) in
-            guard let strongSelf = self else { return }
-            let albumList = MPAlbumListViewController()
-            albumList.preferredContentSize = .init(width: 150, height: 240)
-            albumList.popoverPresentationController?.sourceView = view.sourceView
-            albumList.popoverPresentationController?.permittedArrowDirections = .up
-            albumList.selectAlbumBlock = selectAlbumBlock
-            albumList.closeBlock = closeAlbumBlock
-            strongSelf.present(albumList, animated: true)
-        }
+        footer.actionButtonTapSubject
+            .sink(receiveValue: { [unowned self] in
+                if self.selectedModels.count > 0 {
+                    self.preSelectedResult?(self.selectedModels)
+                } else {
+                    self.dismissAlert()
+                }
+            })
+            .store(in: &disposeBag)
         
-        albumListNavView.segmentAction = { [weak self] (state) in
-            guard let strongSelf = self else { return }
-            strongSelf.viewState = state
-            if strongSelf.selectedModels.count > 1 {
-                strongSelf.toggleFooterDDTip(to: state)
-            }
-        }
+        footer.toolTipButtonTapSubject
+            .sink(receiveValue: { [weak self] in
+                guard let strongSelf = self else { return }
+                let actionSheet = ActionSheet({
+                    Action.default(Lang.selectMorePhotos, action: {
+                        self?.presentLimitedLibraryPicker()
+                    })
+                    Action.default(Lang.changeSettings, action: {
+                        if let url = URL(string: UIApplication.openSettingsURLString) {
+                            if UIApplication.shared.canOpenURL(url) {
+                                UIApplication.shared.open(url, options: [:], completionHandler: nil)
+                            }
+                        }
+                    })
+                    Action.cancel(Lang.cancel)
+                })
+                actionSheet.view.tintColor = strongSelf.uiConfig.navigationAppearance.tintColor
+                strongSelf.present(actionSheet, animated: true)
+            })
+            .store(in: &disposeBag)
+        
+        $selectedModels
+            .throttle(for: 0.15, scheduler: DispatchQueue.main, latest: true)
+            .receive(on: DispatchQueue.main)
+            .sink(receiveValue: { [weak self] (newSelected) in
+                guard let strongSelf = self else { return }
+                strongSelf.processingChangesSelected()
+            })
+            .store(in: &disposeBag)
+        
+        $viewState
+            .receive(on: DispatchQueue.main)
+            .sink(receiveValue: { [weak self] (newState) in
+                guard let strongSelf = self else { return }
+                strongSelf.allowDragAndDrop = newState == .selected
+                strongSelf.reloadData() {
+                    self?.refreshCellIndex()
+                }
+            })
+            .store(in: &disposeBag)
     }
     
     private func loadPhotos() {
@@ -263,12 +275,12 @@ final class MPViewController: UIViewController {
     // The first request was at a limit of 30, so you need to re-request the entire album
     private func firstLoadPhotos() {
         /// completionInMain == false, so that the `loadPhotos()` does not switch the context
-        MPManager.getCameraRollAlbum(allowSelectImage: MPGeneralConfiguration.default().allowImage, allowSelectVideo: MPGeneralConfiguration.default().allowVideo, completionInMain: false, completion: { (album) in
+        MPManager.getCameraRollAlbum(generalConfig: generalConfig, completionInMain: false, completion: { (album) in
             self.albumModel = album
-            self.loadPhotos()
         })
     }
     
+    // MARK: - UICollectionViewLayout
     private func createLayout() -> UICollectionViewLayout {
         let configuration = UICollectionViewCompositionalLayoutConfiguration()
         configuration.interSectionSpacing = UIScreenPixel
@@ -348,6 +360,9 @@ final class MPViewController: UIViewController {
                 cameraGroup.interItemSpacing = .fixed(UIScreenPixel)
                 
                 let section = NSCollectionLayoutSection(group: cameraGroup)
+                section.visibleItemsInvalidationHandler = { (visibleItems, point, environment) in
+                    
+                }
                 section.contentInsets = .zero
                 
                 return section
@@ -377,15 +392,17 @@ final class MPViewController: UIViewController {
         return layout
     }
     
+    // MARK: - DataSource
     private func cellProvider(collectionView: UICollectionView, indexPath: IndexPath, item: MPModel.Item) -> UICollectionViewCell {
         switch item {
         case let .media(model):
             let cell = collectionView.mp.cell(MediaPickerCell.self, for: indexPath)
+            cell.uiConfig = uiConfig
             cell.delegate = self
             
             switch viewState {
             case .all:
-                if MPUIConfiguration.default().showCounterOnSelectionButton, let index = selectedModels.firstIndex(where: { $0 == model }) {
+                if uiConfig.showCounterOnSelectionButton, let index = selectedModels.firstIndex(where: { $0 == model }) {
                     cell.index = index + 1
                 }
             case .selected:
@@ -398,7 +415,7 @@ final class MPViewController: UIViewController {
         case .camera(_):
             let cell = collectionView.mp.cell(MPCameraCell.self, for: indexPath)
             cell.startCapture()
-            cell.isEnable = selectedModels.count < MPGeneralConfiguration.default().maxMediaSelectCount
+            cell.isEnable = selectedModels.count < generalConfig.maxMediaSelectCount
             cell.processSampleBuffer = { [weak self] (sampleBuffer, imageBuffer, connection) in
                 self?.handleProcessBuffer(sampleBuffer: sampleBuffer, imageBuffer: imageBuffer, connection: connection)
             }
@@ -414,7 +431,7 @@ final class MPViewController: UIViewController {
         case .all:
             let item = dataModel.item(indexPath, showCameraCell: showCameraCell)
             if !item.isSelected {
-                if MPGeneralConfiguration.default().maxMediaSelectCount == 1, currentSelectCount > 0  {
+                if generalConfig.maxMediaSelectCount == 1, currentSelectCount > 0  {
                     if let selectedIndex = dataModel.firstSelectedIndex(showCameraCell: showCameraCell) {
                         dataModel.toggleSelected(indexPath: selectedIndex, showCameraCell: showCameraCell, false)
                         if let selected = dataModel.toggleSelected(indexPath: indexPath, showCameraCell: showCameraCell, true) {
@@ -424,7 +441,7 @@ final class MPViewController: UIViewController {
                         toggleCellSelection(at: indexPath)
                     }
                 } else {
-                    guard canSelectMedia(item, currentSelectCount: currentSelectCount) else { return }
+                    guard canSelectMedia(item, currentSelectCount: currentSelectCount, generalConfig: generalConfig) else { return }
                     if let selected = dataModel.toggleSelected(indexPath: indexPath, showCameraCell: showCameraCell, true) {
                         selectedModels.append(selected)
                     }
@@ -495,7 +512,7 @@ final class MPViewController: UIViewController {
                 panSelectType = dataModel.item(indexPath, showCameraCell: showCameraCell).isSelected ? .cancel : .select
                 
                 if !dataModel.item(indexPath, showCameraCell: showCameraCell).isSelected {
-                    if !canSelectMedia(dataModel.item(indexPath, showCameraCell: showCameraCell), currentSelectCount: selectedModels.count) {
+                    if !canSelectMedia(dataModel.item(indexPath, showCameraCell: showCameraCell), currentSelectCount: selectedModels.count, generalConfig: generalConfig) {
                         panSelectType = .none
                         return
                     }
@@ -529,7 +546,7 @@ final class MPViewController: UIViewController {
                 
                 if strongSelf.panSelectType == .select {
                     if !item.isSelected,
-                       canSelectMedia(item, currentSelectCount: strongSelf.selectedModels.count) {
+                       canSelectMedia(item, currentSelectCount: strongSelf.selectedModels.count, generalConfig: strongSelf.generalConfig) {
                         strongSelf.dataModel.toggleSelected(indexPath: indexPath, showCameraCell: strongSelf.showCameraCell, true)
                         item.isSelected = true
                     }
@@ -564,7 +581,7 @@ final class MPViewController: UIViewController {
     }
     
     private func autoScrollWhenSlideSelect(_ pan: UIPanGestureRecognizer) {
-        guard selectedModels.count < MPGeneralConfiguration.default().maxMediaSelectCount else {
+        guard selectedModels.count < generalConfig.maxMediaSelectCount else {
             // Stop auto scroll when reach the max select count.
             stopAutoScroll()
             return
@@ -638,7 +655,7 @@ final class MPViewController: UIViewController {
     
     private func refreshCellIndex() {
         refreshCameraCellStatus()
-        guard MPUIConfiguration.default().showCounterOnSelectionButton else { return }
+        guard uiConfig.showCounterOnSelectionButton else { return }
         
         let visibleIndexPaths = collectionView.indexPathsForVisibleItems
         
@@ -667,14 +684,14 @@ final class MPViewController: UIViewController {
         
         for cell in collectionView.visibleCells {
             if let cell = cell.mp.as(MPCameraCell.self) {
-                cell.isEnable = count < MPGeneralConfiguration.default().maxMediaSelectCount
+                cell.isEnable = count < generalConfig.maxMediaSelectCount
                 break
             }
         }
     }
     
     private func setCellIndex(_ cell: MediaPickerCell?, showIndexLabel: Bool, index: Int) {
-        guard MPUIConfiguration.default().showCounterOnSelectionButton, showIndexLabel else {
+        guard uiConfig.showCounterOnSelectionButton, showIndexLabel else {
             return
         }
         cell?.index = index
@@ -701,7 +718,6 @@ final class MPViewController: UIViewController {
     }
     
     private func showCamera() {
-        let config = MPGeneralConfiguration.default()
         if !UIImagePickerController.isSourceTypeAvailable(.camera) {
             showAlertView(Lang.сameraUnavailable)
         } else if MPManager.hasCameraAuthority() {
@@ -713,10 +729,10 @@ final class MPViewController: UIViewController {
             picker.cameraDevice = .rear
             picker.cameraFlashMode = .auto
             var mediaTypes: [String] = []
-            if config.allowImage {
+            if generalConfig.allowImage {
                 mediaTypes.append("public.image")
             }
-            if config.allowVideo {
+            if generalConfig.allowVideo {
                 mediaTypes.append("public.movie")
             }
             picker.mediaTypes = mediaTypes
@@ -764,14 +780,13 @@ final class MPViewController: UIViewController {
     
     private func handleNewAsset(_ model: MPPhotoModel) {
         var mutateModel = model
-        let config = MPGeneralConfiguration.default()
         
-        if config.maxMediaSelectCount > 1 {
-            if selectedModels.count < config.maxMediaSelectCount {
+        if generalConfig.maxMediaSelectCount > 1 {
+            if selectedModels.count < generalConfig.maxMediaSelectCount {
                 mutateModel.isSelected = true
                 selectedModels.append(mutateModel)
             }
-        } else if config.maxMediaSelectCount == 1 {
+        } else if generalConfig.maxMediaSelectCount == 1 {
             mutateModel.isSelected = true
             selectedModels = [mutateModel]
         }
@@ -821,15 +836,24 @@ final class MPViewController: UIViewController {
     }
     
     private func toggleCancelBarItem(isHide: Bool) {
-        navigationItem.setLeftBarButton(isHide ? nil : cancelBarItem, animated: true)
+        if !isHide && navigationItem.leftBarButtonItems == nil {
+            navigationItem.setLeftBarButton(cancelBarItem, animated: true)
+        } else if isHide && navigationItem.leftBarButtonItems?.isEmpty == false {
+            navigationItem.setLeftBarButton(nil, animated: true)
+        }
     }
     
-    private func toggleViewState(with oldValue: Int) {
+    private func processingChangesSelected() {
+        footer.setCounter(selectedModels.count)
+        toggleViewState()
+    }
+    
+    private func toggleViewState() {
         albumListNavView.selectedCounter = selectedModels.count
-        if selectedModels.count == 0 && oldValue > 0 {
+        if selectedModels.count == 0 {
             toggleCancelBarItem(isHide: true)
             albumListNavView.setState(.album)
-        } else if oldValue == 0 && selectedModels.count > 0 {
+        } else if selectedModels.count > 0 {
             toggleCancelBarItem(isHide: false)
             albumListNavView.setState(.segemented)
         }
@@ -845,6 +869,22 @@ final class MPViewController: UIViewController {
             self?.footer.frame.size.height = height + bottomInset
             self?.view.layoutIfNeeded()
         })
+    }
+    
+    private func showAlbumList(sourceView: UIView) {
+        let albumList = MPAlbumListViewController(generalConfig: generalConfig)
+        albumList.preferredContentSize = .init(width: 150, height: 240)
+        albumList.popoverPresentationController?.sourceView = sourceView
+        albumList.popoverPresentationController?.permittedArrowDirections = .up
+        
+        albumList.selectAlbumSubject
+            .assign(to: &$albumModel)
+        
+        albumList.closeSubject
+            .subscribe(albumListNavView.hideMenuHandler)
+            .store(in: &disposeBag)
+        
+        present(albumList, animated: true)
     }
 }
 
@@ -935,12 +975,12 @@ extension MPViewController: UICollectionViewDelegate {
             switch viewState {
             case .all:
                 let (allPhoto, index) = dataModel.extractedMedia(forSelectedIndexPath: indexPath, showCameraCell: showCameraCell)
-                let preview = MediaViewerViewController(referencedView: mediaCell.referencedView, image: mediaCell.referencedImage, model: allPhoto, selectedModels: selectedModels, index: index)
+                let preview = MediaViewerViewController(referencedView: mediaCell.referencedView, image: mediaCell.referencedImage, model: allPhoto, selectedModels: selectedModels, index: index, uiConfig: uiConfig, generalConfig: generalConfig)
                 preview.dataSource = self
                 preview.delegate = self
                 present(preview, animated: true)
             case .selected:
-                let preview = MediaViewerViewController(referencedView: mediaCell.referencedView, image: mediaCell.referencedImage, model: selectedModels, selectedModels: selectedModels, index: indexPath.item)
+                let preview = MediaViewerViewController(referencedView: mediaCell.referencedView, image: mediaCell.referencedImage, model: selectedModels, selectedModels: selectedModels, index: indexPath.item, uiConfig: uiConfig, generalConfig: generalConfig)
                 preview.dataSource = self
                 preview.delegate = self
                 present(preview, animated: true)
@@ -955,7 +995,7 @@ extension MPViewController: UICollectionViewDelegate {
         DispatchQueue.mp.background(background: {
             if self.showCameraCell && indexPath.section == 0 && indexPath.item == 0 { return }
             let model = self.dataModel.item(indexPath, showCameraCell: self.showCameraCell)
-            if MPUIConfiguration.default().showCounterOnSelectionButton, let _index = self.selectedModels.firstIndex(where: { $0 == model }) {
+            if self.uiConfig.showCounterOnSelectionButton, let _index = self.selectedModels.firstIndex(where: { $0 == model }) {
                 index = _index + 1
             }
         }, completion: {
