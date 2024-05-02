@@ -24,52 +24,52 @@
     
 import UIKit
 
-public extension MPGeneralConfiguration {
+extension MPConfigurationMaker {
     @discardableResult
-    mutating func setAllowImage(_ value: Bool) -> MPGeneralConfiguration {
-        allowImage = value
+    public func setAllowImage(_ value: Bool) -> MPConfigurationMakerExtendable {
+        generalConfig.allowImage = value
         return self
     }
     
     @discardableResult
-    mutating func setAllowGif(_ value: Bool) -> MPGeneralConfiguration {
-        allowGif = value
+    public func setAllowGif(_ value: Bool) -> MPConfigurationMakerExtendable {
+        generalConfig.allowGif = value
         return self
     }
     
     @discardableResult
-    mutating func setAllowVideo(_ value: Bool) -> MPGeneralConfiguration {
-        allowVideo = value
+    public func setAllowVideo(_ value: Bool) -> MPConfigurationMakerExtendable {
+        generalConfig.allowVideo = value
         return self
     }
     
     @discardableResult
-    mutating func setAllowLivePhoto(_ value: Bool) -> MPGeneralConfiguration {
-        allowLivePhoto = value
+    public func setAllowLivePhoto(_ value: Bool) -> MPConfigurationMakerExtendable {
+        generalConfig.allowLivePhoto = value
         return self
     }
     
     @discardableResult
-    mutating func setMaxMediaSelectCount(_ value: Int) -> MPGeneralConfiguration {
-        maxMediaSelectCount = value
+    public func setMaxMediaSelectCount(_ value: Int) -> MPConfigurationMakerExtendable {
+        generalConfig.maxMediaSelectCount = value
         return self
     }
     
     @discardableResult
-    mutating func setBundleLangsDeploy(_ value: Bundle) -> MPGeneralConfiguration {
-        bundleLangsDeploy = value
+    public func setBundleLangsDeploy(_ value: Bundle) -> MPConfigurationMakerExtendable {
+        generalConfig.bundleLangsDeploy = value
         return self
     }
     
     @discardableResult
-    mutating func setKeysLangsDeploy(_ value: [String: String]) -> MPGeneralConfiguration {
-        keysLangsDeploy = value
+    public func setKeysLangsDeploy(_ value: [String: String]) -> MPConfigurationMakerExtendable {
+        generalConfig.keysLangsDeploy = value
         return self
     }
     
     @discardableResult
-    mutating func setStringCatalogType(_ value: MPGeneralConfiguration.StringCatalogType) -> MPGeneralConfiguration {
-        stringCatalogType = value
+    public func setStringCatalogType(_ value: MPGeneralConfiguration.StringCatalogType) -> MPConfigurationMakerExtendable {
+        generalConfig.stringCatalogType = value
         return self
     }
 }

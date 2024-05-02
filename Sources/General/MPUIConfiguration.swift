@@ -24,7 +24,7 @@
     
 import UIKit
 
-public struct MPUIConfiguration {
+public final class MPUIConfiguration {
     private init() { }
     
     public static func `default`() -> MPUIConfiguration {

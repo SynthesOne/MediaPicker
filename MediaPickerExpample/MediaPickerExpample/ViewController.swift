@@ -57,24 +57,19 @@ final class ViewController: UIViewController {
         
         let formatter = ByteCountFormatter()
         mp?.showMediaPicker(
-            uiConfiguration: { [weak self] (uiConfig) in
-                guard let strongSelf = self else { return }
-                uiConfig = strongSelf.uiConfig
+            configuration: { [weak self] (config) in
+                guard let strongSelf = self else { return MPConfigurationMaker.default }
+                return MPConfigurationMaker(uiConfig: strongSelf.uiConfig, generalConfig: strongSelf.generalConfig)
                 //---- or ----
-                //uiConfig
+                //return config
                 //    .setShowCameraCell(false)
-            },
-            generalConfiguration: { [weak self] (generalConfig) in
-                guard let strongSelf = self else { return }
-                generalConfig = strongSelf.generalConfig
-                //---- or ----
-                //generalConfig
+                //    .setPrimaryBackgroundColor(.black)
                 //    .setBundleLangsDeploy(.main)
                 //    .setKeysLangsDeploy([
                 //        "MPAttach": "MPAttach",
                 //        "MPCancelButton": "MPCancelButton"
                 //    ])
-                //    .maxMediaSelectCount(1)
+                //    .setMaxMediaSelectCount(1)
             },
             selectedResult: { [weak self] (result) in
             guard let strongSelf = self else { return }

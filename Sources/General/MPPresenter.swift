@@ -30,8 +30,9 @@ public final class MPPresenter: NSObject {
     private var preSelectedResults: [MPPhotoModel]
     private var selectedResult: (([MPResultModel]) -> ())? = nil
     private var preSelectedResult: (([MPPhotoModel]) -> ())? = nil
-    private var uiConfig: MPUIConfiguration = .default()
-    private var generalConfig: MPGeneralConfiguration = .default()
+    private var config: MPConfigurationMakerExtendable = MPConfigurationMaker()
+    //private var uiConfig: MPUIConfiguration = .default()
+    //private var generalConfig: MPGeneralConfiguration = .default()
     
     private let fetchImageQueue: OperationQueue = {
         let queue = OperationQueue()
@@ -51,17 +52,18 @@ public final class MPPresenter: NSObject {
     }
     
     public func showMediaPicker(
-        uiConfiguration: ((inout MPUIConfiguration) -> ())? = nil,
-        generalConfiguration: ((inout MPGeneralConfiguration) -> ())? = nil,
+        configuration: ((MPConfigurationMakerExtendable) -> (MPConfigurationMakerExtendable))? = nil,
         selectedResult: @escaping ([MPResultModel]) -> (),
         customPresentationStyle: ((UINavigationController) -> ())? = nil
     ) {
         self.selectedResult = selectedResult
+        if let newConfig = configuration?(config) {
+            config = newConfig
+        }
+        //uiConfiguration?(&uiConfig)
+        //generalConfiguration?(&generalConfig)
         
-        uiConfiguration?(&uiConfig)
-        generalConfiguration?(&generalConfig)
-        
-        Lang.generalConfig = generalConfig
+        Lang.generalConfig = config.generalConfig
         
         let status = PHPhotoLibrary.authorizationStatus()
         if status == .restricted || status == .denied {
@@ -95,10 +97,10 @@ public final class MPPresenter: NSObject {
     }
     
     private func showLibraryMP(customPresentationStyle: ((MPNavigationViewController) -> ())? = nil) {
-        MPManager.getCameraRollAlbum(generalConfig: generalConfig, limitCount: 20, completion: { (album) in
-            let gallery = MPViewController(albumModel: album, selectedResults: self.preSelectedResults, uiConfig: self.uiConfig, generalConfig: self.generalConfig)
+        MPManager.getCameraRollAlbum(generalConfig: config.generalConfig, limitCount: 20, completion: { (album) in
+            let gallery = MPViewController(albumModel: album, selectedResults: self.preSelectedResults, uiConfig: self.config.uiConfig, generalConfig: self.config.generalConfig)
             gallery.preSelectedResult = self.preSelectedResult
-            let navWrapper = MPNavigationViewController(rootViewController: gallery, uiConfig: self.uiConfig)
+            let navWrapper = MPNavigationViewController(rootViewController: gallery, uiConfig: self.config.uiConfig)
             
             if let customPresentationStyle {
                 customPresentationStyle(navWrapper)
@@ -136,7 +138,7 @@ public final class MPPresenter: NSObject {
             let totalCount = selectedModels.count
             
             for (i, m) in selectedModels.enumerated() {
-                let operation = MPFetchImageOperation(model: m, generalConfig: strongSelf.generalConfig) { (image) in
+                let operation = MPFetchImageOperation(model: m, generalConfig: strongSelf.config.generalConfig) { (image) in
                     sucCount += 1
                     
                     if let image {

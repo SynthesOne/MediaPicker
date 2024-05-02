@@ -24,7 +24,7 @@
     
 import UIKit
 
-public struct MPGeneralConfiguration {
+public final class MPGeneralConfiguration {
     public enum StringCatalogType {
         case xcstrings, lproj
     }

@@ -24,40 +24,40 @@
 
 import UIKit
 
-public extension MPUIConfiguration {
+extension MPConfigurationMaker {
     @discardableResult
-    mutating func setShowCounterOnSelectionButton(_ value: Bool) -> MPUIConfiguration {
-        showCounterOnSelectionButton = value
+    public func setShowCounterOnSelectionButton(_ value: Bool) -> MPConfigurationMakerExtendable {
+        uiConfig.showCounterOnSelectionButton = value
         return self
     }
     
     @discardableResult
-    mutating func setSelectionButtonCornersStyle(_ value: MPCheckboxStyle) -> MPUIConfiguration {
-        selectionButtonCornersStyle = value
+    public func setSelectionButtonCornersStyle(_ value: MPCheckboxStyle) -> MPConfigurationMakerExtendable {
+        uiConfig.selectionButtonCornersStyle = value
         return self
     }
     
     @discardableResult
-    mutating func setSelectionButtonColorStyle(_ value: MPCheckboxColor) -> MPUIConfiguration {
-        selectionButtonColorStyle = value
+    public func setSelectionButtonColorStyle(_ value: MPCheckboxColor) -> MPConfigurationMakerExtendable {
+        uiConfig.selectionButtonColorStyle = value
         return self
     }
     
     @discardableResult
-    mutating func setNavigationAppearance(_ value: MPNavigationAppearance) -> MPUIConfiguration {
-        navigationAppearance = value
+    public func setNavigationAppearance(_ value: MPNavigationAppearance) -> MPConfigurationMakerExtendable {
+        uiConfig.navigationAppearance = value
         return self
     }
     
     @discardableResult
-    mutating func setPrimaryBackgroundColor(_ value: UIColor) -> MPUIConfiguration {
-        primaryBackgroundColor = value
+    public func setPrimaryBackgroundColor(_ value: UIColor) -> MPConfigurationMakerExtendable {
+        uiConfig.primaryBackgroundColor = value
         return self
     }
     
     @discardableResult
-    mutating func setShowCameraCell(_ value: Bool) -> MPUIConfiguration {
-        showCameraCell = value
+    public func setShowCameraCell(_ value: Bool) -> MPConfigurationMakerExtendable {
+        uiConfig.showCameraCell = value
         return self
     }
 }
