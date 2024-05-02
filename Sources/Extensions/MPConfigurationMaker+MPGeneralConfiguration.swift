@@ -72,4 +72,10 @@ extension MPConfigurationMaker {
         generalConfig.stringCatalogType = value
         return self
     }
+    
+    @discardableResult
+    public func setGeneralConfiguration(_ value: MPGeneralConfiguration) -> MPConfigurationMakerExtendable {
+        generalConfig = value
+        return self
+    }
 }

@@ -31,6 +31,7 @@ public protocol MPUIConfigMakerExtendable: NSObjectProtocol {
     func setNavigationAppearance(_ value: MPNavigationAppearance) -> MPConfigurationMakerExtendable
     func setPrimaryBackgroundColor(_ value: UIColor) -> MPConfigurationMakerExtendable
     func setShowCameraCell(_ value: Bool) -> MPConfigurationMakerExtendable
+    func setUIConfiguration(_ value: MPUIConfiguration) -> MPConfigurationMakerExtendable
 }
 
 public protocol MPGeneralConfigMakerExtendable: NSObjectProtocol {
@@ -42,13 +43,13 @@ public protocol MPGeneralConfigMakerExtendable: NSObjectProtocol {
     func setBundleLangsDeploy(_ value: Bundle) -> MPConfigurationMakerExtendable
     func setKeysLangsDeploy(_ value: [String: String]) -> MPConfigurationMakerExtendable
     func setStringCatalogType(_ value: MPGeneralConfiguration.StringCatalogType) -> MPConfigurationMakerExtendable
+    func setGeneralConfiguration(_ value: MPGeneralConfiguration) -> MPConfigurationMakerExtendable
 }
 
 public protocol MPConfigurationMakerExtendable: MPUIConfigMakerExtendable, MPGeneralConfigMakerExtendable {
     var uiConfig: MPUIConfiguration { get }
     var generalConfig: MPGeneralConfiguration { get }
     static var `default`: MPConfigurationMakerExtendable { get }
-    init(uiConfig: MPUIConfiguration, generalConfig: MPGeneralConfiguration)
 }
 
 public final class MPConfigurationMaker: NSObject, MPConfigurationMakerExtendable {
@@ -61,11 +62,5 @@ public final class MPConfigurationMaker: NSObject, MPConfigurationMakerExtendabl
     
     override init() {
         super.init()
-    }
-    
-    public convenience init(uiConfig: MPUIConfiguration, generalConfig: MPGeneralConfiguration) {
-        self.init()
-        self.uiConfig = uiConfig
-        self.generalConfig = generalConfig
     }
 }

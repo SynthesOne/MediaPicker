@@ -60,4 +60,10 @@ extension MPConfigurationMaker {
         uiConfig.showCameraCell = value
         return self
     }
+    
+    @discardableResult
+    public func setUIConfiguration(_ value: MPUIConfiguration) -> MPConfigurationMakerExtendable {
+        uiConfig = value
+        return self
+    }
 }

@@ -59,7 +59,9 @@ final class ViewController: UIViewController {
         mp?.showMediaPicker(
             configuration: { [weak self] (config) in
                 guard let strongSelf = self else { return MPConfigurationMaker.default }
-                return MPConfigurationMaker(uiConfig: strongSelf.uiConfig, generalConfig: strongSelf.generalConfig)
+                return config
+                    .setUIConfiguration(strongSelf.uiConfig)
+                    .setGeneralConfiguration(strongSelf.generalConfig)
                 //---- or ----
                 //return config
                 //    .setShowCameraCell(false)
