@@ -97,6 +97,8 @@ final class MPViewController: UIViewController {
     private var didAttemptToDismissWasCall = false
     
     private var allowDragAndDrop = false
+    private var lastContentOffset: CGPoint = .zero
+    private var lastViewHeight: CGFloat = .zero
     
     private let uiConfig: MPUIConfiguration
     private let generalConfig: MPGeneralConfiguration
@@ -167,6 +169,7 @@ final class MPViewController: UIViewController {
         albumListNavView.setMenuTitle(albumModel.title)
     }
     
+    // MARK: - Bind
     private func bind() {
         $albumModel
             .removeDuplicates()
@@ -243,12 +246,21 @@ final class MPViewController: UIViewController {
             .store(in: &disposeBag)
         
         $viewState
+            .dropFirst()
             .receive(on: DispatchQueue.main)
             .sink(receiveValue: { [weak self] (newState) in
                 guard let strongSelf = self else { return }
                 strongSelf.allowDragAndDrop = newState == .selected
+                if newState == .selected {
+                    strongSelf.lastContentOffset = strongSelf.collectionView.contentOffset
+                    strongSelf.lastViewHeight = strongSelf.collectionView.frame.size.height
+                }
                 strongSelf.reloadData() {
                     self?.refreshCellIndex()
+                }
+                
+                if newState == .all {
+                    strongSelf.scrollToLastContentOffset()
                 }
             })
             .store(in: &disposeBag)
@@ -886,6 +898,14 @@ final class MPViewController: UIViewController {
         
         present(albumList, animated: true)
     }
+    
+    private func scrollToLastContentOffset() {
+        var finalContentOffset = lastContentOffset
+        if lastViewHeight > collectionView.frame.size.height || lastViewHeight < collectionView.frame.size.height {
+            finalContentOffset = .init(x: 0, y: lastContentOffset.y + ((lastViewHeight - collectionView.frame.size.height) / 2) + 7)
+        } 
+        collectionView.setContentOffset(finalContentOffset, animated: false)
+    }
 }
 
 // MARK: - MediaPickerCellDelegate
@@ -1188,6 +1208,11 @@ extension MPViewController: MediaPreviewControllerDelegate {
 
 // MARK: - UISheetPresentationControllerDelegate
 extension MPViewController: UISheetPresentationControllerDelegate {
+    func sheetPresentationControllerDidChangeSelectedDetentIdentifier(_ sheetPresentationController: UISheetPresentationController) {
+        debugPrint("sheetPresentationController view frame \(view.frame)")
+        debugPrint("sheetPresentationController view bounds \(view.bounds)")
+    }
+    
     func presentationControllerShouldDismiss(_ presentationController: UIPresentationController) -> Bool {
         selectedModels.isEmpty
         //if selectedModels.isEmpty {

@@ -226,7 +226,7 @@ final class MPCheckboxButton: MPControl {
             checkMarkLayer.lineJoin = .round
             checkMarkLayer.fillColor = .none
             checkMarkLayer.removeFromSuperlayer()
-            outerLayer.insertSublayer(checkMarkLayer, at: 0)
+            backgroundLayer.insertSublayer(checkMarkLayer, at: 0)
         } else {
             counterLabel.frame = bounds
             bringSubviewToFront(counterLabel)
@@ -238,8 +238,14 @@ final class MPCheckboxButton: MPControl {
     private func updateActiveLayer(isAnimate: Bool) {
         if let activeBorderColor = _checkBoxColor.activeBorderColor {
             outerLayer.strokeColor = activeBorderColor.resolvedColor(with: traitCollection).cgColor
+            if activeBorderColor == _checkBoxColor.activeColor {
+                outerLayer.shadowColor = UIColor.clear.cgColor
+            } else {
+                outerLayer.shadowColor = UIColor.black.cgColor
+            }
         } else {
             outerLayer.strokeColor = _checkBoxColor.activeColor.resolvedColor(with: traitCollection).cgColor
+            outerLayer.shadowColor = UIColor.clear.cgColor
         }
         backgroundLayer.fillColor = _checkBoxColor.activeColor.resolvedColor(with: traitCollection).cgColor
         if !isAnimate {
@@ -269,6 +275,7 @@ final class MPCheckboxButton: MPControl {
     /// Update inactive layer apply animation
     private func updateInactiveLayer(isAnimate: Bool) {
         outerLayer.strokeColor = _checkBoxColor.inactiveBorderColor.resolvedColor(with: traitCollection).cgColor
+        outerLayer.shadowColor = UIColor.black.cgColor
         if !isAnimate {
             CATransaction.begin()
             CATransaction.setDisableActions(true)
