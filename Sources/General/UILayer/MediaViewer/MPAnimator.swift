@@ -31,6 +31,18 @@ protocol MPViewerBaseAnimator: UIViewControllerAnimatedTransitioning {
     var dismissingDuration: TimeInterval { get set }
 }
 
+protocol MPViewControllerAnimatable: AnyObject {
+    var imageView: MPImageView { get }
+    var referencedView: UIView? { get set }
+    
+    func presentingAnimation()
+    func presentationAnimationDidFinish()
+    
+    func dismissingAnimation()
+    func dismissalAnimationDidFinish()
+    
+}
+
 final class MPAnimator: NSObject, MPViewerBaseAnimator {
 
     /// Preseting transition duration
@@ -59,7 +71,7 @@ final class MPAnimator: NSObject, MPViewerBaseAnimator {
         let animator: UIViewPropertyAnimator
 
         if isPresenting {
-            guard let photoViewerController = toViewController.mp.as(MediaViewerViewController.self) else {
+            guard let animatableVC = toViewController as? MPViewControllerAnimatable else {
                 fatalError("view controller does not conform DTPhotoViewer")
             }
 
@@ -68,16 +80,16 @@ final class MPAnimator: NSObject, MPViewerBaseAnimator {
 
             containerView.addSubview(toView)
 
-            if let referencedView = photoViewerController.referencedView {
-                photoViewerController.imageView.layer.cornerRadius = referencedView.layer.cornerRadius
-                photoViewerController.imageView.layer.masksToBounds = referencedView.layer.masksToBounds
-                photoViewerController.imageView.backgroundColor = referencedView.backgroundColor
+            if let referencedView = animatableVC.referencedView {
+                animatableVC.imageView.layer.cornerRadius = referencedView.layer.cornerRadius
+                animatableVC.imageView.layer.masksToBounds = referencedView.layer.masksToBounds
+                animatableVC.imageView.backgroundColor = referencedView.backgroundColor
             }
 
             let animation = {
-                photoViewerController.presentingAnimation()
-                photoViewerController.imageView.mp.setRadius(0)
-                photoViewerController.imageView.backgroundColor = .clear
+                animatableVC.presentingAnimation()
+                animatableVC.imageView.mp.setRadius(0)
+                animatableVC.imageView.backgroundColor = .clear
             }
 
             animator = UIViewPropertyAnimator(duration: duration, dampingRatio: dampingRatio, animations: animation)
@@ -87,7 +99,7 @@ final class MPAnimator: NSObject, MPViewerBaseAnimator {
                 transitionContext.completeTransition(!isCancelled)
 
                 if !isCancelled {
-                    photoViewerController.presentationAnimationDidFinish()
+                    animatableVC.presentationAnimationDidFinish()
                 }
 
                 // View controller appearance status
@@ -96,7 +108,7 @@ final class MPAnimator: NSObject, MPViewerBaseAnimator {
             }
 
             // Layer animation
-            if let referencedView = photoViewerController.referencedView {
+            if let referencedView = animatableVC.referencedView {
                 let animationGroup = CAAnimationGroup()
                 animationGroup.timingFunction = CAMediaTimingFunction(name: .easeIn)
                 animationGroup.duration = presentingDuration
@@ -106,30 +118,30 @@ final class MPAnimator: NSObject, MPViewerBaseAnimator {
                 let borderColorAnimation = CABasicAnimation(keyPath: "borderColor")
                 borderColorAnimation.fromValue = referencedView.layer.borderColor
                 borderColorAnimation.toValue = UIColor.clear.cgColor
-                photoViewerController.imageView.layer.borderColor = UIColor.clear.cgColor
+                animatableVC.imageView.layer.borderColor = UIColor.clear.cgColor
 
                 // Border width
                 let borderWidthAnimation = CABasicAnimation(keyPath: "borderWidth")
                 borderWidthAnimation.fromValue = referencedView.layer.borderWidth
                 borderWidthAnimation.toValue = 0
-                photoViewerController.imageView.layer.borderWidth = referencedView.layer.borderWidth
+                animatableVC.imageView.layer.borderWidth = referencedView.layer.borderWidth
 
                 animationGroup.animations = [borderColorAnimation, borderWidthAnimation]
-                photoViewerController.imageView.layer.add(animationGroup, forKey: nil)
+                animatableVC.imageView.layer.add(animationGroup, forKey: nil)
             }
         } else {
-            guard let photoViewerController = fromViewController.mp.as(MediaViewerViewController.self) else {
+            guard let animatableVC = fromViewController as? MPViewControllerAnimatable else {
                 fatalError("view controller does not conform DTPhotoViewer")
             }
 
-            photoViewerController.imageView.backgroundColor = .clear
+            animatableVC.imageView.backgroundColor = .clear
 
             let animation = {
-                photoViewerController.dismissingAnimation()
+                animatableVC.dismissingAnimation()
 
-                if let referencedView = photoViewerController.referencedView {
-                    photoViewerController.imageView.layer.cornerRadius = referencedView.layer.cornerRadius
-                    photoViewerController.imageView.backgroundColor = referencedView.backgroundColor
+                if let referencedView = animatableVC.referencedView {
+                    animatableVC.imageView.layer.cornerRadius = referencedView.layer.cornerRadius
+                    animatableVC.imageView.backgroundColor = referencedView.backgroundColor
                 }
             }
 
@@ -140,7 +152,7 @@ final class MPAnimator: NSObject, MPViewerBaseAnimator {
                 transitionContext.completeTransition(!isCancelled)
 
                 if !isCancelled {
-                    photoViewerController.dismissalAnimationDidFinish()
+                    animatableVC.dismissalAnimationDidFinish()
                 }
 
                 // View controller appearance status
@@ -149,7 +161,7 @@ final class MPAnimator: NSObject, MPViewerBaseAnimator {
             }
 
             // Layer animation
-            if let referencedView = photoViewerController.referencedView {
+            if let referencedView = animatableVC.referencedView {
                 let animationGroup = CAAnimationGroup()
                 animationGroup.timingFunction = CAMediaTimingFunction(name: .easeIn)
                 animationGroup.duration = presentingDuration
@@ -159,16 +171,16 @@ final class MPAnimator: NSObject, MPViewerBaseAnimator {
                 let borderColorAnimation = CABasicAnimation(keyPath: "borderColor")
                 borderColorAnimation.fromValue = UIColor.clear.cgColor
                 borderColorAnimation.toValue = referencedView.layer.borderColor
-                photoViewerController.imageView.layer.borderColor = referencedView.layer.borderColor
+                animatableVC.imageView.layer.borderColor = referencedView.layer.borderColor
 
                 // Border width
                 let borderWidthAnimation = CABasicAnimation(keyPath: "borderWidth")
                 borderWidthAnimation.fromValue = 0
                 borderWidthAnimation.toValue = referencedView.layer.borderWidth
-                photoViewerController.imageView.layer.borderWidth = referencedView.layer.borderWidth
+                animatableVC.imageView.layer.borderWidth = referencedView.layer.borderWidth
 
                 animationGroup.animations = [borderColorAnimation, borderWidthAnimation]
-                photoViewerController.imageView.layer.add(animationGroup, forKey: nil)
+                animatableVC.imageView.layer.add(animationGroup, forKey: nil)
             }
         }
 

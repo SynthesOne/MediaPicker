@@ -25,35 +25,35 @@
 import UIKit
 
 public protocol MPUIConfigMakerExtendable: NSObjectProtocol {
-    func setShowCounterOnSelectionButton(_ value: Bool) -> MPConfigurationMakerExtendable
-    func setSelectionButtonCornersStyle(_ value: MPCheckboxStyle) -> MPConfigurationMakerExtendable
-    func setSelectionButtonColorStyle(_ value: MPCheckboxColor) -> MPConfigurationMakerExtendable
-    func setNavigationAppearance(_ value: MPNavigationAppearance) -> MPConfigurationMakerExtendable
-    func setPrimaryBackgroundColor(_ value: UIColor) -> MPConfigurationMakerExtendable
-    func setShowCameraCell(_ value: Bool) -> MPConfigurationMakerExtendable
-    func setUIConfiguration(_ value: MPUIConfiguration) -> MPConfigurationMakerExtendable
+    func setShowCounterOnSelectionButton(_ value: Bool) -> Self
+    func setSelectionButtonCornersStyle(_ value: MPCheckboxStyle) -> Self
+    func setSelectionButtonColorStyle(_ value: MPCheckboxColor) -> Self
+    func setNavigationAppearance(_ value: MPNavigationAppearance) -> Self
+    func setPrimaryBackgroundColor(_ value: UIColor) -> Self
+    func setShowCameraCell(_ value: Bool) -> Self
+    func setUIConfiguration(_ value: MPUIConfiguration) -> Self
 }
 
 public protocol MPGeneralConfigMakerExtendable: NSObjectProtocol {
-    func setAllowImage(_ value: Bool) -> MPConfigurationMakerExtendable
-    func setAllowGif(_ value: Bool) -> MPConfigurationMakerExtendable
-    func setAllowVideo(_ value: Bool) -> MPConfigurationMakerExtendable
-    func setAllowLivePhoto(_ value: Bool) -> MPConfigurationMakerExtendable
-    func setMaxMediaSelectCount(_ value: Int) -> MPConfigurationMakerExtendable
-    func setBundleLangsDeploy(_ value: Bundle) -> MPConfigurationMakerExtendable
-    func setKeysLangsDeploy(_ value: [String: String]) -> MPConfigurationMakerExtendable
-    func setStringCatalogType(_ value: MPGeneralConfiguration.StringCatalogType) -> MPConfigurationMakerExtendable
-    func setGeneralConfiguration(_ value: MPGeneralConfiguration) -> MPConfigurationMakerExtendable
+    func setAllowImage(_ value: Bool) -> Self
+    func setAllowGif(_ value: Bool) -> Self
+    func setAllowVideo(_ value: Bool) -> Self
+    func setAllowLivePhoto(_ value: Bool) -> Self
+    func setMaxMediaSelectCount(_ value: Int) -> Self
+    func setBundleLangsDeploy(_ value: Bundle) -> Self
+    func setKeysLangsDeploy(_ value: [String: String]) -> Self
+    func setStringCatalogType(_ value: MPGeneralConfiguration.StringCatalogType) -> Self
+    func setGeneralConfiguration(_ value: MPGeneralConfiguration) -> Self
 }
 
 public protocol MPConfigurationMakerExtendable: MPUIConfigMakerExtendable, MPGeneralConfigMakerExtendable {
     var uiConfig: MPUIConfiguration { get }
     var generalConfig: MPGeneralConfiguration { get }
-    static var `default`: MPConfigurationMakerExtendable { get }
+    static var `default`: Self { get }
 }
 
 public final class MPConfigurationMaker: NSObject, MPConfigurationMakerExtendable {
-    public static var `default`: MPConfigurationMakerExtendable {
+    public static var `default`: MPConfigurationMaker {
         self.init()
     }
     

@@ -49,9 +49,9 @@ final class MPCameraCell: CollectionViewCell {
     
     private var photoOutput: AVCapturePhotoOutput?
     
-    private var previewLayer: AVCaptureVideoPreviewLayer?
-    
     private var videoOutput: AVCaptureVideoDataOutput?
+    
+    private var previewLayer: AVCaptureVideoPreviewLayer?
     
     var processSampleBuffer: ((CMSampleBuffer, CVImageBuffer, AVCaptureConnection) -> Void)?
     
@@ -148,7 +148,7 @@ final class MPCameraCell: CollectionViewCell {
         previewLayer?.videoGravity = .resizeAspectFill
         contentView.layer.insertSublayer(previewLayer!, at: 0)
         
-        DispatchQueue.mp.background(qos: .userInitiated, background: { [weak self] in
+        DispatchQueue.mp.background(qos: .background, background: { [weak self] in
             self?.session?.startRunning()
         }, completion: { [weak self] in
             self?.backgroundThumgnail.mp.setIsHidden(true, duration: 0.3)

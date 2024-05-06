@@ -30,7 +30,7 @@ public final class MPPresenter: NSObject {
     private var preSelectedResults: [MPPhotoModel]
     private var selectedResult: (([MPResultModel]) -> ())? = nil
     private var preSelectedResult: (([MPPhotoModel]) -> ())? = nil
-    private var config: MPConfigurationMakerExtendable = MPConfigurationMaker()
+    private var config = MPConfigurationMaker()
     //private var uiConfig: MPUIConfiguration = .default()
     //private var generalConfig: MPGeneralConfiguration = .default()
     
@@ -52,7 +52,7 @@ public final class MPPresenter: NSObject {
     }
     
     public func showMediaPicker(
-        configuration: ((MPConfigurationMakerExtendable) -> (MPConfigurationMakerExtendable))? = nil,
+        configuration: ((MPConfigurationMaker) -> (MPConfigurationMaker))? = nil,
         selectedResult: @escaping ([MPResultModel]) -> (),
         customPresentationStyle: ((UINavigationController) -> ())? = nil
     ) {

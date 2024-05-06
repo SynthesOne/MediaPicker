@@ -44,7 +44,7 @@ extension MediaPreviewControllerDelegate {
     func toggleSelected(forModel model: MPPhotoModel) {}
 }
 
-final class MediaViewerViewController: UIViewController {
+final class MediaViewerViewController: UIViewController, MPViewControllerAnimatable {
     /// Indicates status bar animation style when changing hidden status
     /// Default value if UIStatusBarStyle.fade
     var statusBarAnimationStyle: UIStatusBarAnimation = .fade
@@ -70,7 +70,7 @@ final class MediaViewerViewController: UIViewController {
 
     /// The view where photo viewer originally animates from.
     /// Provide this correctly so that you can have a nice effect.
-    weak private(set) var referencedView: UIView? {
+    weak var referencedView: UIView? {
         didSet {
             // Unhide old referenced view and hide the new one
             if oldValue !== referencedView {

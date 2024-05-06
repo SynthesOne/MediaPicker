@@ -26,43 +26,43 @@ import UIKit
 
 extension MPConfigurationMaker {
     @discardableResult
-    public func setShowCounterOnSelectionButton(_ value: Bool) -> MPConfigurationMakerExtendable {
+    public func setShowCounterOnSelectionButton(_ value: Bool) -> Self {
         uiConfig.showCounterOnSelectionButton = value
         return self
     }
     
     @discardableResult
-    public func setSelectionButtonCornersStyle(_ value: MPCheckboxStyle) -> MPConfigurationMakerExtendable {
+    public func setSelectionButtonCornersStyle(_ value: MPCheckboxStyle) -> Self {
         uiConfig.selectionButtonCornersStyle = value
         return self
     }
     
     @discardableResult
-    public func setSelectionButtonColorStyle(_ value: MPCheckboxColor) -> MPConfigurationMakerExtendable {
+    public func setSelectionButtonColorStyle(_ value: MPCheckboxColor) -> Self {
         uiConfig.selectionButtonColorStyle = value
         return self
     }
     
     @discardableResult
-    public func setNavigationAppearance(_ value: MPNavigationAppearance) -> MPConfigurationMakerExtendable {
+    public func setNavigationAppearance(_ value: MPNavigationAppearance) -> Self {
         uiConfig.navigationAppearance = value
         return self
     }
     
     @discardableResult
-    public func setPrimaryBackgroundColor(_ value: UIColor) -> MPConfigurationMakerExtendable {
+    public func setPrimaryBackgroundColor(_ value: UIColor) -> Self {
         uiConfig.primaryBackgroundColor = value
         return self
     }
     
     @discardableResult
-    public func setShowCameraCell(_ value: Bool) -> MPConfigurationMakerExtendable {
+    public func setShowCameraCell(_ value: Bool) -> Self {
         uiConfig.showCameraCell = value
         return self
     }
     
     @discardableResult
-    public func setUIConfiguration(_ value: MPUIConfiguration) -> MPConfigurationMakerExtendable {
+    public func setUIConfiguration(_ value: MPUIConfiguration) -> Self {
         uiConfig = value
         return self
     }

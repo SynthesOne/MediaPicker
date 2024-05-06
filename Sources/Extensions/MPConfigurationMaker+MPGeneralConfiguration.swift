@@ -26,55 +26,55 @@ import UIKit
 
 extension MPConfigurationMaker {
     @discardableResult
-    public func setAllowImage(_ value: Bool) -> MPConfigurationMakerExtendable {
+    public func setAllowImage(_ value: Bool) -> Self {
         generalConfig.allowImage = value
         return self
     }
     
     @discardableResult
-    public func setAllowGif(_ value: Bool) -> MPConfigurationMakerExtendable {
+    public func setAllowGif(_ value: Bool) -> Self {
         generalConfig.allowGif = value
         return self
     }
     
     @discardableResult
-    public func setAllowVideo(_ value: Bool) -> MPConfigurationMakerExtendable {
+    public func setAllowVideo(_ value: Bool) -> Self {
         generalConfig.allowVideo = value
         return self
     }
     
     @discardableResult
-    public func setAllowLivePhoto(_ value: Bool) -> MPConfigurationMakerExtendable {
+    public func setAllowLivePhoto(_ value: Bool) -> Self {
         generalConfig.allowLivePhoto = value
         return self
     }
     
     @discardableResult
-    public func setMaxMediaSelectCount(_ value: Int) -> MPConfigurationMakerExtendable {
+    public func setMaxMediaSelectCount(_ value: Int) -> Self {
         generalConfig.maxMediaSelectCount = value
         return self
     }
     
     @discardableResult
-    public func setBundleLangsDeploy(_ value: Bundle) -> MPConfigurationMakerExtendable {
+    public func setBundleLangsDeploy(_ value: Bundle) -> Self {
         generalConfig.bundleLangsDeploy = value
         return self
     }
     
     @discardableResult
-    public func setKeysLangsDeploy(_ value: [String: String]) -> MPConfigurationMakerExtendable {
+    public func setKeysLangsDeploy(_ value: [String: String]) -> Self {
         generalConfig.keysLangsDeploy = value
         return self
     }
     
     @discardableResult
-    public func setStringCatalogType(_ value: MPGeneralConfiguration.StringCatalogType) -> MPConfigurationMakerExtendable {
+    public func setStringCatalogType(_ value: MPGeneralConfiguration.StringCatalogType) -> Self {
         generalConfig.stringCatalogType = value
         return self
     }
     
     @discardableResult
-    public func setGeneralConfiguration(_ value: MPGeneralConfiguration) -> MPConfigurationMakerExtendable {
+    public func setGeneralConfiguration(_ value: MPGeneralConfiguration) -> Self {
         generalConfig = value
         return self
     }

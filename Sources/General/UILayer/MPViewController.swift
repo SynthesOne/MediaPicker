@@ -94,8 +94,6 @@ final class MPViewController: UIViewController {
     
     private var wasCreateSnapshot: Bool = false
     
-    private var didAttemptToDismissWasCall = false
-    
     private var allowDragAndDrop = false
     private var lastContentOffset: CGPoint = .zero
     private var lastViewHeight: CGFloat = .zero
@@ -1088,18 +1086,6 @@ extension MPViewController: UICollectionViewDropDelegate {
         previewParameters.backgroundColor = .clear
         return previewParameters
     }
-    
-    func collectionView(_ collectionView: UICollectionView, dropSessionDidEnd session: any UIDropSession) {
-        debugPrint("collectionView dropSessionDidEnd")
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, dropSessionDidExit session: any UIDropSession) {
-        debugPrint("collectionView dropSessionDidExit")
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, dropSessionDidEnter session: any UIDropSession) {
-        debugPrint("collectionView dropSessionDidEnter")
-    }
 }
 
 // MARK: Photo library change observer
@@ -1208,28 +1194,11 @@ extension MPViewController: MediaPreviewControllerDelegate {
 
 // MARK: - UISheetPresentationControllerDelegate
 extension MPViewController: UISheetPresentationControllerDelegate {
-    func sheetPresentationControllerDidChangeSelectedDetentIdentifier(_ sheetPresentationController: UISheetPresentationController) {
-        debugPrint("sheetPresentationController view frame \(view.frame)")
-        debugPrint("sheetPresentationController view bounds \(view.bounds)")
-    }
-    
     func presentationControllerShouldDismiss(_ presentationController: UIPresentationController) -> Bool {
         selectedModels.isEmpty
-        //if selectedModels.isEmpty {
-        //    return true
-        //} else {
-        //    // scheduledTimer is required to handle cases of attempting to close the sheet with tap outside
-        //    didAttemptToDismissWasCall = false
-        //    Timer.scheduledTimer(withTimeInterval: 0.3, repeats: false, block: { [weak self] (_) in
-        //        guard let strongSelf = self, !strongSelf.didAttemptToDismissWasCall else { return }
-        //        strongSelf.dismissAlert(needDismiss: false)
-        //    })
-        //    return false
-        //}
     }
     
     func presentationControllerDidAttemptToDismiss(_ presentationController: UIPresentationController) {
-        //didAttemptToDismissWasCall = true
         dismissAlert(needDismiss: false)
     }
 }
