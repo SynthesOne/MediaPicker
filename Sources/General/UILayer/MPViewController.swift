@@ -1171,7 +1171,7 @@ extension MPViewController: MediaPreviewControllerDataSource {
     func photoViewerController(_ photoViewerController: MediaViewerViewController, referencedViewForPhotoModel model: MPPhotoModel) -> UIView? {
         switch viewState {
         case .all:
-            if let indexPath = dataModel.getIndexPath(forMedia: model) {
+            if let indexPath = dataModel.getIndexPath(forMedia: model, showCameraCell: showCameraCell) {
                 return collectionView.mp.cellItem(MediaPickerCell.self, for: indexPath)?.referencedView
             }
         case .selected:
@@ -1186,7 +1186,7 @@ extension MPViewController: MediaPreviewControllerDataSource {
 // MARK: - MediaPreviewControllerDataSource
 extension MPViewController: MediaPreviewControllerDelegate {
     func toggleSelected(forModel model: MPPhotoModel) {
-        if let indexPath = dataModel.getIndexPath(forMedia: model) {
+        if let indexPath = dataModel.getIndexPath(forMedia: model, showCameraCell: showCameraCell) {
             selectionBlock(at: indexPath)
         }
     }

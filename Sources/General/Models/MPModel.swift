@@ -51,14 +51,18 @@ public struct MPModel {
         return (items.compactMap({ $0.unwrapped }), index)
     }
     
-    func getIndexPath(forMedia model: MPPhotoModel) -> IndexPath? {
+    func getIndexPath(forMedia model: MPPhotoModel, showCameraCell: Bool) -> IndexPath? {
         if let index = items.firstIndex(where: { $0.unwrapped == model }) {
-            var itemsOffset = 5
-            if currentOrientationIsLandscape {
-                itemsOffset += 4
-            }
-            if index > itemsOffset - 1 {
-                return IndexPath(item: index - itemsOffset, section: 1)
+            if showCameraCell {
+                var itemsOffset = 5
+                if currentOrientationIsLandscape {
+                    itemsOffset += 4
+                }
+                if index > itemsOffset - 1 {
+                    return IndexPath(item: index - itemsOffset, section: 1)
+                } else {
+                    return IndexPath(item: index, section: 0)
+                }
             } else {
                 return IndexPath(item: index, section: 0)
             }
