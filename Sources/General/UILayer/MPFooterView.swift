@@ -102,6 +102,7 @@ final class MPFooterView: UIView {
         view.setTitle(Lang.attach, for: .normal)
         view.titleLabel?.font = Font.regular(17)
         view.alpha = 0
+        view.isExclusiveTouch = true
         return view
     }()
     

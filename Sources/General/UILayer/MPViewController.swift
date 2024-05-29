@@ -204,6 +204,7 @@ final class MPViewController: UIViewController {
             .store(in: &disposeBag)
         
         footer.actionButtonTapSubject
+            .first()
             .sink(receiveValue: { [unowned self] in
                 if self.selectedModels.count > 0 {
                     self.preSelectedResult?(self.selectedModels)
