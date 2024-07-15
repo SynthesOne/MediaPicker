@@ -297,7 +297,7 @@ final class MPViewController: UIViewController {
         configuration.interSectionSpacing = UIScreenPixel
         let layout = UICollectionViewCompositionalLayout(sectionProvider: { [weak self] (sectionIndex: Int, environment: NSCollectionLayoutEnvironment) -> NSCollectionLayoutSection? in
             guard let strongSelf = self else { return nil }
-            let section = strongSelf.showedSections[sectionIndex]
+            let section = strongSelf.showedSections[optional: sectionIndex]
             var columnCount = 3
             if UIApplication.shared.mp.scene?.interfaceOrientation.isLandscape == true {
                 columnCount += 2
@@ -396,6 +396,9 @@ final class MPViewController: UIViewController {
                 section.contentInsets = .zero
                 
                 return section
+                
+            default:
+                return nil
             }
             
         }, configuration: configuration)
