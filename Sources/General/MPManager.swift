@@ -163,7 +163,7 @@ public enum MPManager {
             option.fetchLimit = limitCount
             option.sortDescriptors = [.init(keyPath: \PHAsset.creationDate, ascending: false)]
             
-            let smartAlbums = PHAssetCollection.fetchAssetCollections(with: .smartAlbum, subtype: .albumRegular, options: nil)
+			let smartAlbums = PHAssetCollection.fetchAssetCollections(with: .smartAlbum, subtype: .any, options: nil)
             smartAlbums.enumerateObjects { collection, _, stop in
                 if collection.assetCollectionSubtype == .smartAlbumUserLibrary {
                     stop.pointee = true
