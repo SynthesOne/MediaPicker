@@ -85,8 +85,14 @@ public final class MPPresenter: NSObject {
     }
     
     private func showNoAuthAlert() {
-        let alert = Alert(message: Lang.notAuthPhotos, {
-            Action.cancel(Lang.ok)
+		let alert = Alert(message: Lang.notAuthPhotos, { [weak self] in
+			if self?.config.uiConfig.showOpenSettingsButton == true {
+				Action.default(Lang.changeSettings, action: {
+					guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
+					UIApplication.shared.open(url, options: [:])
+				})
+			}
+			Action.cancel(Lang.cancel)
         })
         
         if isIpad {

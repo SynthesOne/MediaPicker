@@ -57,6 +57,10 @@ public struct MPUIConfiguration {
             MPFontDeploy.nameSpace = customFontName
         }
     }
+	
+	/// If access is denied to Photo
+	/// Determines whether to show a button to open settings
+	public var showOpenSettingsButton = true
 }
 
 enum MPFontDeploy {
