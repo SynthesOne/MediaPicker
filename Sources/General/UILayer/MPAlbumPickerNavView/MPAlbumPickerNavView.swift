@@ -144,7 +144,9 @@ final class MPAlbumPickerNavView: UIView {
     override func layoutSubviews() {
         super.layoutSubviews()
         var minX: CGFloat = 50.0
-        if let superSpMinX = superview?.superview?.frame.minX, superSpMinX > 0 {
+		if let superSpSpMinX = superview?.superview?.superview?.frame.minX, superSpSpMinX > 0 {
+			minX = superSpSpMinX
+		} else if let superSpMinX = superview?.superview?.frame.minX, superSpMinX > 0 {
             minX = superSpMinX
         } else if let superMinX = superview?.frame.minX, superMinX > 0 {
             minX = superMinX

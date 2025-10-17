@@ -417,7 +417,7 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/SynthesOne/MediaPicker.git";
 			requirement = {
-				branch = main;
+				branch = dev;
 				kind = branch;
 			};
 		};
