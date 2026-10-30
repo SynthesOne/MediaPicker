@@ -195,7 +195,7 @@ final class MediaViewerViewController: UIViewController, MPViewControllerAnimata
             // For that reason, we should not update frame of imageView no matter what.
             guard let strongSelf = self, let image, strongSelf.imageView.isHidden else { return }
             strongSelf.imageView.frame.size = strongSelf.imageViewSizeForImage(image)
-            strongSelf.imageView.center = strongSelf.view.center
+            strongSelf.imageView.center = CGPoint(x: strongSelf.view.bounds.midX, y: strongSelf.view.bounds.midY)
             strongSelf.collectionView.reloadData()
         }
 
@@ -250,11 +250,8 @@ final class MediaViewerViewController: UIViewController, MPViewControllerAnimata
 
     override func viewWillLayoutSubviews() {
         super.viewWillLayoutSubviews()
-        backgroundView.frame = .init(origin: .zero, size: .init(width: view.bounds.width, height: view.bounds.height))
-        backgroundView.center = view.center
-        
-        scrollView.frame = .init(origin: .zero, size: .init(width: view.bounds.width, height: view.bounds.height))
-        scrollView.center = view.center
+        backgroundView.frame = view.bounds
+        scrollView.frame = view.bounds
 
         if UIApplication.shared.mp.isLandscape == true {
             selectionButton.frame = .init(x: view.bounds.width - 40 - view.safeAreaInsets.right, y: view.safeAreaInsets.top + 8, width: 32, height: 32)
@@ -368,23 +365,14 @@ final class MediaViewerViewController: UIViewController, MPViewControllerAnimata
     }
 
     private func frameForReferencedView() -> CGRect {
-        if let referencedView = referencedView {
-            if let superview = referencedView.superview {
-                var frame = (superview.convert(referencedView.frame, to: view))
-
-                if abs(frame.size.width - referencedView.frame.size.width) > 1 {
-                    // This is workaround for bug in ios 8, everything is double.
-                    frame = CGRect(x: frame.origin.x / 2, y: frame.origin.y / 2, width: frame.size.width / 2, height: frame.size.height / 2)
-                }
-
-                return frame
-            }
+        if let referencedView, referencedView.superview != nil {
+            return referencedView.convert(referencedView.bounds, to: view)
         }
 
         // Work around when there is no reference view, dragging might behave oddly
         // Should be fixed in the future
         let defaultSize: CGFloat = 1
-        return CGRect(x: view.frame.midX - defaultSize / 2, y: view.frame.midY - defaultSize / 2, width: defaultSize, height: defaultSize)
+        return CGRect(x: view.bounds.midX - defaultSize / 2, y: view.bounds.midY - defaultSize / 2, width: defaultSize, height: defaultSize)
     }
 
     private func currentPhotoIndex(for scrollView: UIScrollView) -> Int {
@@ -437,11 +425,11 @@ final class MediaViewerViewController: UIViewController, MPViewControllerAnimata
 
             case .changed:
                 let translation = gesture.translation(in: gestureView)
-                imageView.center = CGPoint(x: view.center.x, y: view.center.y + translation.y)
+                imageView.center = CGPoint(x: view.bounds.midX, y: view.bounds.midY + translation.y)
 
                 //Change opacity of background view based on vertical distance from center
-                let yDistance = CGFloat(abs(imageView.center.y - view.center.y))
-                var alpha = 1.0 - yDistance / (gestureView.center.y)
+                let yDistance = CGFloat(abs(imageView.center.y - view.bounds.midY))
+                var alpha = 1.0 - yDistance / gestureView.bounds.midY
 
                 if alpha < 0 {
                     alpha = 0
@@ -519,7 +507,7 @@ final class MediaViewerViewController: UIViewController, MPViewControllerAnimata
 
         // Animate image view to the center
         imageView.frame = destinationFrame
-        imageView.center = view.center
+        imageView.center = CGPoint(x: view.bounds.midX, y: view.bounds.midY)
 
         // Animate background alpha
         backgroundView.alpha = 1.0
@@ -541,6 +529,7 @@ final class MediaViewerViewController: UIViewController, MPViewControllerAnimata
     }
 
     func presentationAnimationWillStart() {
+        imageView.frame = frameForReferencedView()
         _hideImageView(false)
     }
 

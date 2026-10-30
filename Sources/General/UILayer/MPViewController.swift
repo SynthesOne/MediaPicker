@@ -64,13 +64,13 @@ final class MPViewController: UIViewController {
     })
     
     private var dataModel: MPModel = .empty
+    private var photoLoadGeneration = 0
 
     private var disposeBag = Set<AnyCancellable>()
     private var hasTakeANewAsset = false
     
     // ** Pan select gesture
     private var autoScrollInfo: (direction: AutoScrollDirection, speed: CGFloat) = (.none, 0)
-    private var slideCalculateQueue = DispatchQueue(label: "com.mediapicker.slide")
     private var panSelectType: MPViewController.SlideSelectType = .none
     private var beginPanSelect = false
     private var autoScrollTimer: CADisplayLink?
@@ -170,15 +170,15 @@ final class MPViewController: UIViewController {
     // MARK: - Bind
     private func bind() {
         $albumModel
-            .removeDuplicates()
-            .receive(on: DispatchQueue.global(qos: .userInitiated))
-            .handleEvents(receiveOutput: { [weak self] _ in
-                guard let strongSelf = self else { return }
-                strongSelf.loadPhotos()
+            .removeDuplicates(by: { previous, current in
+                previous.collection.localIdentifier == current.collection.localIdentifier &&
+                previous.result === current.result &&
+                previous == current
             })
             .receive(on: DispatchQueue.main)
             .sink(receiveValue: { [weak self] (newAlbum) in
                 guard let strongSelf = self else { return }
+                strongSelf.loadPhotos(from: newAlbum)
                 strongSelf.albumListNavView.hideMenuHandler.send()
                 strongSelf.albumListNavView.setMenuTitle(newAlbum.title)
                 if strongSelf.presentedViewController is MPAlbumListViewController {
@@ -265,18 +265,25 @@ final class MPViewController: UIViewController {
             .store(in: &disposeBag)
     }
     
-    private func loadPhotos() {
-        DispatchQueue.global(qos: .userInitiated).async {
-            if self.albumModel.models.isEmpty {
-                self.albumModel.refetchPhotos()
-                self.dataModel = .init(models: self.albumModel.models, showCameraCell: self.showCameraCell)
-                self.markSelected()
-            } else {
-                self.dataModel = .init(models: self.albumModel.models, showCameraCell: self.showCameraCell)
-                self.markSelected()
+    private func loadPhotos(from album: MPAlbumModel) {
+        photoLoadGeneration += 1
+        let generation = photoLoadGeneration
+        let showCameraCell = uiConfig.showCameraCell && album.isCameraRoll
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            var loadedAlbum = album
+            if loadedAlbum.models.isEmpty {
+                loadedAlbum.refetchPhotos()
             }
-            
-            MPMainAsync {
+            let loadedModel = MPModel(models: loadedAlbum.models, showCameraCell: showCameraCell)
+
+            MPMainAsync { [weak self, loadedAlbum] in
+                guard let self,
+                      self.photoLoadGeneration == generation,
+                      self.albumModel.result === album.result,
+                      self.albumModel.collection.localIdentifier == album.collection.localIdentifier else { return }
+                self.albumModel.models = loadedAlbum.models
+                self.dataModel = loadedModel
+                self.markSelected()
                 self.dataModel.setOrinetation(isLandscape: UIApplication.shared.mp.isLandscape == true)
                 self.reloadData()
             }
@@ -285,10 +292,22 @@ final class MPViewController: UIViewController {
     
     // The first request was at a limit of 30, so you need to re-request the entire album
     private func firstLoadPhotos() {
-        /// completionInMain == false, so that the `loadPhotos()` does not switch the context
-        MPManager.getCameraRollAlbum(generalConfig: generalConfig, completionInMain: false, completion: { (album) in
+        let initialResult = albumModel.result
+        let initialCollectionIdentifier = albumModel.collection.localIdentifier
+        MPManager.getCameraRollAlbum(
+            generalConfig: generalConfig,
+            completionInMain: true
+        ) { [weak self] album in
+            guard let self,
+                  self.albumModel.collection.localIdentifier == initialCollectionIdentifier else { return }
+            guard self.albumModel.result === initialResult else {
+                if self.albumModel.option.fetchLimit > 0 {
+                    self.firstLoadPhotos()
+                }
+                return
+            }
             self.albumModel = album
-        })
+        }
     }
     
     // MARK: - UICollectionViewLayout
@@ -552,44 +571,33 @@ final class MPViewController: UIViewController {
             
             lastPanUpdateTime = CACurrentMediaTime()
             
-            slideCalculateQueue.async { [weak self] in
-                guard let strongSelf = self else { return }
-                var selectedArrHasChange = false
-                
-                var item = strongSelf.dataModel.item(indexPath, showCameraCell: strongSelf.showCameraCell)
-                
-                if strongSelf.panSelectType == .select {
-                    if !item.isSelected,
-                       canSelectMedia(item, currentSelectCount: strongSelf.selectedModels.count, generalConfig: strongSelf.generalConfig) {
-                        strongSelf.dataModel.toggleSelected(indexPath: indexPath, showCameraCell: strongSelf.showCameraCell, true)
-                        item.isSelected = true
-                    }
-                } else if strongSelf.panSelectType == .cancel {
-                    strongSelf.dataModel.toggleSelected(indexPath: indexPath, showCameraCell: strongSelf.showCameraCell, false)
-                    item.isSelected = false
+            var selectedArrHasChange = false
+            var item = dataModel.item(indexPath, showCameraCell: showCameraCell)
+
+            if panSelectType == .select {
+                if !item.isSelected,
+                   canSelectMedia(item, currentSelectCount: selectedModels.count, generalConfig: generalConfig) {
+                    dataModel.toggleSelected(indexPath: indexPath, showCameraCell: showCameraCell, true)
+                    item.isSelected = true
                 }
-                
-                if !item.isSelected {
-                    if let index = strongSelf.selectedModels.firstIndex(where: { $0 == item }) {
-                        strongSelf.selectedModels.remove(at: index)
-                        selectedArrHasChange = true
-                    }
-                } else {
-                    if !strongSelf.selectedModels.contains(where: { $0 == item }) {
-                        strongSelf.selectedModels.append(strongSelf.dataModel.item(indexPath, showCameraCell: strongSelf.showCameraCell))
-                        selectedArrHasChange = true
-                    }
+            } else if panSelectType == .cancel {
+                dataModel.toggleSelected(indexPath: indexPath, showCameraCell: showCameraCell, false)
+                item.isSelected = false
+            }
+
+            if !item.isSelected {
+                if let index = selectedModels.firstIndex(where: { $0 == item }) {
+                    selectedModels.remove(at: index)
+                    selectedArrHasChange = true
                 }
-                
-                MPMainAsync {
-                    strongSelf.toggleCellSelection(at: indexPath, withModel: item)
-                }
-                
-                if selectedArrHasChange {
-                    MPMainAsync {
-                        strongSelf.refreshCellIndex()
-                    }
-                }
+            } else if !selectedModels.contains(where: { $0 == item }) {
+                selectedModels.append(dataModel.item(indexPath, showCameraCell: showCameraCell))
+                selectedArrHasChange = true
+            }
+
+            toggleCellSelection(at: indexPath, withModel: item)
+            if selectedArrHasChange {
+                refreshCellIndex()
             }
         }
     }
@@ -888,7 +896,9 @@ final class MPViewController: UIViewController {
     private func showAlbumList(sourceView: UIView) {
         let albumList = MPAlbumListViewController(generalConfig: generalConfig)
         albumList.preferredContentSize = .init(width: 150, height: 240)
-        albumList.popoverPresentationController?.sourceView = sourceView
+        let anchorView = (sourceView as? MPAlbumPickerNavView)?.sourceView ?? sourceView
+        albumList.popoverPresentationController?.sourceView = anchorView
+        albumList.popoverPresentationController?.sourceRect = anchorView.bounds
         albumList.popoverPresentationController?.permittedArrowDirections = .up
         
         albumList.selectAlbumSubject
@@ -1013,18 +1023,10 @@ extension MPViewController: UICollectionViewDelegate {
     }
     
     public func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
-        var index: Int? = nil
-        DispatchQueue.mp.background(background: {
-            if self.showCameraCell && indexPath.section == 0 && indexPath.item == 0 { return }
-            let model = self.dataModel.item(indexPath, showCameraCell: self.showCameraCell)
-            if self.uiConfig.showCounterOnSelectionButton, let _index = self.selectedModels.firstIndex(where: { $0 == model }) {
-                index = _index + 1
-            }
-        }, completion: {
-            if let index {
-                cell.mp.as(MediaPickerCell.self)?.index = index
-            }
-        })
+        guard uiConfig.showCounterOnSelectionButton,
+              let model = dataSource.itemIdentifier(for: indexPath)?.unwrapped,
+              let index = selectedModels.firstIndex(where: { $0 == model }) else { return }
+        cell.mp.as(MediaPickerCell.self)?.index = index + 1
     }
 }
 
@@ -1095,35 +1097,25 @@ extension MPViewController: UICollectionViewDropDelegate {
 // MARK: Photo library change observer
 extension MPViewController: PHPhotoLibraryChangeObserver {
     func photoLibraryDidChange(_ changeInstance: PHChange) {
-        func isChangesCount<T>(changeDetails: PHFetchResultChangeDetails<T>) -> Bool {
-            let before = changeDetails.fetchResultBeforeChanges.count
-            let after = changeDetails.fetchResultAfterChanges.count
-            return before != after
-        }
-        guard let changes = changeInstance.changeDetails(for: albumModel.result) else {
-            return
-        }
-        
-        MPMainAsync {
+        MPMainAsync { [weak self] in
+            guard let self,
+                  let changes = changeInstance.changeDetails(for: self.albumModel.result) else { return }
+
             // Re-displaying the album list after a change requires an update
             self.hasTakeANewAsset = true
-            self.albumModel.result = changes.fetchResultAfterChanges
+            var album = self.albumModel
+            album.result = changes.fetchResultAfterChanges
             for sm in self.selectedModels {
                 let isDelete = changeInstance.changeDetails(for: sm.asset)?.objectWasDeleted ?? false
                 if isDelete {
                     self.selectedModels.remove(sm)
                 }
             }
-            if changes.hasIncrementalChanges {
-                if !changes.removedObjects.isEmpty || !changes.insertedObjects.isEmpty {
-                    self.albumModel.models.removeAll()
-                }
-                
-                self.loadPhotos()
-            } else {
-                self.albumModel.models.removeAll()
-                self.loadPhotos()
+            if !changes.hasIncrementalChanges || !changes.removedObjects.isEmpty || !changes.insertedObjects.isEmpty {
+                album.models.removeAll()
             }
+            self.albumModel = album
+            self.loadPhotos(from: album)
         }
     }
 }

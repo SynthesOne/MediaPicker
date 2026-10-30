@@ -112,23 +112,14 @@ public enum MPManager {
         
         option.sortDescriptors = [.init(keyPath: \PHAsset.creationDate, ascending: false)]
         
-        let smartAlbums = PHAssetCollection.fetchAssetCollections(with: .smartAlbum, subtype: .albumRegular, options: nil) as? PHFetchResult<PHCollection>
-        let albums = PHAssetCollection.fetchAssetCollections(with: .album, subtype: .albumRegular, options: nil) as? PHFetchResult<PHCollection>
-        let streamAlbums = PHAssetCollection.fetchAssetCollections(with: .album, subtype: .albumMyPhotoStream, options: nil) as? PHFetchResult<PHCollection>
-        let syncedAlbums = PHAssetCollection.fetchAssetCollections(with: .album, subtype: .albumSyncedAlbum, options: nil) as? PHFetchResult<PHCollection>
-        let sharedAlbums = PHAssetCollection.fetchAssetCollections(with: .album, subtype: .albumCloudShared, options: nil) as? PHFetchResult<PHCollection>
-        let arr = [smartAlbums, albums, streamAlbums, syncedAlbums, sharedAlbums].compactMap { $0 }
+        let smartAlbums = PHAssetCollection.fetchAssetCollections(with: .smartAlbum, subtype: .any, options: nil)
+        let albums = PHAssetCollection.fetchAssetCollections(with: .album, subtype: .any, options: nil)
         
         var albumList: [MPAlbumModel] = []
-        arr.forEach { album in
+        var collectionIdentifiers = Set<String>()
+        [smartAlbums, albums].forEach { album in
             album.enumerateObjects { collection, _, _ in
-                guard let collection = collection as? PHAssetCollection else { return }
-                if collection.assetCollectionSubtype == .smartAlbumAllHidden {
-                    return
-                }
-                if collection.assetCollectionSubtype.rawValue > PHAssetCollectionSubtype.smartAlbumLongExposures.rawValue {
-                    return
-                }
+                guard collectionIdentifiers.insert(collection.localIdentifier).inserted else { return }
                 let result = PHAsset.fetchAssets(in: collection, options: option)
                 if result.count == 0 {
                     return

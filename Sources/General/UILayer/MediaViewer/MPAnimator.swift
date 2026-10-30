@@ -35,6 +35,7 @@ protocol MPViewControllerAnimatable: AnyObject {
     var imageView: MPImageView { get }
     var referencedView: UIView? { get set }
     
+    func presentationAnimationWillStart()
     func presentingAnimation()
     func presentationAnimationDidFinish()
     
@@ -79,6 +80,8 @@ final class MPAnimator: NSObject, MPViewerBaseAnimator {
             toView.frame = transitionContext.finalFrame(for: toViewController)
 
             containerView.addSubview(toView)
+            toView.layoutIfNeeded()
+            animatableVC.presentationAnimationWillStart()
 
             if let referencedView = animatableVC.referencedView {
                 animatableVC.imageView.layer.cornerRadius = referencedView.layer.cornerRadius
