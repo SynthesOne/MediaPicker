@@ -34,6 +34,8 @@ extension MPExtensionWrapper where Base: UIView {
         UIView.animate(withDuration: duration, animations: {
             base.alpha = hidden ? 0.0 : 1.0
         }) { (_) in
+            let targetAlpha: CGFloat = hidden ? 0.0 : 1.0
+            guard abs(base.alpha - targetAlpha) <= 0.01 else { return }
             base.isHidden = hidden
         }
     }
